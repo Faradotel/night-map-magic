@@ -5,8 +5,9 @@ import { FilterBar, Filters } from '@/components/FilterBar';
 import { BottomNav } from '@/components/BottomNav';
 import { SearchScreen } from '@/components/SearchScreen';
 import { ProfileScreen } from '@/components/ProfileScreen';
+import { AddEventSheet } from '@/components/AddEventSheet';
 import { mockEvents, NightEvent, getDistance } from '@/data/mockEvents';
-import { MapPin, Locate } from 'lucide-react';
+import { MapPin, Locate, Plus } from 'lucide-react';
 
 type Tab = 'map' | 'search' | 'profile';
 
@@ -20,6 +21,8 @@ export default function Index() {
   const [mapCenter, setMapCenter] = useState<[number, number]>(DEFAULT_CENTER);
   const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
   const [locating, setLocating] = useState(false);
+  const [showAddEvent, setShowAddEvent] = useState(false);
+  const [userEvents, setUserEvents] = useState<NightEvent[]>([]);
   const [filters, setFilters] = useState<Filters>({
     date: 'all',
     price: 'all',
@@ -47,7 +50,9 @@ export default function Index() {
   }, []);
 
   // Filter events
-  const filteredEvents = mockEvents.filter(event => {
+  const allEvents = [...mockEvents, ...userEvents];
+
+  const filteredEvents = allEvents.filter(event => {
     // Price filter
     if (filters.price === 'free' && event.priceRange !== 'gratuit') return false;
     if (filters.price === 'paid' && event.priceRange === 'gratuit') return false;
@@ -109,6 +114,13 @@ export default function Index() {
     if (activeTab !== 'map') setActiveTab('map');
   }
 
+  function handleAddEvent(event: NightEvent) {
+    setUserEvents(prev => [...prev, event]);
+    setSelectedEvent(event);
+    setMapCenter([event.lat, event.lng]);
+    setMapZoom(15);
+  }
+
   return (
     <div className="relative w-full h-full overflow-hidden" style={{ background: 'hsl(258 60% 8%)' }}>
       {/* ── MAP SCREEN (always mounted, hidden via visibility) ── */}
@@ -136,6 +148,18 @@ export default function Index() {
         >
         </div>
 
+        {/* Add event button */}
+        <button
+          onClick={() => setShowAddEvent(true)}
+          className="absolute right-3 bottom-32 z-[400] w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90"
+          style={{
+            background: 'linear-gradient(135deg, hsl(183 100% 40%), hsl(275 71% 50%))',
+            boxShadow: '0 0 16px hsl(183 100% 50% / 0.5), 0 2px 12px hsl(258 60% 4% / 0.6)',
+          }}
+        >
+          <Plus size={18} className="text-white" />
+        </button>
+
         {/* Locate me button */}
         <button
           onClick={handleLocate}
@@ -153,7 +177,7 @@ export default function Index() {
 
         {/* Event count badge */}
         <div
-          className="absolute right-3 bottom-32 z-[400] px-2.5 py-1.5 rounded-full border border-surface-4 flex items-center gap-1.5"
+          className="absolute right-3 bottom-44 z-[400] px-2.5 py-1.5 rounded-full border border-surface-4 flex items-center gap-1.5"
           style={{
             background: 'hsl(258 55% 11% / 0.95)',
             backdropFilter: 'blur(12px)',
@@ -171,6 +195,13 @@ export default function Index() {
             onClose={() => setSelectedEvent(null)}
           />
         )}
+
+        {/* Add event sheet */}
+        <AddEventSheet
+          open={showAddEvent}
+          onClose={() => setShowAddEvent(false)}
+          onAdd={handleAddEvent}
+        />
       </div>
 
       {/* ── SEARCH SCREEN ── */}
