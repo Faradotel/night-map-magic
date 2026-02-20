@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { EventMap } from '@/components/EventMap';
 import { EventDetailSheet } from '@/components/EventDetailSheet';
+import { MapEventCard } from '@/components/MapEventCard';
 import { FilterBar, Filters } from '@/components/FilterBar';
 import { BottomNav } from '@/components/BottomNav';
 import { SearchScreen } from '@/components/SearchScreen';
@@ -22,6 +23,7 @@ const CITY_RADIUS_DEFAULT = 40;
 export default function Index() {
   const [activeTab, setActiveTab] = useState<Tab>('map');
   const [selectedEvent, setSelectedEvent] = useState<NightEvent | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>(DEFAULT_CENTER);
   const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
@@ -175,6 +177,7 @@ export default function Index() {
 
   function handleEventSelect(event: NightEvent) {
     setSelectedEvent(event);
+    setShowDetail(false);
     setMapCenter([event.lat, event.lng]);
     if (activeTab !== 'map') setActiveTab('map');
   }
@@ -253,13 +256,22 @@ export default function Index() {
           <span className="text-[10px] text-muted-foreground">événements</span>
         </div>
 
-        {/* Event detail sheet */}
-        {selectedEvent &&
-        <EventDetailSheet
-          event={selectedEvent}
-          onClose={() => setSelectedEvent(null)} />
+        {/* Small event preview card on map */}
+        {selectedEvent && (
+          <MapEventCard
+            event={selectedEvent}
+            onClose={() => setSelectedEvent(null)}
+            onDetails={() => setShowDetail(true)}
+          />
+        )}
 
-        }
+        {/* Full event detail sheet */}
+        {selectedEvent && showDetail && (
+          <EventDetailSheet
+            event={selectedEvent}
+            onClose={() => setShowDetail(false)}
+          />
+        )}
 
         {/* Add event sheet */}
         <AddEventSheet
@@ -271,7 +283,7 @@ export default function Index() {
 
       {/* ── SEARCH SCREEN ── */}
       {activeTab === 'search' &&
-      <SearchScreen onEventSelect={handleEventSelect} />
+      <SearchScreen onEventSelect={handleEventSelect} events={filteredEvents} />
       }
 
       {/* ── PROFILE SCREEN ── */}

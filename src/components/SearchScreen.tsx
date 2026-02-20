@@ -1,23 +1,24 @@
 import { useState } from 'react';
 import { Search, MapPin, Clock, X } from 'lucide-react';
-import { mockEvents, NightEvent, vibeConfig, typeConfig, formatTime, formatDate } from '@/data/mockEvents';
+import { NightEvent, vibeConfig, typeConfig, formatTime, formatDate } from '@/data/mockEvents';
 
 interface SearchScreenProps {
   onEventSelect: (event: NightEvent) => void;
+  events: NightEvent[];
 }
 
-export function SearchScreen({ onEventSelect }: SearchScreenProps) {
+export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
   const [query, setQuery] = useState('');
 
   const results = query.trim().length > 1
-    ? mockEvents.filter(e =>
+    ? events.filter(e =>
         e.name.toLowerCase().includes(query.toLowerCase()) ||
         e.city.toLowerCase().includes(query.toLowerCase()) ||
         e.venue.toLowerCase().includes(query.toLowerCase()) ||
         e.genres.some(g => g.includes(query.toLowerCase())) ||
         e.type.includes(query.toLowerCase())
       )
-    : mockEvents;
+    : events;
 
   return (
     <div className="absolute inset-0 z-[300] flex flex-col" style={{ background: 'hsl(var(--surface-1))' }}>
