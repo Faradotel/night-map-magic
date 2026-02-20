@@ -240,7 +240,7 @@ export default function Index() {
         </div>
 
         {/* Filters (hidden toggle, uses data attribute) */}
-        <FilterBar filters={filters} onChange={setFilters} />
+        <FilterBar filters={filters} onChange={setFilters} isNearbyMode={locationMode === 'nearby' && userLocation !== null} />
 
         {/* ── Bottom right controls ── */}
         {/* Locate me */}

@@ -17,6 +17,7 @@ export interface Filters {
 interface FilterBarProps {
   filters: Filters;
   onChange: (f: Filters) => void;
+  isNearbyMode?: boolean;
 }
 
 const genreOptions: GenreFilter[] = ['electro', 'techno', 'house', 'pop', 'rock', 'indie', 'r&b', 'jazz'];
@@ -35,7 +36,7 @@ const dateChips: { key: DateFilter; label: string }[] = [
   { key: 'all', label: 'Tout' },
 ];
 
-export function FilterBar({ filters, onChange }: FilterBarProps) {
+export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBarProps) {
   const [showPanel, setShowPanel] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -125,7 +126,8 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
                 </div>
               </div>
 
-              {/* Radius */}
+              {/* Radius - only when nearby mode is active */}
+              {isNearbyMode && (
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Rayon</span>
@@ -143,6 +145,7 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
                   }}
                 />
               </div>
+              )}
 
               {/* Price */}
               <div>
