@@ -71,7 +71,7 @@ export function LocationMode({ mode, selectedCity, onModeChange, onCitySelect, l
   }
 
   return (
-    <div className="flex items-center gap-1.5 w-full min-w-0">
+    <div className="flex items-center gap-1.5" style={{ width: 'max-content' }}>
       {/* Near me pill */}
       <button
         onClick={handleSwitchToNearby}
