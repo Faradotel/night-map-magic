@@ -212,21 +212,6 @@ export default function Index() {
             {/* Search bar + Filter button */}
             <div className="flex items-center gap-2">
               <button
-                onClick={() => { setActiveTab('search'); setSelectedEvent(null); }}
-                className="flex-1 flex items-center h-14 px-4 rounded-full border"
-                style={{
-                  background: 'rgba(26, 13, 21, 0.8)',
-                  backdropFilter: 'blur(12px)',
-                  borderColor: 'hsl(325 89% 50% / 0.1)',
-                  boxShadow: '0 4px 20px hsl(230 60% 4% / 0.5)',
-                }}
-              >
-                <Search size={18} style={{ color: 'hsl(325 89% 50%)' }} className="mr-3 shrink-0" />
-                <span className="text-sm font-medium" style={{ color: 'hsl(225 15% 45%)' }}>
-                  Où sort-on ce soir ?
-                </span>
-              </button>
-              <button
                 onClick={() => {
                   const el = document.querySelector('[data-filter-toggle]') as HTMLButtonElement;
                   el?.click();
