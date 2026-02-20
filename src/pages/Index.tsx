@@ -110,21 +110,26 @@ export default function Index() {
     if (filters.price === 'paid' && event.priceRange === 'gratuit') return false;
 
     if (filters.date !== 'all') {
-      const eventDate = new Date(event.startTime);
-      const now = new Date();
-      const todayEnd = new Date(now);todayEnd.setHours(23, 59, 59);
-      const weekendStart = new Date(now);
-      const day = now.getDay();
-      const daysToSaturday = day === 6 ? 0 : 6 - day;
-      weekendStart.setDate(now.getDate() + daysToSaturday);
-      weekendStart.setHours(0, 0, 0);
+      // Use Paris timezone for all date comparisons
+      const parisNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
+      const eventDate = new Date(new Date(event.startTime).toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
+
+      const todayEnd = new Date(parisNow);
+      todayEnd.setHours(23, 59, 59, 999);
+
+      const weekendStart = new Date(parisNow);
+      const day = parisNow.getDay();
+      const daysToSaturday = day === 6 ? 0 : day === 0 ? -1 : 6 - day;
+      weekendStart.setDate(parisNow.getDate() + daysToSaturday);
+      weekendStart.setHours(0, 0, 0, 0);
       const weekendEnd = new Date(weekendStart);
       weekendEnd.setDate(weekendStart.getDate() + 1);
-      weekendEnd.setHours(23, 59, 59);
-      const weekEnd = new Date(now);
-      weekEnd.setDate(now.getDate() + 7);
+      weekendEnd.setHours(23, 59, 59, 999);
 
-      if (filters.date === 'today' && eventDate > todayEnd) return false;
+      const weekEnd = new Date(parisNow);
+      weekEnd.setDate(parisNow.getDate() + 7);
+
+      if (filters.date === 'today' && (eventDate < parisNow || eventDate > todayEnd)) return false;
       if (filters.date === 'weekend' && (eventDate < weekendStart || eventDate > weekendEnd)) return false;
       if (filters.date === 'week' && eventDate > weekEnd) return false;
     }
