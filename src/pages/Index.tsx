@@ -38,7 +38,7 @@ export default function Index() {
     price: 'all',
     genres: [],
     vibes: [],
-    radiusKm: NEARBY_RADIUS_DEFAULT,
+    radiusKm: NEARBY_RADIUS_DEFAULT
   });
 
   // Request geolocation on load + fetch Shotgun events
@@ -66,13 +66,13 @@ export default function Index() {
                 toast.success(`${events.length} événements trouvés près de vous`);
               }
             } catch {
+
+
               // silent
-            } finally {
-              setShotgunLoading(false);
-            }
+            } finally {setShotgunLoading(false);}
           }
         },
-        () => { setLocating(false); },
+        () => {setLocating(false);},
         { enableHighAccuracy: true, timeout: 8000 }
       );
     }
@@ -81,17 +81,17 @@ export default function Index() {
   // Filter events using filterCenter (user location or city center)
   const allEvents = [...mockEvents, ...userEvents, ...shotgunEvents];
 
-  const filteredEvents = allEvents.filter(event => {
+  const filteredEvents = allEvents.filter((event) => {
     if (filters.price === 'free' && event.priceRange !== 'gratuit') return false;
     if (filters.price === 'paid' && event.priceRange === 'gratuit') return false;
 
     if (filters.date !== 'all') {
       const eventDate = new Date(event.startTime);
       const now = new Date();
-      const todayEnd = new Date(now); todayEnd.setHours(23, 59, 59);
+      const todayEnd = new Date(now);todayEnd.setHours(23, 59, 59);
       const weekendStart = new Date(now);
       const day = now.getDay();
-      const daysToSaturday = day === 6 ? 0 : (6 - day);
+      const daysToSaturday = day === 6 ? 0 : 6 - day;
       weekendStart.setDate(now.getDate() + daysToSaturday);
       weekendStart.setHours(0, 0, 0);
       const weekendEnd = new Date(weekendStart);
@@ -105,7 +105,7 @@ export default function Index() {
       if (filters.date === 'week' && eventDate > weekEnd) return false;
     }
 
-    if (filters.genres.length > 0 && !event.genres.some(g => filters.genres.includes(g as any))) return false;
+    if (filters.genres.length > 0 && !event.genres.some((g) => filters.genres.includes(g as any))) return false;
     if (filters.vibes.length > 0 && !filters.vibes.includes(event.vibe as any)) return false;
 
     // Distance filter using filterCenter (works in both modes)
@@ -122,7 +122,7 @@ export default function Index() {
     setLocationMode(mode);
     if (mode === 'nearby') {
       setSelectedCityName(null);
-      setFilters(prev => ({ ...prev, radiusKm: NEARBY_RADIUS_DEFAULT }));
+      setFilters((prev) => ({ ...prev, radiusKm: NEARBY_RADIUS_DEFAULT }));
       if (userLocation) {
         setFilterCenter(userLocation);
         setMapCenter(userLocation);
@@ -139,7 +139,7 @@ export default function Index() {
     setFilterCenter(cityCenter);
     setMapCenter(cityCenter);
     setMapZoom(12);
-    setFilters(prev => ({ ...prev, radiusKm: CITY_RADIUS_DEFAULT }));
+    setFilters((prev) => ({ ...prev, radiusKm: CITY_RADIUS_DEFAULT }));
 
     setShotgunLoading(true);
     toast.info(`Recherche des événements à ${city.name}…`);
@@ -163,14 +163,14 @@ export default function Index() {
     setLocationMode('nearby');
     setSelectedCityName(null);
     navigator.geolocation.getCurrentPosition(
-      pos => {
+      (pos) => {
         const loc: [number, number] = [pos.coords.latitude, pos.coords.longitude];
         setUserLocation(loc);
         setFilterCenter(loc);
         setMapCenter(loc);
         setMapZoom(13);
         setLocating(false);
-        setFilters(prev => ({ ...prev, radiusKm: NEARBY_RADIUS_DEFAULT }));
+        setFilters((prev) => ({ ...prev, radiusKm: NEARBY_RADIUS_DEFAULT }));
       },
       () => setLocating(false),
       { enableHighAccuracy: true, timeout: 8000 }
@@ -184,7 +184,7 @@ export default function Index() {
   }
 
   function handleAddEvent(event: NightEvent) {
-    setUserEvents(prev => [...prev, event]);
+    setUserEvents((prev) => [...prev, event]);
     setSelectedEvent(event);
     setMapCenter([event.lat, event.lng]);
     setMapZoom(15);
@@ -203,8 +203,8 @@ export default function Index() {
             onEventSelect={setSelectedEvent}
             selectedEvent={selectedEvent}
             userLocation={userLocation}
-            radiusKm={filters.radiusKm}
-          />
+            radiusKm={filters.radiusKm} />
+
         </div>
 
         {/* Filters */}
@@ -213,8 +213,8 @@ export default function Index() {
         {/* App title overlay */}
         <div
           className="absolute top-14 left-3 z-[400] pointer-events-none"
-          style={{ opacity: 0.9 }}
-        >
+          style={{ opacity: 0.9 }}>
+
         </div>
 
         {/* Add event button */}
@@ -223,9 +223,9 @@ export default function Index() {
           className="absolute right-3 bottom-32 z-[400] w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90"
           style={{
             background: 'linear-gradient(135deg, hsl(183 100% 40%), hsl(275 71% 50%))',
-            boxShadow: '0 0 16px hsl(183 100% 50% / 0.5), 0 2px 12px hsl(258 60% 4% / 0.6)',
-          }}
-        >
+            boxShadow: '0 0 16px hsl(183 100% 50% / 0.5), 0 2px 12px hsl(258 60% 4% / 0.6)'
+          }}>
+
           <Plus size={18} className="text-white" />
         </button>
 
@@ -238,9 +238,9 @@ export default function Index() {
             background: 'hsl(258 55% 11% / 0.95)',
             backdropFilter: 'blur(12px)',
             boxShadow: '0 2px 12px hsl(258 60% 4% / 0.6)',
-            color: locating ? 'hsl(183 100% 50%)' : 'hsl(240 20% 70%)',
-          }}
-        >
+            color: locating ? 'hsl(183 100% 50%)' : 'hsl(240 20% 70%)'
+          }}>
+
           <Locate size={17} className={locating ? 'animate-spin' : ''} />
         </button>
 
@@ -249,72 +249,72 @@ export default function Index() {
           className="absolute right-3 bottom-44 z-[400] px-2.5 py-1.5 rounded-full border border-surface-4 flex items-center gap-1.5"
           style={{
             background: 'hsl(258 55% 11% / 0.95)',
-            backdropFilter: 'blur(12px)',
-          }}
-        >
+            backdropFilter: 'blur(12px)'
+          }}>
+
           <span className="w-1.5 h-1.5 rounded-full bg-neon-cyan" style={{ boxShadow: '0 0 6px hsl(183 100% 50%)' }} />
           <span className="text-xs font-bold text-neon-cyan">{filteredEvents.length}</span>
           <span className="text-[10px] text-muted-foreground">événements</span>
         </div>
 
         {/* Event detail sheet */}
-        {selectedEvent && (
-          <EventDetailSheet
-            event={selectedEvent}
-            onClose={() => setSelectedEvent(null)}
-          />
-        )}
+        {selectedEvent &&
+        <EventDetailSheet
+          event={selectedEvent}
+          onClose={() => setSelectedEvent(null)} />
+
+        }
 
         {/* Add event sheet */}
         <AddEventSheet
           open={showAddEvent}
           onClose={() => setShowAddEvent(false)}
-          onAdd={handleAddEvent}
-        />
+          onAdd={handleAddEvent} />
+
       </div>
 
       {/* ── SEARCH SCREEN ── */}
-      {activeTab === 'search' && (
-        <SearchScreen onEventSelect={handleEventSelect} />
-      )}
+      {activeTab === 'search' &&
+      <SearchScreen onEventSelect={handleEventSelect} />
+      }
 
       {/* ── PROFILE SCREEN ── */}
-      {activeTab === 'profile' && (
-        <ProfileScreen />
-      )}
+      {activeTab === 'profile' &&
+      <ProfileScreen />
+      }
 
       {/* ── BOTTOM NAV ── */}
-      <BottomNav activeTab={activeTab} onTabChange={tab => { setActiveTab(tab); setSelectedEvent(null); }} />
+      <BottomNav activeTab={activeTab} onTabChange={(tab) => {setActiveTab(tab);setSelectedEvent(null);}} />
 
       {/* Header wordmark - always visible */}
       <div
         className="absolute top-0 left-0 right-0 h-12 z-[500] flex items-center px-4"
         style={{
-          background: activeTab === 'map'
-            ? 'linear-gradient(to bottom, hsl(258 60% 8% / 0.85) 0%, transparent 100%)'
-            : 'transparent',
-          display: activeTab !== 'map' ? 'none' : 'flex',
-        }}
-      >
+          background: activeTab === 'map' ?
+          'linear-gradient(to bottom, hsl(258 60% 8% / 0.85) 0%, transparent 100%)' :
+          'transparent',
+          display: activeTab !== 'map' ? 'none' : 'flex'
+        }}>
+
         <div className="flex items-center gap-2 pointer-events-auto">
-          <div
-            className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-            style={{
-              background: 'linear-gradient(135deg, hsl(183 100% 40%), hsl(275 71% 50%))',
-              boxShadow: '0 0 12px hsl(183 100% 50% / 0.4)',
-            }}
-          >
-            <MapPin size={14} className="text-white" />
-          </div>
+          
+
+
+
+
+
+
+
+
           <span
             className="text-base font-black tracking-tight shrink-0"
             style={{
               background: 'linear-gradient(90deg, hsl(183 100% 60%), hsl(275 71% 70%))',
               WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            NightMap
+              WebkitTextFillColor: 'transparent'
+            }}>
+
+            ​
           </span>
           <div className="ml-1">
             <LocationMode
@@ -322,11 +322,11 @@ export default function Index() {
               selectedCity={selectedCityName}
               onModeChange={handleModeChange}
               onCitySelect={handleCitySelect}
-              locating={locating}
-            />
+              locating={locating} />
+
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
