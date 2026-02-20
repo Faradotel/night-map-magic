@@ -230,7 +230,7 @@ export default function Index() {
             </div>
 
             {/* Location mode + filter chips */}
-            <div className="overflow-x-auto scrollbar-hidden pb-1 -mx-3 px-3">
+            <div className="pb-1">
               <LocationMode
                 mode={locationMode}
                 selectedCity={selectedCityName}
