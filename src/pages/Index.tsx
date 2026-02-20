@@ -8,7 +8,7 @@ import { ProfileScreen } from '@/components/ProfileScreen';
 import { AddEventSheet } from '@/components/AddEventSheet';
 import { mockEvents, NightEvent, getDistance } from '@/data/mockEvents';
 import { reverseGeocodeCity, fetchShotgunEvents } from '@/lib/api/shotgun';
-import { LocationMode, City, LocationModeType } from '@/components/LocationMode';
+import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
 import { MapPin, Locate, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -28,8 +28,9 @@ export default function Index() {
   const [locating, setLocating] = useState(false);
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [userEvents, setUserEvents] = useState<NightEvent[]>([]);
-  const [shotgunEvents, setShotgunEvents] = useState<NightEvent[]>([]);
+  const [allShotgunEvents, setAllShotgunEvents] = useState<NightEvent[]>([]);
   const [shotgunLoading, setShotgunLoading] = useState(false);
+  const [shotgunLoaded, setShotgunLoaded] = useState(false);
   const [locationMode, setLocationMode] = useState<LocationModeType>('nearby');
   const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
   const [filterCenter, setFilterCenter] = useState<[number, number] | null>(null);
@@ -41,12 +42,40 @@ export default function Index() {
     radiusKm: NEARBY_RADIUS_DEFAULT
   });
 
-  // Request geolocation on load + fetch Shotgun events
+  // Load all Shotgun events for all cities on mount
+  useEffect(() => {
+    if (shotgunLoaded) return;
+    
+    async function loadAllEvents() {
+      setShotgunLoading(true);
+      try {
+        const results = await Promise.allSettled(
+          CITIES.map(city => fetchShotgunEvents(city.name))
+        );
+        const allEvents = results
+          .filter((r): r is PromiseFulfilledResult<NightEvent[]> => r.status === 'fulfilled')
+          .flatMap(r => r.value);
+        setAllShotgunEvents(allEvents);
+        setShotgunLoaded(true);
+        if (allEvents.length > 0) {
+          toast.success(`${allEvents.length} événements chargés en France`);
+        }
+      } catch {
+        // silent
+      } finally {
+        setShotgunLoading(false);
+      }
+    }
+
+    loadAllEvents();
+  }, [shotgunLoaded]);
+
+  // Request geolocation on load
   useEffect(() => {
     if ('geolocation' in navigator) {
       setLocating(true);
       navigator.geolocation.getCurrentPosition(
-        async (pos) => {
+        (pos) => {
           const loc: [number, number] = [pos.coords.latitude, pos.coords.longitude];
           setUserLocation(loc);
           setFilterCenter(loc);
@@ -54,32 +83,15 @@ export default function Index() {
           if (pos.coords.latitude > 41 && pos.coords.latitude < 52 && pos.coords.longitude > -5 && pos.coords.longitude < 10) {
             setMapCenter(loc);
           }
-
-          // Reverse-geocode to detect city, then fetch Shotgun events
-          const city = await reverseGeocodeCity(pos.coords.latitude, pos.coords.longitude);
-          if (city) {
-            setShotgunLoading(true);
-            try {
-              const events = await fetchShotgunEvents(city);
-              setShotgunEvents(events);
-              if (events.length > 0) {
-                toast.success(`${events.length} événements trouvés près de vous`);
-              }
-            } catch {
-
-
-              // silent
-            } finally {setShotgunLoading(false);}
-          }
         },
-        () => {setLocating(false);},
+        () => { setLocating(false); },
         { enableHighAccuracy: true, timeout: 8000 }
       );
     }
   }, []);
 
   // Filter events using filterCenter (user location or city center)
-  const allEvents = [...mockEvents, ...userEvents, ...shotgunEvents];
+  const allEvents = [...mockEvents, ...userEvents, ...allShotgunEvents];
 
   const filteredEvents = allEvents.filter((event) => {
     if (filters.price === 'free' && event.priceRange !== 'gratuit') return false;
@@ -132,7 +144,7 @@ export default function Index() {
   }, [userLocation]);
 
   // Handle manual city selection
-  const handleCitySelect = useCallback(async (city: City) => {
+  const handleCitySelect = useCallback((city: City) => {
     setSelectedCityName(city.name);
     setLocationMode('city');
     const cityCenter: [number, number] = [city.lat, city.lng];
@@ -140,22 +152,6 @@ export default function Index() {
     setMapCenter(cityCenter);
     setMapZoom(12);
     setFilters((prev) => ({ ...prev, radiusKm: CITY_RADIUS_DEFAULT }));
-
-    setShotgunLoading(true);
-    toast.info(`Recherche des événements à ${city.name}…`);
-    try {
-      const events = await fetchShotgunEvents(city.name);
-      setShotgunEvents(events);
-      if (events.length > 0) {
-        toast.success(`${events.length} événements trouvés à ${city.name} !`);
-      } else {
-        toast.info(`Aucun événement trouvé à ${city.name}`);
-      }
-    } catch {
-      toast.error('Erreur lors de la récupération des événements');
-    } finally {
-      setShotgunLoading(false);
-    }
   }, []);
 
   const handleLocate = useCallback(() => {
