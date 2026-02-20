@@ -8,6 +8,7 @@ import { ProfileScreen } from '@/components/ProfileScreen';
 import { AddEventSheet } from '@/components/AddEventSheet';
 import { mockEvents, NightEvent, getDistance } from '@/data/mockEvents';
 import { reverseGeocodeCity, fetchShotgunEvents } from '@/lib/api/shotgun';
+import { CitySelector, City, CITIES } from '@/components/CitySelector';
 import { MapPin, Locate, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -28,6 +29,7 @@ export default function Index() {
   const [shotgunEvents, setShotgunEvents] = useState<NightEvent[]>([]);
   const [shotgunLoading, setShotgunLoading] = useState(false);
   const [shotgunCity, setShotgunCity] = useState<string | null>(null);
+  const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>({
     date: 'all',
     price: 'all',
@@ -117,6 +119,29 @@ export default function Index() {
 
     return true;
   });
+
+  // Handle manual city selection
+  const handleCitySelect = useCallback(async (city: City) => {
+    setSelectedCityName(city.name);
+    setMapCenter([city.lat, city.lng]);
+    setMapZoom(12);
+    setShotgunCity(city.name);
+    setShotgunLoading(true);
+    toast.info(`Recherche des événements Shotgun à ${city.name}…`);
+    try {
+      const events = await fetchShotgunEvents(city.name);
+      setShotgunEvents(events);
+      if (events.length > 0) {
+        toast.success(`${events.length} événements Shotgun trouvés à ${city.name} !`);
+      } else {
+        toast.info(`Aucun événement Shotgun trouvé à ${city.name}`);
+      }
+    } catch {
+      toast.error('Erreur lors de la récupération des événements Shotgun');
+    } finally {
+      setShotgunLoading(false);
+    }
+  }, []);
 
   const handleLocate = useCallback(() => {
     setLocating(true);
@@ -246,7 +271,7 @@ export default function Index() {
 
       {/* Header wordmark - always visible */}
       <div
-        className="absolute top-0 left-0 right-0 h-12 z-[500] pointer-events-none flex items-center px-4"
+        className="absolute top-0 left-0 right-0 h-12 z-[500] flex items-center px-4"
         style={{
           background: activeTab === 'map'
             ? 'linear-gradient(to bottom, hsl(258 60% 8% / 0.85) 0%, transparent 100%)'
@@ -254,7 +279,7 @@ export default function Index() {
           display: activeTab !== 'map' ? 'none' : 'flex',
         }}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 pointer-events-auto">
           <div
             className="w-7 h-7 rounded-lg flex items-center justify-center"
             style={{
@@ -274,6 +299,7 @@ export default function Index() {
           >
             NightMap
           </span>
+          <CitySelector selectedCity={selectedCityName} onCitySelect={handleCitySelect} />
         </div>
       </div>
     </div>
