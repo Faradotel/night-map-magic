@@ -296,7 +296,7 @@ export default function Index() {
 
       {/* Header wordmark - always visible */}
       <div
-        className="absolute top-0 left-0 right-0 h-12 z-[500] flex items-center px-4"
+        className="absolute top-0 left-0 right-0 h-12 z-[500] flex items-center px-4 pointer-events-none"
         style={{
           background: activeTab === 'map' ?
           'linear-gradient(to bottom, hsl(258 60% 8% / 0.85) 0%, transparent 100%)' :
