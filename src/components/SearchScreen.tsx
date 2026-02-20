@@ -21,17 +21,17 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
     : events;
 
   return (
-    <div className="absolute inset-0 z-[300] flex flex-col" style={{ background: 'hsl(var(--surface-1))' }}>
+    <div className="absolute inset-0 z-[300] flex flex-col" style={{ background: 'hsl(230 60% 6%)' }}>
       {/* Header */}
-      <div className="pt-safe pt-4 px-4 pb-3" style={{ borderBottom: '1px solid hsl(258 40% 15%)' }}>
-        <h1 className="text-lg font-black mb-3 tracking-tight">
-          <span className="text-neon-cyan">Rechercher</span> une soirée
+      <div className="pt-safe pt-4 px-4 pb-3" style={{ borderBottom: '1px solid hsl(230 25% 14%)' }}>
+        <h1 className="text-lg font-extrabold mb-3 tracking-tight">
+          <span style={{ color: 'hsl(325 89% 50%)' }}>Rechercher</span> une soirée
         </h1>
         <div
-          className="flex items-center gap-3 h-11 px-3 rounded-xl border"
-          style={{ background: 'hsl(258 45% 13%)', borderColor: 'hsl(258 40% 20%)' }}
+          className="flex items-center gap-3 h-11 px-3 rounded-2xl border"
+          style={{ background: 'hsl(230 45% 11%)', borderColor: 'hsl(230 25% 18%)' }}
         >
-          <Search size={16} className="text-muted-foreground shrink-0" />
+          <Search size={16} style={{ color: 'hsl(325 89% 50%)' }} />
           <input
             type="text"
             placeholder="Nom, ville, genre, lieu..."
@@ -63,35 +63,34 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
                 <button
                   key={event.id}
                   onClick={() => onEventSelect(event)}
-                  className="w-full text-left rounded-xl border overflow-hidden transition-all active:scale-[0.98]"
+                  className="w-full text-left rounded-2xl border overflow-hidden transition-all active:scale-[0.98]"
                   style={{
-                    background: 'hsl(258 55% 11%)',
-                    borderColor: 'hsl(258 40% 18%)',
+                    background: 'hsl(230 50% 10%)',
+                    borderColor: 'hsl(230 25% 16%)',
                   }}
                 >
-                  {/* Color accent left bar */}
                   <div className="flex">
-                    <div className="w-1 shrink-0" style={{ background: vibe.color }} />
+                    <div className="w-1 shrink-0" style={{ background: 'hsl(325 89% 50%)' }} />
                     <div className="flex-1 p-3">
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <div>
                           <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-[10px] font-semibold" style={{ color: vibe.color }}>
+                            <span className="text-[10px] font-semibold" style={{ color: 'hsl(325 89% 55%)' }}>
                               {vibe.emoji} {vibe.label}
                             </span>
                             <span className="text-[10px] text-muted-foreground">{type.emoji} {type.label}</span>
                             {event.isLive && (
-                              <span className="text-[10px] font-bold text-neon-pink">● LIVE</span>
+                              <span className="text-[10px] font-bold" style={{ color: 'hsl(325 89% 50%)' }}>● LIVE</span>
                             )}
                           </div>
-                          <h3 className="text-sm font-black tracking-tight">{event.name}</h3>
+                          <h3 className="text-sm font-extrabold tracking-tight">{event.name}</h3>
                         </div>
                         <span
                           className="text-xs font-bold shrink-0 mt-0.5"
                           style={{
-                            color: event.priceRange === 'gratuit' ? 'hsl(183 100% 50%)' :
-                              event.priceRange === '€1-10' ? '#4ade80' :
-                              event.priceRange === '€10-20' ? '#facc15' : 'hsl(315 100% 53%)',
+                            color: event.priceRange === 'gratuit' ? 'hsl(130 60% 55%)' :
+                              event.priceRange === '€1-10' ? 'hsl(130 60% 55%)' :
+                              event.priceRange === '€10-20' ? 'hsl(45 100% 55%)' : 'hsl(325 89% 50%)',
                           }}
                         >
                           {event.priceRange}
@@ -100,11 +99,11 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
 
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
-                          <MapPin size={10} className="text-neon-pink" />
+                          <MapPin size={10} style={{ color: 'hsl(325 89% 50%)' }} />
                           {event.venue}, {event.city}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Clock size={10} className="text-neon-cyan" />
+                          <Clock size={10} style={{ color: 'hsl(225 15% 55%)' }} />
                           {formatDate(event.startTime)} · {formatTime(event.startTime)}
                         </span>
                       </div>

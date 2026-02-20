@@ -190,7 +190,7 @@ export default function Index() {
   }
 
   return (
-    <div className="relative w-full h-full overflow-hidden" style={{ background: 'hsl(258 60% 8%)' }}>
+    <div className="relative w-full h-full overflow-hidden" style={{ background: 'hsl(230 60% 6%)' }}>
       {/* ── MAP SCREEN (always mounted, hidden via visibility) ── */}
       <div className="absolute inset-0" style={{ visibility: activeTab === 'map' ? 'visible' : 'hidden' }}>
         {/* Map */}
@@ -219,10 +219,10 @@ export default function Index() {
         {/* Add event button */}
         <button
           onClick={() => setShowAddEvent(true)}
-          className="absolute right-3 bottom-32 z-[400] w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90"
+          className="absolute right-3 bottom-32 z-[400] w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-90"
           style={{
-            background: 'linear-gradient(135deg, hsl(183 100% 40%), hsl(275 71% 50%))',
-            boxShadow: '0 0 16px hsl(183 100% 50% / 0.5), 0 2px 12px hsl(258 60% 4% / 0.6)'
+            background: 'hsl(325 89% 50%)',
+            boxShadow: '0 0 20px hsl(325 89% 50% / 0.5), 0 4px 16px hsl(230 60% 4% / 0.6)'
           }}>
 
           <Plus size={18} className="text-white" />
@@ -232,12 +232,13 @@ export default function Index() {
         <button
           onClick={handleLocate}
           disabled={locating}
-          className="absolute right-3 bottom-20 z-[400] w-10 h-10 rounded-full flex items-center justify-center border border-surface-4 transition-all"
+          className="absolute right-3 bottom-20 z-[400] w-12 h-12 rounded-full flex items-center justify-center border transition-all"
           style={{
-            background: 'hsl(258 55% 11% / 0.95)',
+            background: 'hsl(230 50% 10% / 0.95)',
+            borderColor: 'hsl(230 30% 18%)',
             backdropFilter: 'blur(12px)',
-            boxShadow: '0 2px 12px hsl(258 60% 4% / 0.6)',
-            color: locating ? 'hsl(183 100% 50%)' : 'hsl(240 20% 70%)'
+            boxShadow: '0 2px 12px hsl(230 60% 4% / 0.6)',
+            color: locating ? 'hsl(325 89% 50%)' : 'hsl(225 15% 55%)'
           }}>
 
           <Locate size={17} className={locating ? 'animate-spin' : ''} />
@@ -245,14 +246,15 @@ export default function Index() {
 
         {/* Event count badge */}
         <div
-          className="absolute right-3 bottom-44 z-[400] px-2.5 py-1.5 rounded-full border border-surface-4 flex items-center gap-1.5"
+          className="absolute right-3 bottom-44 z-[400] px-3 py-1.5 rounded-full border flex items-center gap-1.5"
           style={{
-            background: 'hsl(258 55% 11% / 0.95)',
+            background: 'hsl(230 50% 10% / 0.95)',
+            borderColor: 'hsl(230 30% 18%)',
             backdropFilter: 'blur(12px)'
           }}>
 
-          <span className="w-1.5 h-1.5 rounded-full bg-neon-cyan" style={{ boxShadow: '0 0 6px hsl(183 100% 50%)' }} />
-          <span className="text-xs font-bold text-neon-cyan">{filteredEvents.length}</span>
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'hsl(325 89% 50%)', boxShadow: '0 0 6px hsl(325 89% 50%)' }} />
+          <span className="text-xs font-bold" style={{ color: 'hsl(325 89% 50%)' }}>{filteredEvents.length}</span>
           <span className="text-[10px] text-muted-foreground">événements</span>
         </div>
 
@@ -299,7 +301,7 @@ export default function Index() {
         className="absolute top-0 left-0 right-0 h-12 z-[500] flex items-center px-4 pointer-events-none"
         style={{
           background: activeTab === 'map' ?
-          'linear-gradient(to bottom, hsl(258 60% 8% / 0.85) 0%, transparent 100%)' :
+          'linear-gradient(to bottom, hsl(230 60% 6% / 0.85) 0%, transparent 100%)' :
           'transparent',
           display: activeTab !== 'map' ? 'none' : 'flex'
         }}>
@@ -315,9 +317,9 @@ export default function Index() {
 
 
           <span
-            className="text-base font-black tracking-tight shrink-0"
+            className="text-base font-extrabold tracking-tight shrink-0"
             style={{
-              background: 'linear-gradient(90deg, hsl(183 100% 60%), hsl(275 71% 70%))',
+              background: 'linear-gradient(90deg, hsl(325 89% 55%), hsl(275 71% 70%))',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent'
             }}>
