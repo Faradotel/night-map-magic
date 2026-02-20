@@ -1,7 +1,9 @@
 import { allBadges } from '@/data/badges';
-import { Settings, ChevronRight, MapPin, Calendar, Star } from 'lucide-react';
+import { Settings, ChevronRight, MapPin, Calendar, Star, Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
 
 export function ProfileScreen() {
+  const { theme, toggleTheme } = useTheme();
   const unlockedBadges = allBadges.filter(b => b.unlocked);
   const lockedBadges = allBadges.filter(b => !b.unlocked);
 
@@ -37,7 +39,7 @@ export function ProfileScreen() {
         <div className="mx-4 mb-4">
           <div
             className="rounded-2xl p-4 border border-surface-4 flex items-center gap-4"
-            style={{ background: 'hsl(258 55% 11%)' }}
+            style={{ background: 'var(--profile-card-bg)' }}
           >
             {/* Avatar */}
             <div
@@ -85,7 +87,7 @@ export function ProfileScreen() {
             <div
               key={stat.label}
               className="rounded-xl p-3 border border-surface-4 text-center"
-              style={{ background: 'hsl(258 55% 11%)' }}
+              style={{ background: 'var(--profile-card-bg)' }}
             >
               <p className="text-xl font-black" style={{ color: stat.color }}>{stat.value}</p>
               <p className="text-[10px] text-muted-foreground mt-0.5">{stat.label}</p>
@@ -123,12 +125,47 @@ export function ProfileScreen() {
           </div>
         </div>
 
+        {/* Theme toggle */}
+        <div className="mx-4 mt-5 mb-3">
+          <h3 className="text-sm font-black mb-2 text-muted-foreground">Apparence</h3>
+          <div
+            className="rounded-2xl border border-surface-4 overflow-hidden"
+            style={{ background: 'var(--profile-card-bg)' }}
+          >
+            <button
+              onClick={toggleTheme}
+              className="w-full flex items-center justify-between px-4 py-3 text-left"
+            >
+              <div className="flex items-center gap-3">
+                {theme === 'dark' ? <Moon size={16} className="text-neon-cyan" /> : <Sun size={16} className="text-neon-cyan" />}
+                <div>
+                  <p className="text-sm font-medium">Mode {theme === 'dark' ? 'sombre' : 'clair'}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
+                  </p>
+                </div>
+              </div>
+              <div
+                className="w-10 h-6 rounded-full relative transition-colors"
+                style={{
+                  background: theme === 'light' ? 'hsl(var(--primary))' : 'hsl(var(--surface-4))',
+                }}
+              >
+                <div
+                  className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"
+                  style={{ left: theme === 'light' ? '18px' : '2px' }}
+                />
+              </div>
+            </button>
+          </div>
+        </div>
+
         {/* Settings section */}
-        <div className="mx-4 mt-5">
+        <div className="mx-4 mt-2">
           <h3 className="text-sm font-black mb-2 text-muted-foreground">Paramètres</h3>
           <div
             className="rounded-2xl border border-surface-4 overflow-hidden"
-            style={{ background: 'hsl(258 55% 11%)' }}
+            style={{ background: 'var(--profile-card-bg)' }}
           >
             {[
               { label: 'Notifications soirées proches', sub: 'Activées' },
@@ -138,7 +175,7 @@ export function ProfileScreen() {
               <button
                 key={item.label}
                 className="w-full flex items-center justify-between px-4 py-3 text-left"
-                style={{ borderBottom: i < arr.length - 1 ? '1px solid hsl(258 40% 15%)' : 'none' }}
+                style={{ borderBottom: i < arr.length - 1 ? '1px solid var(--profile-divider)' : 'none' }}
               >
                 <div>
                   <p className="text-sm font-medium">{item.label}</p>
