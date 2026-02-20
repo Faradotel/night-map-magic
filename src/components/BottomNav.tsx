@@ -1,6 +1,6 @@
-import { Map, Search, User, Ticket } from 'lucide-react';
+import { Map, Search, User } from 'lucide-react';
 
-type Tab = 'map' | 'search' | 'shotgun' | 'profile';
+type Tab = 'map' | 'search' | 'profile';
 
 interface BottomNavProps {
   activeTab: Tab;
@@ -11,7 +11,6 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const tabs: { id: Tab; icon: typeof Map; label: string }[] = [
     { id: 'map', icon: Map, label: 'Carte' },
     { id: 'search', icon: Search, label: 'Recherche' },
-    { id: 'shotgun', icon: Ticket, label: 'Shotgun' },
     { id: 'profile', icon: User, label: 'Profil' },
   ];
 
