@@ -17,114 +17,97 @@ interface ShotgunEvent {
   price?: string;
 }
 
-// Known Shotgun area IDs for French cities
-const AREA_IDS: Record<string, number> = {
-  'paris': 1, 'lyon': 4, 'marseille': 5, 'nice': 46,
-  'bordeaux': 3, 'lille': 7, 'toulouse': 6, 'nantes': 8,
-  'strasbourg': 9, 'montpellier': 10, 'rennes': 11,
+// City slug mapping for shotgun.live/fr/cities/{slug}
+const CITY_SLUGS: Record<string, string> = {
+  'paris': 'paris',
+  'lyon': 'lyon',
+  'marseille': 'marseille',
+  'nice': 'nice',
+  'bordeaux': 'bordeaux',
+  'lille': 'lille',
+  'toulouse': 'toulouse',
+  'nantes': 'nantes',
+  'strasbourg': 'strasbourg',
+  'montpellier': 'montpellier',
+  'rennes': 'rennes',
 };
 
 interface ParsedEvent {
   name: string;
+  venue: string;
   price: string;
-  city: string;
   date: string;
-  genre: string;
+  genres: string[];
   url: string;
 }
 
-function parseMarkdownEvents(markdown: string, targetCity: string): ParsedEvent[] {
+function parseEventsFromCityPage(markdown: string): ParsedEvent[] {
   const events: ParsedEvent[] = [];
-  const cityLower = targetCity.toLowerCase();
 
-  // Shotgun markdown format has event blocks like:
-  // [![Event Name](image_url)\
-  // \
-  // Event Name\
-  // \
-  // Price\
-  // \
-  // City, Country\
-  // \
-  // Date\
-  // ...
-  // Genre](event_url)
-
-  // Split by event links pattern
-  const linkRegex = /\[!\[([^\]]*)\]\([^)]*\)[^]*?\]\(([^)]+)\)/g;
+  // Each event block is a markdown link: [![Name](image)\\...](url)
+  // Pattern: [![EventName](imageUrl)\\\n...\\\nGenre](eventUrl)
+  const eventRegex = /\[!\[([^\]]*)\]\([^)]*\)\\[\s\\]*([^\]]*)\]\(([^)]+)\)/g;
   let match;
 
-  while ((match = linkRegex.exec(markdown)) !== null) {
-    const block = match[0];
-    const eventUrl = match[2];
-    const altText = match[1]; // event name from alt text
+  while ((match = eventRegex.exec(markdown)) !== null) {
+    const name = match[1].trim();
+    const innerContent = match[2];
+    const eventUrl = match[3];
 
-    // Extract lines from the block
-    const lines = block.split('\\').map(l => l.replace(/\n/g, '').trim()).filter(l => l && l !== '|');
+    // Skip pinned/promo items or non-event links
+    if (!eventUrl.includes('/events/')) continue;
+    if (!name) continue;
 
-    // Find event name (appears after the image)
-    let name = altText || '';
+    // Parse inner content lines (separated by \\)
+    const lines = innerContent
+      .split('\\')
+      .map(l => l.replace(/\n/g, '').replace(/\|/g, '').trim())
+      .filter(l => l.length > 0);
+
     let price = '';
-    let city = '';
+    let venue = '';
     let date = '';
-    let genre = '';
+    const genres: string[] = [];
 
     for (const line of lines) {
-      // Skip markdown image syntax and empty lines
-      if (line.startsWith('[![') || line.startsWith('](') || line === '') continue;
+      // Skip if it's the event name repeated
+      if (line === name) continue;
 
-      // Detect price (contains € or $ or "free"/"gratuit")
-      if (/[€$]|gratuit|free/i.test(line) && !price) {
+      // Price detection
+      if (/[€$]|gratuit|free|waiting list/i.test(line) && !price) {
         price = line;
         continue;
       }
 
-      // Detect city/location line (contains country flag or "France")
-      if (/🇫🇷|🇺🇸|🇧🇷|🇬🇧|🇩🇪|🇪🇸|🇮🇹|🇧🇪|🇳🇱|🇨🇭|france|états-unis|brésil|belgique/i.test(line)) {
-        city = line.replace(/🇫🇷|🇺🇸|🇧🇷|🇬🇧|🇩🇪|🇪🇸|🇮🇹|🇧🇪|🇳🇱|🇨🇭/g, '').trim();
-        continue;
-      }
-
-      // Detect date (contains day names or month abbreviations)
-      if (/\b(lun|mar|mer|jeu|ven|sam|dim|jan|fév|mars|avr|mai|juin|juil|août|sep|oct|nov|déc|mon|tue|wed|thu|fri|sat|sun)\b/i.test(line)) {
+      // Date detection (French day/month patterns)
+      if (/\b(lun|mar|mer|jeu|ven|sam|dim|jan|fév|mars|avr|mai|juin|juil|août|sep|oct|nov|déc)\b/i.test(line) && !date) {
         date = line;
         continue;
       }
 
-      // Detect time
-      if (/^\|?\d{1,2}:\d{2}/.test(line)) {
-        date += ' ' + line.replace('|', '');
+      // Time detection
+      if (/^\d{1,2}:\d{2}/.test(line)) {
+        date = date ? `${date} ${line}` : line;
         continue;
       }
 
-      // If it's a short word and not matched above, could be genre
-      if (line.length < 30 && !line.includes('[') && !line.includes('(')) {
-        if (!name || name === altText) {
-          // Could be the event name repeated
+      // Short strings are likely genres (Techno, House, etc.) or venue
+      if (line.length < 40 && !line.includes('[') && !line.includes('(')) {
+        // If we don't have a venue yet and it looks like a venue name (capitalized, longer)
+        if (!venue && line.length > 2 && !/^(techno|house|electro|pop|rock|rap|hip[\s-]?hop|rnb|r&b|jazz|soul|funk|disco|trance|drum|bass|dnb|dubstep|reggae|dancehall|afro|latin|salsa|reggaeton|edm|club|hard|deep|minimal|ambient|trap|baile|mpb|samba|pagode|afrobeat)$/i.test(line)) {
+          venue = line;
+        } else {
+          genres.push(line);
         }
-        genre = genre ? `${genre}, ${line}` : line;
       }
     }
-
-    if (!name) continue;
-
-    // Strict city filter: only include if city line mentions the target city
-    if (city) {
-      const eventCityLower = city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      const targetLower = targetCity.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      if (!eventCityLower.includes(targetLower)) {
-        continue;
-      }
-    }
-    // If no city detected at all, skip (can't verify it's in the right city)
-    if (!city) continue;
 
     events.push({
-      name: name.trim(),
-      price: price || '',
-      city: city || targetCity,
-      date: date.trim(),
-      genre: genre.trim(),
+      name,
+      venue: venue || name,
+      price,
+      date,
+      genres,
       url: eventUrl,
     });
   }
@@ -156,16 +139,13 @@ Deno.serve(async (req) => {
     }
 
     const cityLower = city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const areaId = AREA_IDS[cityLower];
+    const slug = CITY_SLUGS[cityLower] || cityLower;
 
-    // Use areaId if known, otherwise show all events page
-    const shotgunUrl = areaId
-      ? `https://shotgun.live/fr/events?areaId=${areaId}`
-      : `https://shotgun.live/fr/events`;
+    // Use /fr/cities/{slug} which returns more events with better structure
+    const shotgunUrl = `https://shotgun.live/fr/cities/${slug}`;
 
     console.log('Scraping Shotgun URL:', shotgunUrl, 'for city:', city);
 
-    // Scrape with markdown format (more reliable for JS-rendered pages)
     const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
       method: 'POST',
       headers: {
@@ -184,7 +164,6 @@ Deno.serve(async (req) => {
 
     if (!scrapeResponse.ok) {
       console.error('Firecrawl error:', JSON.stringify(scrapeData));
-      // On timeout or error, return empty events instead of 500
       return new Response(
         JSON.stringify({ success: true, events: [], city }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -194,8 +173,8 @@ Deno.serve(async (req) => {
     const markdown = scrapeData?.data?.markdown || scrapeData?.markdown || '';
     console.log('Markdown length:', markdown.length);
 
-    // Parse events from markdown
-    const rawEvents = parseMarkdownEvents(markdown, city);
+    // Parse events from city page markdown
+    const rawEvents = parseEventsFromCityPage(markdown);
     console.log(`Parsed ${rawEvents.length} events for ${city}`);
 
     // Get city center coordinates
@@ -221,18 +200,18 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Geocode each venue
+    // Geocode each venue (limit to 25 events)
     const geocodedEvents: ShotgunEvent[] = [];
 
-    for (const raw of rawEvents.slice(0, 15)) {
-      let lat = cityLat + (Math.random() - 0.5) * 0.008;
-      let lng = cityLng + (Math.random() - 0.5) * 0.008;
+    for (const raw of rawEvents.slice(0, 25)) {
+      let lat = cityLat + (Math.random() - 0.5) * 0.02;
+      let lng = cityLng + (Math.random() - 0.5) * 0.02;
 
-      if (raw.name) {
-        // Try geocoding venue name
+      // Try geocoding venue name in the city
+      if (raw.venue && raw.venue !== raw.name) {
         try {
           const geoRes = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(raw.name + ', ' + city + ', France')}&limit=1`,
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(raw.venue + ', ' + city + ', France')}&limit=1`,
             { headers: { 'User-Agent': 'NightMap/1.0' } }
           );
           const geoData = await geoRes.json();
@@ -240,7 +219,7 @@ Deno.serve(async (req) => {
             lat = parseFloat(geoData[0].lat);
             lng = parseFloat(geoData[0].lon);
           }
-          await new Promise(r => setTimeout(r, 250));
+          await new Promise(r => setTimeout(r, 200));
         } catch { /* use fallback */ }
       }
 
@@ -249,17 +228,20 @@ Deno.serve(async (req) => {
         ticketUrl = `https://shotgun.live${ticketUrl.startsWith('/') ? '' : '/'}${ticketUrl}`;
       }
 
+      const genreStr = raw.genres.length > 0 ? raw.genres.join(', ') : '';
+      const description = [genreStr, raw.price, raw.date, 'via Shotgun'].filter(Boolean).join(' • ');
+
       geocodedEvents.push({
-        id: `shotgun-${cityLower}-${geocodedEvents.length}`,
+        id: `shotgun-${slug}-${geocodedEvents.length}`,
         name: raw.name,
-        venue: raw.name,
-        address: raw.city || city,
+        venue: raw.venue,
+        address: `${raw.venue}, ${city}`,
         city,
         lat,
         lng,
         startTime: new Date().toISOString(),
-        description: [raw.genre, raw.price, 'via Shotgun'].filter(Boolean).join(' • '),
-        ticketUrl: ticketUrl || `https://shotgun.live/fr/events?areaId=${areaId || ''}`,
+        description,
+        ticketUrl: ticketUrl || `https://shotgun.live/fr/cities/${slug}`,
         price: raw.price || null,
       });
     }
