@@ -63,6 +63,7 @@ export default {
           cyan: "hsl(var(--neon-cyan))",
           pink: "hsl(var(--neon-pink))",
           purple: "hsl(var(--neon-purple))",
+          green: "hsl(var(--neon-green))",
         },
         surface: {
           1: "hsl(var(--surface-1))",
@@ -101,10 +102,11 @@ export default {
         "slide-up": "slide-up 0.35s cubic-bezier(0.32, 0.72, 0, 1)",
       },
       boxShadow: {
-        "neon-cyan": "0 0 20px hsl(183 100% 50% / 0.4), 0 0 40px hsl(183 100% 50% / 0.2)",
-        "neon-pink": "0 0 20px hsl(315 100% 53% / 0.4), 0 0 40px hsl(315 100% 53% / 0.2)",
-        "neon-purple": "0 0 20px hsl(275 71% 58% / 0.3)",
-        "card-dark": "0 4px 24px hsl(258 60% 4% / 0.6)",
+        "neon-cyan": "0 0 20px hsl(182 100% 50% / 0.4), 0 0 40px hsl(182 100% 50% / 0.2)",
+        "neon-pink": "0 0 20px hsl(320 100% 50% / 0.4), 0 0 40px hsl(320 100% 50% / 0.2)",
+        "neon-purple": "0 0 20px hsl(271 69% 59% / 0.3)",
+        "neon-green": "0 0 20px hsl(110 100% 54% / 0.4), 0 0 40px hsl(110 100% 54% / 0.2)",
+        "card-dark": "0 4px 24px hsl(260 38% 4% / 0.6)",
       },
     },
   },
