@@ -104,16 +104,16 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
               </button>
             </div>
 
-            <div className="p-4 pt-0 space-y-4 overflow-y-auto scrollbar-hidden">
+            <div className="p-3 pt-0 space-y-3">
               {/* Date chips */}
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Quand</span>
-                <div className="flex gap-2 flex-wrap">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Quand</span>
+                <div className="flex gap-1.5 flex-wrap">
                   {dateChips.map(d => (
                     <button
                       key={d.key}
                       onClick={() => onChange({ ...filters, date: filters.date === d.key ? 'all' : d.key })}
-                      className="h-9 px-3 rounded-full text-xs font-semibold transition-all"
+                      className="h-7 px-2.5 rounded-full text-[11px] font-semibold transition-all"
                       style={{
                         background: filters.date === d.key ? 'hsl(325 89% 50%)' : 'hsl(0 0% 100% / 0.08)',
                         color: filters.date === d.key ? 'white' : 'hsl(225 15% 70%)',
@@ -129,9 +129,9 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
               {/* Radius - only when nearby mode is active */}
               {isNearbyMode && (
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Rayon</span>
-                  <span className="text-xs font-bold" style={{ color: 'hsl(325 89% 50%)' }}>{filters.radiusKm} km</span>
+                  <span className="text-[11px] font-bold" style={{ color: 'hsl(325 89% 50%)' }}>{filters.radiusKm} km</span>
                 </div>
                 <input
                   type="range"
@@ -149,13 +149,13 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
 
               {/* Price */}
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Prix</span>
-                <div className="flex gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Prix</span>
+                <div className="flex gap-1.5">
                   {(['all', 'free', 'paid'] as const).map(p => (
                     <button
                       key={p}
                       onClick={() => onChange({ ...filters, price: p })}
-                      className="flex-1 h-9 rounded-full text-xs font-semibold transition-all"
+                      className="flex-1 h-7 rounded-full text-[11px] font-semibold transition-all"
                       style={{
                         background: filters.price === p ? 'hsl(325 89% 50% / 0.2)' : 'hsl(0 0% 100% / 0.06)',
                         color: filters.price === p ? 'hsl(325 89% 55%)' : 'hsl(225 15% 60%)',
@@ -170,13 +170,13 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
 
               {/* Genres */}
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Genres</span>
-                <div className="flex flex-wrap gap-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Genres</span>
+                <div className="flex flex-wrap gap-1">
                   {genreOptions.map(g => (
                     <button
                       key={g}
                       onClick={() => toggleGenre(g)}
-                      className="h-8 px-3 rounded-full text-xs font-semibold transition-all"
+                      className="h-7 px-2.5 rounded-full text-[11px] font-semibold transition-all"
                       style={{
                         background: filters.genres.includes(g) ? 'hsl(325 89% 50%)' : 'hsl(0 0% 100% / 0.08)',
                         color: filters.genres.includes(g) ? 'white' : 'hsl(225 15% 65%)',
@@ -191,13 +191,13 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
 
               {/* Vibes */}
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Ambiance</span>
-                <div className="flex flex-wrap gap-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Ambiance</span>
+                <div className="flex flex-wrap gap-1">
                   {vibeOptions.map(v => (
                     <button
                       key={v.key}
                       onClick={() => toggleVibe(v.key)}
-                      className="h-8 px-3 rounded-full text-xs font-semibold transition-all"
+                      className="h-7 px-2.5 rounded-full text-[11px] font-semibold transition-all"
                       style={{
                         background: filters.vibes.includes(v.key) ? 'hsl(325 89% 50%)' : 'hsl(0 0% 100% / 0.08)',
                         color: filters.vibes.includes(v.key) ? 'white' : 'hsl(225 15% 65%)',
@@ -214,7 +214,7 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
               {activeCount > 0 && (
                 <button
                   onClick={() => onChange({ date: 'all', price: 'all', genres: [], vibes: [], radiusKm: 10 })}
-                  className="w-full h-9 rounded-full text-xs font-semibold transition-colors"
+                  className="w-full h-7 rounded-full text-[11px] font-semibold transition-colors"
                   style={{ background: 'hsl(0 0% 100% / 0.06)', color: 'hsl(225 15% 55%)' }}
                 >
                   Réinitialiser
