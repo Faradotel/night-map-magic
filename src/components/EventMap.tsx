@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { NightEvent, vibeConfig, typeConfig } from '@/data/mockEvents';
+import { useTheme } from '@/hooks/useTheme';
 
 interface EventMapProps {
   events: NightEvent[];
@@ -43,8 +44,10 @@ function createUserIcon(): L.DivIcon {
 }
 
 export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, userLocation, radiusKm }: EventMapProps) {
+  const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
   const userMarkerRef = useRef<L.Marker | null>(null);
   const radiusCircleRef = useRef<L.Circle | null>(null);
@@ -60,9 +63,11 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       attributionControl: false,
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png?language=fr', {
-      maxZoom: 19,
-    }).addTo(map);
+    const tileUrl = theme === 'dark'
+      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png?language=fr'
+      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png?language=fr';
+
+    tileLayerRef.current = L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(map);
 
     mapRef.current = map;
 
@@ -71,6 +76,17 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       mapRef.current = null;
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Swap tile layer on theme change
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (tileLayerRef.current) map.removeLayer(tileLayerRef.current);
+    const tileUrl = theme === 'dark'
+      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png?language=fr'
+      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png?language=fr';
+    tileLayerRef.current = L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(map);
+  }, [theme]);
 
   // Update center/zoom
   useEffect(() => {

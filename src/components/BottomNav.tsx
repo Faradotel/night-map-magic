@@ -1,4 +1,4 @@
-import { Map, Search, Heart, User } from 'lucide-react';
+import { Map, Search, User } from 'lucide-react';
 
 type Tab = 'map' | 'search' | 'profile';
 
@@ -18,9 +18,9 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
     <nav
       className="absolute bottom-0 left-0 right-0 h-16 flex items-center z-[400]"
       style={{
-        background: 'rgba(26, 13, 21, 0.9)',
+        background: 'var(--nav-bg)',
         backdropFilter: 'blur(20px)',
-        borderTop: '1px solid hsl(0 0% 100% / 0.05)',
+        borderTop: '1px solid var(--nav-border)',
       }}
     >
       {tabs.map(tab => {
@@ -35,15 +35,15 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
               size={22}
               strokeWidth={isActive ? 2.5 : 1.5}
               style={{
-                color: isActive ? 'hsl(325 89% 50%)' : 'hsl(225 15% 40%)',
-                filter: isActive ? 'drop-shadow(0 0 8px hsl(325 89% 50% / 0.6))' : 'none',
+                color: isActive ? 'var(--nav-active)' : 'var(--nav-inactive)',
+                filter: isActive ? 'drop-shadow(0 0 8px var(--nav-active))' : 'none',
                 transition: 'all 0.2s ease',
               }}
             />
             <span
               className="text-[10px] font-bold uppercase tracking-widest transition-all"
               style={{
-                color: isActive ? 'hsl(325 89% 50%)' : 'hsl(225 15% 40%)',
+                color: isActive ? 'var(--nav-active)' : 'var(--nav-inactive)',
               }}
             >
               {tab.label}

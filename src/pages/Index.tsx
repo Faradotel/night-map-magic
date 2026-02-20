@@ -205,7 +205,7 @@ export default function Index() {
   }
 
   return (
-    <div className="relative w-full h-full overflow-hidden" style={{ background: 'hsl(230 60% 6%)' }}>
+    <div className="relative w-full h-full overflow-hidden" style={{ background: 'var(--map-bg)' }}>
       {/* ── MAP SCREEN (always mounted, hidden via visibility) ── */}
       <div className="absolute inset-0" style={{ visibility: activeTab === 'map' ? 'visible' : 'hidden' }}>
         {/* Map */}
@@ -222,7 +222,7 @@ export default function Index() {
 
         {/* ── Top Controls ── */}
         <div className="absolute top-0 left-0 right-0 z-[500] pointer-events-none"
-          style={{ background: 'linear-gradient(to bottom, hsl(230 60% 4% / 0.8) 0%, transparent 100%)' }}>
+          style={{ background: 'var(--top-gradient)' }}>
           <div className="px-3 pt-10 pb-2 pointer-events-auto">
             {/* Row: Location pills left + Settings button right */}
             <div className="flex items-center gap-2">
@@ -241,11 +241,11 @@ export default function Index() {
                 }}
                 className="w-10 h-10 rounded-full flex items-center justify-center border shrink-0"
                 style={{
-                  background: 'rgba(26, 13, 21, 0.8)',
+                  background: 'var(--controls-bg)',
                   backdropFilter: 'blur(12px)',
-                  borderColor: 'hsl(325 89% 50% / 0.1)',
-                  boxShadow: '0 4px 20px hsl(230 60% 4% / 0.5)',
-                  color: 'hsl(325 89% 50%)',
+                  borderColor: 'var(--controls-border)',
+                  boxShadow: 'var(--controls-shadow)',
+                  color: 'hsl(var(--accent))',
                 }}
               >
                 <Sliders size={16} />
@@ -265,11 +265,11 @@ export default function Index() {
           className="absolute right-3 z-[400] w-12 h-12 rounded-full flex items-center justify-center border transition-all"
           style={{
             bottom: selectedEvent ? '220px' : '80px',
-            background: 'rgba(26, 13, 21, 0.8)',
+            background: 'var(--controls-bg)',
             backdropFilter: 'blur(12px)',
-            borderColor: 'hsl(325 89% 50% / 0.1)',
-            boxShadow: '0 4px 20px hsl(230 60% 4% / 0.5)',
-            color: locating ? 'hsl(325 89% 50%)' : 'hsl(225 20% 80%)',
+            borderColor: 'var(--controls-border)',
+            boxShadow: 'var(--controls-shadow)',
+            color: locating ? 'hsl(var(--accent))' : 'hsl(var(--muted-foreground))',
           }}>
           <Locate size={20} className={locating ? 'animate-spin' : ''} />
         </button>
@@ -280,8 +280,8 @@ export default function Index() {
           className="absolute right-3 z-[400] w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-90"
           style={{
             bottom: selectedEvent ? '276px' : '136px',
-            background: 'hsl(325 89% 50%)',
-            boxShadow: '0 0 20px hsl(325 89% 50% / 0.5), 0 4px 16px hsl(230 60% 4% / 0.6)',
+            background: 'hsl(var(--accent))',
+            boxShadow: '0 0 20px hsl(var(--accent) / 0.5), 0 4px 16px hsl(var(--background) / 0.6)',
           }}>
           <Plus size={20} className="text-white" />
         </button>

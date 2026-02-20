@@ -5,7 +5,8 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  :root,
+  .dark {
     /* NightMap Dark Nightlife Design System — Deep Purple-Black */
     --background: 260 38% 7%;
     --foreground: 240 100% 97%;
@@ -16,7 +17,6 @@
     --popover: 262 33% 12%;
     --popover-foreground: 240 100% 97%;
 
-    /* Cyan/Electric as primary */
     --primary: 182 100% 50%;
     --primary-foreground: 260 38% 7%;
 
@@ -26,7 +26,6 @@
     --muted: 262 28% 14%;
     --muted-foreground: 240 20% 69%;
 
-    /* Magenta/Pink accent */
     --accent: 320 100% 50%;
     --accent-foreground: 0 0% 100%;
 
@@ -39,7 +38,6 @@
 
     --radius: 1rem;
 
-    /* Custom NightMap tokens */
     --neon-cyan: 182 100% 50%;
     --neon-pink: 320 100% 50%;
     --neon-purple: 271 69% 59%;
@@ -49,20 +47,17 @@
     --surface-3: 262 28% 16%;
     --surface-4: 262 25% 20%;
 
-    /* Gradients */
     --gradient-card: linear-gradient(135deg, hsl(262 33% 12%), hsl(262 28% 16%));
     --gradient-hero: linear-gradient(180deg, transparent 0%, hsl(260 38% 7% / 0.95) 100%);
     --gradient-neon-pink: linear-gradient(135deg, hsl(320 100% 50%), hsl(340 85% 55%));
     --gradient-neon-cyan: linear-gradient(135deg, hsl(182 100% 50%), hsl(195 100% 45%));
     --gradient-badge: linear-gradient(135deg, hsl(271 69% 25%), hsl(320 60% 20%));
 
-    /* Glows */
     --glow-cyan: 0 0 20px hsl(182 100% 50% / 0.4), 0 0 40px hsl(182 100% 50% / 0.2);
     --glow-pink: 0 0 20px hsl(320 100% 50% / 0.5), 0 0 40px hsl(320 100% 50% / 0.25);
     --glow-purple: 0 0 20px hsl(271 69% 59% / 0.3);
     --glow-green: 0 0 20px hsl(110 100% 54% / 0.4), 0 0 40px hsl(110 100% 54% / 0.2);
 
-    /* Sidebar */
     --sidebar-background: 260 38% 7%;
     --sidebar-foreground: 240 100% 97%;
     --sidebar-primary: 182 100% 50%;
@@ -71,6 +66,93 @@
     --sidebar-accent-foreground: 240 100% 97%;
     --sidebar-border: 262 25% 18%;
     --sidebar-ring: 182 100% 50%;
+
+    /* Light mode-specific overrides */
+    --nav-bg: rgba(26, 13, 21, 0.9);
+    --nav-border: hsl(0 0% 100% / 0.05);
+    --nav-active: hsl(325 89% 50%);
+    --nav-inactive: hsl(225 15% 40%);
+    --controls-bg: rgba(26, 13, 21, 0.8);
+    --controls-border: hsl(325 89% 50% / 0.1);
+    --controls-shadow: 0 4px 20px hsl(230 60% 4% / 0.5);
+    --map-bg: hsl(230 60% 6%);
+    --top-gradient: linear-gradient(to bottom, hsl(230 60% 4% / 0.8) 0%, transparent 100%);
+    --profile-card-bg: hsl(258 55% 11%);
+    --profile-divider: hsl(258 40% 15%);
+  }
+
+  .light {
+    /* NightMap Light — White & warm beige */
+    --background: 40 30% 96%;
+    --foreground: 240 10% 10%;
+
+    --card: 40 25% 92%;
+    --card-foreground: 240 10% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
+
+    --primary: 182 80% 38%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 40 20% 88%;
+    --secondary-foreground: 240 10% 20%;
+
+    --muted: 40 15% 90%;
+    --muted-foreground: 240 8% 45%;
+
+    --accent: 320 70% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 80% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 40 15% 82%;
+    --input: 40 15% 88%;
+    --ring: 182 80% 38%;
+
+    --radius: 1rem;
+
+    --neon-cyan: 182 80% 38%;
+    --neon-pink: 320 70% 45%;
+    --neon-purple: 271 50% 50%;
+    --neon-green: 150 60% 38%;
+    --surface-1: 40 30% 96%;
+    --surface-2: 40 25% 92%;
+    --surface-3: 40 20% 88%;
+    --surface-4: 40 15% 82%;
+
+    --gradient-card: linear-gradient(135deg, hsl(40 25% 92%), hsl(40 20% 88%));
+    --gradient-hero: linear-gradient(180deg, transparent 0%, hsl(40 30% 96% / 0.95) 100%);
+    --gradient-neon-pink: linear-gradient(135deg, hsl(320 70% 45%), hsl(340 65% 50%));
+    --gradient-neon-cyan: linear-gradient(135deg, hsl(182 80% 38%), hsl(195 70% 40%));
+    --gradient-badge: linear-gradient(135deg, hsl(271 40% 80%), hsl(320 40% 85%));
+
+    --glow-cyan: 0 0 10px hsl(182 80% 38% / 0.2);
+    --glow-pink: 0 0 10px hsl(320 70% 45% / 0.2);
+    --glow-purple: 0 0 10px hsl(271 50% 50% / 0.15);
+    --glow-green: 0 0 10px hsl(150 60% 38% / 0.2);
+
+    --sidebar-background: 40 30% 96%;
+    --sidebar-foreground: 240 10% 10%;
+    --sidebar-primary: 182 80% 38%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 40 20% 88%;
+    --sidebar-accent-foreground: 240 10% 10%;
+    --sidebar-border: 40 15% 82%;
+    --sidebar-ring: 182 80% 38%;
+
+    --nav-bg: rgba(255, 252, 245, 0.92);
+    --nav-border: hsl(40 15% 82% / 0.6);
+    --nav-active: hsl(320 70% 45%);
+    --nav-inactive: hsl(240 8% 55%);
+    --controls-bg: rgba(255, 252, 245, 0.9);
+    --controls-border: hsl(40 15% 82% / 0.6);
+    --controls-shadow: 0 4px 20px hsl(40 20% 50% / 0.15);
+    --map-bg: hsl(40 30% 96%);
+    --top-gradient: linear-gradient(to bottom, hsl(40 30% 96% / 0.85) 0%, transparent 100%);
+    --profile-card-bg: hsl(40 25% 92%);
+    --profile-divider: hsl(40 15% 85%);
   }
 }
 
@@ -134,7 +216,7 @@
 
 /* Leaflet custom styles */
 .leaflet-container {
-  background: hsl(260 38% 7%);
+  background: hsl(var(--background));
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
