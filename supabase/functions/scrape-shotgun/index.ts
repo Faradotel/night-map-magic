@@ -15,6 +15,7 @@ interface ShotgunEvent {
   description: string;
   ticketUrl: string;
   price?: string;
+  genres: string[];
 }
 
 // City slug mapping for shotgun.live/fr/cities/{slug}
@@ -30,6 +31,25 @@ const CITY_SLUGS: Record<string, string> = {
   'strasbourg': 'strasbourg',
   'montpellier': 'montpellier',
   'rennes': 'rennes',
+  'reims': 'reims',
+  'saint-etienne': 'saint-etienne',
+  'le havre': 'le-havre',
+  'toulon': 'toulon',
+  'grenoble': 'grenoble',
+  'dijon': 'dijon',
+  'angers': 'angers',
+  'nimes': 'nimes',
+  'clermont-ferrand': 'clermont-ferrand',
+  'aix-en-provence': 'aix-marseille',
+  'brest': 'brest',
+  'tours': 'tours',
+  'limoges': 'limoges',
+  'amiens': 'amiens',
+  'metz': 'metz',
+  'rouen': 'rouen',
+  'perpignan': 'perpignan',
+  'orleans': 'orleans',
+  'caen': 'caen',
 };
 
 interface ParsedEvent {
@@ -44,8 +64,6 @@ interface ParsedEvent {
 function parseEventsFromCityPage(markdown: string): ParsedEvent[] {
   const events: ParsedEvent[] = [];
 
-  // Each event block is a markdown link: [![Name](image)\\...](url)
-  // Pattern: [![EventName](imageUrl)\\\n...\\\nGenre](eventUrl)
   const eventRegex = /\[!\[([^\]]*)\]\([^)]*\)\\[\s\\]*([^\]]*)\]\(([^)]+)\)/g;
   let match;
 
@@ -54,11 +72,9 @@ function parseEventsFromCityPage(markdown: string): ParsedEvent[] {
     const innerContent = match[2];
     const eventUrl = match[3];
 
-    // Skip pinned/promo items or non-event links
     if (!eventUrl.includes('/events/')) continue;
     if (!name) continue;
 
-    // Parse inner content lines (separated by \\)
     const lines = innerContent
       .split('\\')
       .map(l => l.replace(/\n/g, '').replace(/\|/g, '').trim())
@@ -70,31 +86,25 @@ function parseEventsFromCityPage(markdown: string): ParsedEvent[] {
     const genres: string[] = [];
 
     for (const line of lines) {
-      // Skip if it's the event name repeated
       if (line === name) continue;
 
-      // Price detection
       if (/[€$]|gratuit|free|waiting list/i.test(line) && !price) {
         price = line;
         continue;
       }
 
-      // Date detection (French day/month patterns)
       if (/\b(lun|mar|mer|jeu|ven|sam|dim|jan|fév|mars|avr|mai|juin|juil|août|sep|oct|nov|déc)\b/i.test(line) && !date) {
         date = line;
         continue;
       }
 
-      // Time detection
       if (/^\d{1,2}:\d{2}/.test(line)) {
         date = date ? `${date} ${line}` : line;
         continue;
       }
 
-      // Short strings are likely genres (Techno, House, etc.) or venue
       if (line.length < 40 && !line.includes('[') && !line.includes('(')) {
-        // If we don't have a venue yet and it looks like a venue name (capitalized, longer)
-        if (!venue && line.length > 2 && !/^(techno|house|electro|pop|rock|rap|hip[\s-]?hop|rnb|r&b|jazz|soul|funk|disco|trance|drum|bass|dnb|dubstep|reggae|dancehall|afro|latin|salsa|reggaeton|edm|club|hard|deep|minimal|ambient|trap|baile|mpb|samba|pagode|afrobeat)$/i.test(line)) {
+        if (!venue && line.length > 2 && !/^(techno|house|electro|electronic|pop|rock|rap|hip[\s-]?hop|rnb|r&b|jazz|soul|funk|disco|trance|drum|bass|dnb|dubstep|reggae|dancehall|afro|latin|salsa|reggaeton|edm|club|hard|deep|minimal|ambient|trap|baile|mpb|samba|pagode|afrobeat|afrobeats|indie|folk|metal|punk|alternative|dance|world|classical|blues|swing|tech house|deep house|melodic house|afro house|disco house|hard techno|industrial|psytrance|hardstyle|hardcore|gabber|bass music|drum and bass|drum & bass|singer-songwriter|bossa nova)$/i.test(line)) {
           venue = line;
         } else {
           genres.push(line);
@@ -141,7 +151,6 @@ Deno.serve(async (req) => {
     const cityLower = city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const slug = CITY_SLUGS[cityLower] || cityLower;
 
-    // Use /fr/cities/{slug} which returns more events with better structure
     const shotgunUrl = `https://shotgun.live/fr/cities/${slug}`;
 
     console.log('Scraping Shotgun URL:', shotgunUrl, 'for city:', city);
@@ -173,7 +182,6 @@ Deno.serve(async (req) => {
     const markdown = scrapeData?.data?.markdown || scrapeData?.markdown || '';
     console.log('Markdown length:', markdown.length);
 
-    // Parse events from city page markdown
     const rawEvents = parseEventsFromCityPage(markdown);
     console.log(`Parsed ${rawEvents.length} events for ${city}`);
 
@@ -207,7 +215,6 @@ Deno.serve(async (req) => {
       let lat = cityLat + (Math.random() - 0.5) * 0.02;
       let lng = cityLng + (Math.random() - 0.5) * 0.02;
 
-      // Try geocoding venue name in the city
       if (raw.venue && raw.venue !== raw.name) {
         try {
           const geoRes = await fetch(
@@ -243,6 +250,7 @@ Deno.serve(async (req) => {
         description,
         ticketUrl: ticketUrl || `https://shotgun.live/fr/cities/${slug}`,
         price: raw.price || null,
+        genres: raw.genres,
       });
     }
 
