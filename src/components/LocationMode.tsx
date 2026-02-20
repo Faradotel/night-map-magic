@@ -74,18 +74,18 @@ export function LocationMode({ mode, selectedCity, onModeChange, onCitySelect, l
         {/* Near me pill */}
         <button
           onClick={handleSwitchToNearby}
-          className="flex items-center gap-1.5 h-7 px-2.5 rounded-full text-[11px] font-semibold border transition-all"
+          className="flex items-center gap-1.5 h-10 px-4 rounded-full text-sm font-semibold transition-all shrink-0"
           style={{
             background: mode === 'nearby'
-              ? 'hsl(325 89% 50% / 0.15)'
-              : 'hsl(230 50% 10% / 0.92)',
-            borderColor: mode === 'nearby' ? 'hsl(325 89% 50%)' : 'hsl(230 25% 20%)',
-            color: mode === 'nearby' ? 'hsl(325 89% 55%)' : 'hsl(225 15% 60%)',
+              ? 'hsl(325 89% 50%)'
+              : 'rgba(26, 13, 21, 0.8)',
             backdropFilter: 'blur(12px)',
-            boxShadow: mode === 'nearby' ? '0 0 10px hsl(325 89% 50% / 0.25)' : 'none',
+            border: mode === 'nearby' ? 'none' : '1px solid hsl(325 89% 50% / 0.1)',
+            color: mode === 'nearby' ? 'white' : 'hsl(225 15% 70%)',
+            boxShadow: mode === 'nearby' ? '0 0 16px hsl(325 89% 50% / 0.3)' : '0 2px 8px rgba(0,0,0,0.3)',
           }}
         >
-          <Navigation size={10} className={locating && mode === 'nearby' ? 'animate-spin' : ''} />
+          <Navigation size={12} className={locating && mode === 'nearby' ? 'animate-spin' : ''} />
           <span>Près de moi</span>
         </button>
 
@@ -98,30 +98,30 @@ export function LocationMode({ mode, selectedCity, onModeChange, onCitySelect, l
               handleSwitchToCity();
             }
           }}
-          className="flex items-center gap-1.5 h-7 px-2.5 rounded-full text-[11px] font-semibold border transition-all"
+          className="flex items-center gap-1.5 h-10 px-4 rounded-full text-sm font-semibold transition-all shrink-0"
           style={{
             background: mode === 'city'
-              ? 'hsl(275 71% 58% / 0.15)'
-              : 'hsl(230 50% 10% / 0.92)',
-            borderColor: mode === 'city' ? 'hsl(275 71% 58%)' : 'hsl(230 25% 20%)',
-            color: mode === 'city' ? 'hsl(275 71% 65%)' : 'hsl(225 15% 60%)',
+              ? 'hsl(275 71% 58%)'
+              : 'rgba(26, 13, 21, 0.8)',
             backdropFilter: 'blur(12px)',
-            boxShadow: mode === 'city' ? '0 0 10px hsl(275 71% 58% / 0.25)' : 'none',
+            border: mode === 'city' ? 'none' : '1px solid hsl(325 89% 50% / 0.1)',
+            color: mode === 'city' ? 'white' : 'hsl(225 15% 70%)',
+            boxShadow: mode === 'city' ? '0 0 16px hsl(275 71% 58% / 0.3)' : '0 2px 8px rgba(0,0,0,0.3)',
           }}
         >
-          <MapPin size={10} />
+          <MapPin size={12} />
           <span>{mode === 'city' && selectedCity ? selectedCity : 'Autre ville'}</span>
-          <ChevronDown size={9} className={`transition-transform ${showCityList ? 'rotate-180' : ''}`} />
+          <ChevronDown size={10} className={`transition-transform ${showCityList ? 'rotate-180' : ''}`} />
         </button>
       </div>
 
       {/* City dropdown */}
       {showCityList && (
         <div
-          className="absolute top-full left-0 mt-2 w-56 rounded-2xl border overflow-hidden z-[600]"
+          className="absolute top-full left-0 mt-2 w-56 rounded-2xl overflow-hidden z-[600]"
           style={{
-            background: 'hsl(230 50% 8% / 0.97)',
-            borderColor: 'hsl(230 25% 16%)',
+            background: 'rgba(26, 13, 21, 0.95)',
+            border: '1px solid hsl(325 89% 50% / 0.15)',
             backdropFilter: 'blur(20px)',
             boxShadow: '0 12px 40px hsl(230 60% 4% / 0.85)',
           }}
@@ -131,8 +131,8 @@ export function LocationMode({ mode, selectedCity, onModeChange, onCitySelect, l
             <div
               className="flex items-center gap-2 h-8 px-2.5 rounded-xl border"
               style={{
-                background: 'hsl(230 35% 12%)',
-                borderColor: 'hsl(230 25% 20%)',
+                background: 'hsl(0 0% 100% / 0.06)',
+                borderColor: 'hsl(0 0% 100% / 0.1)',
               }}
             >
               <Search size={12} style={{ color: 'hsl(225 15% 50%)' }} />

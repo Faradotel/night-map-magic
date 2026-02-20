@@ -17,15 +17,16 @@ function createEventIcon(event: NightEvent, isSelected: boolean): L.DivIcon {
   const vibe = vibeConfig[event.vibe];
   const typeEmoji = typeConfig[event.type]?.emoji ?? '📍';
   const color = isSelected ? 'hsl(325, 89%, 50%)' : vibe.color;
-  const size = isSelected ? 48 : 40;
+  const size = isSelected ? 52 : 42;
 
   return L.divIcon({
     className: '',
     html: `
       <div style="position:relative;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;">
+        ${isSelected ? `<div style="position:absolute;inset:-4px;border-radius:50%;border:2px solid ${color};animation:ping-slow 1.5s ease-out infinite;opacity:0.3;"></div>` : ''}
         ${event.isLive ? `<div style="position:absolute;inset:0;border-radius:50%;background:${color}22;animation:ping-slow 1.5s ease-out infinite;"></div>` : ''}
-        <div style="width:${size - 4}px;height:${size - 4}px;border-radius:50%;background:hsl(230,50%,10%);border:2.5px solid ${color};display:flex;align-items:center;justify-content:center;font-size:${isSelected ? 20 : 17}px;box-shadow:0 0 ${isSelected ? 20 : 12}px ${color}66,0 2px 8px rgba(0,0,0,.6);cursor:pointer;position:relative;z-index:1;">${typeEmoji}</div>
-        ${event.isLive ? `<div style="position:absolute;top:0;right:0;width:10px;height:10px;border-radius:50%;background:hsl(325,89%,50%);border:2px solid hsl(230,55%,7%);z-index:2;"></div>` : ''}
+        <div style="width:${size - 6}px;height:${size - 6}px;border-radius:50%;background:rgba(26,13,21,0.85);backdrop-filter:blur(8px);border:2px solid ${color};display:flex;align-items:center;justify-content:center;font-size:${isSelected ? 22 : 18}px;box-shadow:0 0 ${isSelected ? 24 : 14}px ${color}55,0 4px 12px rgba(0,0,0,.5);cursor:pointer;position:relative;z-index:1;">${typeEmoji}</div>
+        ${event.isLive ? `<div style="position:absolute;top:0;right:0;width:10px;height:10px;border-radius:50%;background:hsl(142,71%,45%);border:2px solid rgba(26,13,21,0.9);z-index:2;box-shadow:0 0 8px hsl(142,71%,45%,0.6);"></div>` : ''}
       </div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],

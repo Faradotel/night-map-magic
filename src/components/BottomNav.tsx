@@ -1,4 +1,4 @@
-import { Map, Search, User } from 'lucide-react';
+import { Map, Search, Heart, User } from 'lucide-react';
 
 type Tab = 'map' | 'search' | 'profile';
 
@@ -18,10 +18,9 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
     <nav
       className="absolute bottom-0 left-0 right-0 h-16 flex items-center z-[400]"
       style={{
-        background: 'hsl(230 55% 7% / 0.97)',
+        background: 'rgba(26, 13, 21, 0.9)',
         backdropFilter: 'blur(20px)',
-        borderTop: '1px solid hsl(230 25% 16%)',
-        boxShadow: '0 -4px 24px hsl(230 60% 4% / 0.6)',
+        borderTop: '1px solid hsl(0 0% 100% / 0.05)',
       }}
     >
       {tabs.map(tab => {
@@ -32,29 +31,19 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
             onClick={() => onTabChange(tab.id)}
             className="flex-1 h-full flex flex-col items-center justify-center gap-1 transition-all"
           >
-            <div
-              className="relative flex items-center justify-center"
-              style={{ transition: 'all 0.2s ease' }}
-            >
-              {isActive && (
-                <div
-                  className="absolute inset-[-4px] rounded-full opacity-30"
-                  style={{ background: 'hsl(325 89% 50%)' }}
-                />
-              )}
-              <tab.icon
-                size={20}
-                style={{
-                  color: isActive ? 'hsl(325 89% 50%)' : 'hsl(225 15% 45%)',
-                  filter: isActive ? 'drop-shadow(0 0 6px hsl(325 89% 50% / 0.8))' : 'none',
-                  transition: 'all 0.2s ease',
-                }}
-              />
-            </div>
-            <span
-              className="text-[10px] font-semibold transition-all"
+            <tab.icon
+              size={22}
+              strokeWidth={isActive ? 2.5 : 1.5}
               style={{
-                color: isActive ? 'hsl(325 89% 50%)' : 'hsl(225 15% 45%)',
+                color: isActive ? 'hsl(325 89% 50%)' : 'hsl(225 15% 40%)',
+                filter: isActive ? 'drop-shadow(0 0 8px hsl(325 89% 50% / 0.6))' : 'none',
+                transition: 'all 0.2s ease',
+              }}
+            />
+            <span
+              className="text-[10px] font-bold uppercase tracking-widest transition-all"
+              style={{
+                color: isActive ? 'hsl(325 89% 50%)' : 'hsl(225 15% 40%)',
               }}
             >
               {tab.label}
