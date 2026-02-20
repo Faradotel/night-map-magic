@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { EventMap } from '@/components/EventMap';
 import { EventDetailSheet } from '@/components/EventDetailSheet';
+import { EventDetailPage } from '@/components/EventDetailPage';
 import { MapEventCard } from '@/components/MapEventCard';
 import { FilterBar, Filters } from '@/components/FilterBar';
 import { BottomNav } from '@/components/BottomNav';
@@ -296,11 +297,12 @@ export default function Index() {
           />
         )}
 
-        {/* Full event detail sheet */}
+        {/* Full event detail page */}
         {selectedEvent && showDetail && (
-          <EventDetailSheet
+          <EventDetailPage
             event={selectedEvent}
             onClose={() => setShowDetail(false)}
+            userLocation={userLocation}
           />
         )}
 

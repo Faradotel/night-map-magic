@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Search, MapPin, Clock, X } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, formatTime, formatDate } from '@/data/mockEvents';
+import { EventDetailPage } from '@/components/EventDetailPage';
 
 interface SearchScreenProps {
   onEventSelect: (event: NightEvent) => void;
@@ -9,6 +10,7 @@ interface SearchScreenProps {
 
 export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
   const [query, setQuery] = useState('');
+  const [detailEvent, setDetailEvent] = useState<NightEvent | null>(null);
 
   const results = query.trim().length > 1
     ? events.filter(e =>
@@ -20,18 +22,27 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
       )
     : events;
 
+  if (detailEvent) {
+    return (
+      <EventDetailPage
+        event={detailEvent}
+        onClose={() => setDetailEvent(null)}
+      />
+    );
+  }
+
   return (
-    <div className="absolute inset-0 z-[300] flex flex-col" style={{ background: 'hsl(230 60% 6%)' }}>
+    <div className="absolute inset-0 z-[300] flex flex-col" style={{ background: 'hsl(var(--background))' }}>
       {/* Header */}
-      <div className="pt-safe pt-4 px-4 pb-3" style={{ borderBottom: '1px solid hsl(230 25% 14%)' }}>
+      <div className="pt-safe pt-4 px-4 pb-3" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
         <h1 className="text-lg font-extrabold mb-3 tracking-tight">
-          <span style={{ color: 'hsl(325 89% 50%)' }}>Rechercher</span> une soirée
+          <span style={{ color: 'hsl(var(--accent))' }}>Rechercher</span> une soirée
         </h1>
         <div
           className="flex items-center gap-3 h-11 px-3 rounded-2xl border"
-          style={{ background: 'hsl(230 45% 11%)', borderColor: 'hsl(230 25% 18%)' }}
+          style={{ background: 'hsl(var(--secondary))', borderColor: 'hsl(var(--border))' }}
         >
-          <Search size={16} style={{ color: 'hsl(325 89% 50%)' }} />
+          <Search size={16} style={{ color: 'hsl(var(--accent))' }} />
           <input
             type="text"
             placeholder="Nom, ville, genre, lieu..."
@@ -59,28 +70,32 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
             {results.map(event => {
               const vibe = vibeConfig[event.vibe];
               const type = typeConfig[event.type];
+              const source = event.id.startsWith('tm-') ? 'TM' : event.id.startsWith('shotgun-') ? 'SG' : null;
               return (
                 <button
                   key={event.id}
-                  onClick={() => onEventSelect(event)}
+                  onClick={() => setDetailEvent(event)}
                   className="w-full text-left rounded-2xl border overflow-hidden transition-all active:scale-[0.98]"
                   style={{
-                    background: 'hsl(230 50% 10%)',
-                    borderColor: 'hsl(230 25% 16%)',
+                    background: 'var(--profile-card-bg)',
+                    borderColor: 'hsl(var(--border))',
                   }}
                 >
                   <div className="flex">
-                    <div className="w-1 shrink-0" style={{ background: 'hsl(325 89% 50%)' }} />
+                    <div className="w-1 shrink-0" style={{ background: 'hsl(var(--accent))' }} />
                     <div className="flex-1 p-3">
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <div>
                           <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-[10px] font-semibold" style={{ color: 'hsl(325 89% 55%)' }}>
+                            <span className="text-[10px] font-semibold" style={{ color: 'hsl(var(--accent))' }}>
                               {vibe.emoji} {vibe.label}
                             </span>
                             <span className="text-[10px] text-muted-foreground">{type.emoji} {type.label}</span>
+                            {source && (
+                              <span className="text-[8px] uppercase tracking-wider text-muted-foreground opacity-60 font-medium">{source}</span>
+                            )}
                             {event.isLive && (
-                              <span className="text-[10px] font-bold" style={{ color: 'hsl(325 89% 50%)' }}>● LIVE</span>
+                              <span className="text-[10px] font-bold" style={{ color: 'hsl(var(--accent))' }}>● LIVE</span>
                             )}
                           </div>
                           <h3 className="text-sm font-extrabold tracking-tight">{event.name}</h3>
@@ -90,7 +105,7 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
                           style={{
                             color: event.priceRange === 'gratuit' ? 'hsl(130 60% 55%)' :
                               event.priceRange === '€1-10' ? 'hsl(130 60% 55%)' :
-                              event.priceRange === '€10-20' ? 'hsl(45 100% 55%)' : 'hsl(325 89% 50%)',
+                              event.priceRange === '€10-20' ? 'hsl(45 100% 55%)' : 'hsl(var(--accent))',
                           }}
                         >
                           {event.priceRange}
@@ -99,11 +114,11 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
 
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
-                          <MapPin size={10} style={{ color: 'hsl(325 89% 50%)' }} />
+                          <MapPin size={10} style={{ color: 'hsl(var(--accent))' }} />
                           {event.venue}, {event.city}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Clock size={10} style={{ color: 'hsl(225 15% 55%)' }} />
+                          <Clock size={10} className="text-muted-foreground" />
                           {formatDate(event.startTime)} · {formatTime(event.startTime)}
                         </span>
                       </div>
