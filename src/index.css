@@ -6,69 +6,71 @@
 
 @layer base {
   :root {
-    /* NightMap Dark Nightlife Design System — Midnight Navy */
-    --background: 230 60% 6%;
-    --foreground: 220 20% 95%;
+    /* NightMap Dark Nightlife Design System — Deep Purple-Black */
+    --background: 260 38% 7%;
+    --foreground: 240 100% 97%;
 
-    --card: 230 50% 10%;
-    --card-foreground: 220 20% 95%;
+    --card: 262 33% 12%;
+    --card-foreground: 240 100% 97%;
 
-    --popover: 230 50% 10%;
-    --popover-foreground: 220 20% 95%;
+    --popover: 262 33% 12%;
+    --popover-foreground: 240 100% 97%;
 
-    /* Hot Pink as primary */
-    --primary: 325 89% 50%;
-    --primary-foreground: 0 0% 100%;
+    /* Cyan/Electric as primary */
+    --primary: 182 100% 50%;
+    --primary-foreground: 260 38% 7%;
 
-    --secondary: 230 35% 16%;
-    --secondary-foreground: 220 20% 90%;
+    --secondary: 262 28% 16%;
+    --secondary-foreground: 240 50% 92%;
 
-    --muted: 230 35% 14%;
-    --muted-foreground: 225 15% 55%;
+    --muted: 262 28% 14%;
+    --muted-foreground: 240 20% 69%;
 
-    /* Pink accent */
-    --accent: 325 89% 50%;
+    /* Magenta/Pink accent */
+    --accent: 320 100% 50%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 100% 65%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 230 30% 18%;
-    --input: 230 35% 14%;
-    --ring: 325 89% 50%;
+    --border: 262 25% 18%;
+    --input: 262 28% 14%;
+    --ring: 182 100% 50%;
 
     --radius: 1rem;
 
     /* Custom NightMap tokens */
-    --neon-cyan: 183 100% 50%;
-    --neon-pink: 325 89% 50%;
-    --neon-purple: 275 71% 58%;
-    --surface-1: 230 60% 6%;
-    --surface-2: 230 50% 10%;
-    --surface-3: 230 40% 14%;
-    --surface-4: 230 30% 18%;
+    --neon-cyan: 182 100% 50%;
+    --neon-pink: 320 100% 50%;
+    --neon-purple: 271 69% 59%;
+    --neon-green: 110 100% 54%;
+    --surface-1: 260 38% 7%;
+    --surface-2: 262 33% 12%;
+    --surface-3: 262 28% 16%;
+    --surface-4: 262 25% 20%;
 
     /* Gradients */
-    --gradient-card: linear-gradient(135deg, hsl(230 50% 10%), hsl(230 40% 14%));
-    --gradient-hero: linear-gradient(180deg, transparent 0%, hsl(230 60% 6% / 0.95) 100%);
-    --gradient-neon-pink: linear-gradient(135deg, hsl(325 89% 50%), hsl(340 85% 55%));
-    --gradient-neon-cyan: linear-gradient(135deg, hsl(183 100% 50%), hsl(195 100% 45%));
-    --gradient-badge: linear-gradient(135deg, hsl(275 71% 25%), hsl(325 60% 20%));
+    --gradient-card: linear-gradient(135deg, hsl(262 33% 12%), hsl(262 28% 16%));
+    --gradient-hero: linear-gradient(180deg, transparent 0%, hsl(260 38% 7% / 0.95) 100%);
+    --gradient-neon-pink: linear-gradient(135deg, hsl(320 100% 50%), hsl(340 85% 55%));
+    --gradient-neon-cyan: linear-gradient(135deg, hsl(182 100% 50%), hsl(195 100% 45%));
+    --gradient-badge: linear-gradient(135deg, hsl(271 69% 25%), hsl(320 60% 20%));
 
     /* Glows */
-    --glow-cyan: 0 0 20px hsl(183 100% 50% / 0.4), 0 0 40px hsl(183 100% 50% / 0.2);
-    --glow-pink: 0 0 20px hsl(325 89% 50% / 0.5), 0 0 40px hsl(325 89% 50% / 0.25);
-    --glow-purple: 0 0 20px hsl(275 71% 58% / 0.3);
+    --glow-cyan: 0 0 20px hsl(182 100% 50% / 0.4), 0 0 40px hsl(182 100% 50% / 0.2);
+    --glow-pink: 0 0 20px hsl(320 100% 50% / 0.5), 0 0 40px hsl(320 100% 50% / 0.25);
+    --glow-purple: 0 0 20px hsl(271 69% 59% / 0.3);
+    --glow-green: 0 0 20px hsl(110 100% 54% / 0.4), 0 0 40px hsl(110 100% 54% / 0.2);
 
     /* Sidebar */
-    --sidebar-background: 230 60% 6%;
-    --sidebar-foreground: 220 20% 95%;
-    --sidebar-primary: 325 89% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 230 35% 16%;
-    --sidebar-accent-foreground: 220 20% 95%;
-    --sidebar-border: 230 30% 18%;
-    --sidebar-ring: 325 89% 50%;
+    --sidebar-background: 260 38% 7%;
+    --sidebar-foreground: 240 100% 97%;
+    --sidebar-primary: 182 100% 50%;
+    --sidebar-primary-foreground: 260 38% 7%;
+    --sidebar-accent: 262 28% 16%;
+    --sidebar-accent-foreground: 240 100% 97%;
+    --sidebar-border: 262 25% 18%;
+    --sidebar-ring: 182 100% 50%;
   }
 }
 
@@ -132,7 +134,7 @@
 
 /* Leaflet custom styles */
 .leaflet-container {
-  background: hsl(230 60% 6%);
+  background: hsl(260 38% 7%);
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
@@ -153,30 +155,30 @@
 }
 
 .leaflet-control-zoom {
-  border: 1px solid hsl(230 30% 18%) !important;
+  border: 1px solid hsl(262 25% 18%) !important;
   border-radius: 16px !important;
   overflow: hidden;
 }
 
 .leaflet-control-zoom a {
-  background: hsl(230 50% 10%) !important;
-  color: hsl(325 89% 50%) !important;
-  border-color: hsl(230 30% 18%) !important;
+  background: hsl(262 33% 12%) !important;
+  color: hsl(182 100% 50%) !important;
+  border-color: hsl(262 25% 18%) !important;
   font-weight: 700;
 }
 
 .leaflet-control-zoom a:hover {
-  background: hsl(230 40% 14%) !important;
+  background: hsl(262 28% 16%) !important;
 }
 
 .leaflet-control-attribution {
-  background: hsl(230 60% 6% / 0.7) !important;
-  color: hsl(230 15% 45%) !important;
+  background: hsl(260 38% 7% / 0.7) !important;
+  color: hsl(262 15% 45%) !important;
   font-size: 10px;
 }
 
 .leaflet-control-attribution a {
-  color: hsl(325 89% 50%) !important;
+  color: hsl(182 100% 50%) !important;
 }
 
 /* Custom event marker */
