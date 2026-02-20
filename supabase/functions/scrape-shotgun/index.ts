@@ -175,7 +175,8 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         url: shotgunUrl,
         formats: ['markdown'],
-        waitFor: 5000,
+        waitFor: 10000,
+        timeout: 30000,
       }),
     });
 
@@ -183,9 +184,10 @@ Deno.serve(async (req) => {
 
     if (!scrapeResponse.ok) {
       console.error('Firecrawl error:', JSON.stringify(scrapeData));
+      // On timeout or error, return empty events instead of 500
       return new Response(
-        JSON.stringify({ success: false, error: 'Failed to scrape Shotgun' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: true, events: [], city }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
