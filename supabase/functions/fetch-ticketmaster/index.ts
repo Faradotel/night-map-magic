@@ -20,41 +20,57 @@ Deno.serve(async (req) => {
     }
 
     // Build query params
-    const params = new URLSearchParams({
+    const baseParams = new URLSearchParams({
       apikey: apiKey,
       locale: 'fr',
       countryCode: 'FR',
       classificationName: 'music',
-      size: '50',
+      size: '200',
       sort: 'date,asc',
     });
 
     if (lat && lng) {
-      params.set('latlong', `${lat},${lng}`);
-      params.set('radius', String(radius));
-      params.set('unit', 'km');
+      baseParams.set('latlong', `${lat},${lng}`);
+      baseParams.set('radius', String(radius));
+      baseParams.set('unit', 'km');
     } else if (city) {
-      params.set('city', city);
+      baseParams.set('city', city);
     }
 
-    const url = `https://app.ticketmaster.com/discovery/v2/events.json?${params}`;
-    console.log('Fetching Ticketmaster:', url.replace(apiKey, '***'));
+    // Paginate to get all events (max 5 pages = 1000 events)
+    const allRawEvents: any[] = [];
+    const maxPages = 5;
 
-    const response = await fetch(url);
-    const data = await response.json();
+    for (let page = 0; page < maxPages; page++) {
+      const params = new URLSearchParams(baseParams);
+      params.set('page', String(page));
 
-    if (!response.ok) {
-      console.error('Ticketmaster error:', JSON.stringify(data));
-      return new Response(
-        JSON.stringify({ success: true, events: [] }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      const url = `https://app.ticketmaster.com/discovery/v2/events.json?${params}`;
+      if (page === 0) console.log('Fetching Ticketmaster:', url.replace(apiKey, '***'));
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error('Ticketmaster error page', page, ':', JSON.stringify(data));
+        break;
+      }
+
+      const pageEvents = data?._embedded?.events || [];
+      allRawEvents.push(...pageEvents);
+
+      const totalPages = data?.page?.totalPages || 1;
+      console.log(`Page ${page + 1}/${Math.min(totalPages, maxPages)}: ${pageEvents.length} events`);
+
+      if (page + 1 >= totalPages) break;
+
+      // Small delay to respect rate limits
+      await new Promise(r => setTimeout(r, 200));
     }
 
-    const rawEvents = data?._embedded?.events || [];
-    console.log(`Got ${rawEvents.length} Ticketmaster events`);
+    console.log(`Got ${allRawEvents.length} total Ticketmaster events`);
 
-    const events = rawEvents.map((e: any) => {
+    const events = allRawEvents.map((e: any) => {
       const venue = e._embedded?.venues?.[0];
       const eventLat = parseFloat(venue?.location?.latitude || '0');
       const eventLng = parseFloat(venue?.location?.longitude || '0');
