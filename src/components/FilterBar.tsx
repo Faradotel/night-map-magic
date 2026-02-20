@@ -81,12 +81,12 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
               className="shrink-0 h-8 px-3 rounded-full text-xs font-semibold border transition-all"
               style={{
                 background: filters.date === d
-                  ? 'hsl(183 100% 50%)'
-                  : 'hsl(258 55% 11% / 0.92)',
-                color: filters.date === d ? 'hsl(258 60% 8%)' : 'hsl(240 20% 80%)',
-                borderColor: filters.date === d ? 'hsl(183 100% 50%)' : 'hsl(258 40% 20%)',
+                  ? 'hsl(325 89% 50%)'
+                  : 'hsl(230 50% 10% / 0.92)',
+                color: filters.date === d ? 'white' : 'hsl(225 15% 70%)',
+                borderColor: filters.date === d ? 'hsl(325 89% 50%)' : 'hsl(230 25% 20%)',
                 backdropFilter: 'blur(12px)',
-                boxShadow: filters.date === d ? '0 0 12px hsl(183 100% 50% / 0.4)' : 'none',
+                boxShadow: filters.date === d ? '0 0 12px hsl(325 89% 50% / 0.4)' : 'none',
               }}
             >
               {d === 'today' ? 'Soir' : d === 'weekend' ? 'Week-end' : d === 'week' ? 'Semaine' : 'Tout'}
@@ -99,16 +99,19 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
           onClick={() => setShowPanel(!showPanel)}
           className="shrink-0 h-8 w-8 rounded-full flex items-center justify-center border transition-all relative"
           style={{
-            background: showPanel || activeCount > 0 ? 'hsl(315 100% 53%)' : 'hsl(258 55% 11% / 0.92)',
-            borderColor: showPanel || activeCount > 0 ? 'hsl(315 100% 53%)' : 'hsl(258 40% 20%)',
-            color: showPanel || activeCount > 0 ? 'white' : 'hsl(240 20% 70%)',
+            background: showPanel || activeCount > 0 ? 'hsl(325 89% 50%)' : 'hsl(230 50% 10% / 0.92)',
+            borderColor: showPanel || activeCount > 0 ? 'hsl(325 89% 50%)' : 'hsl(230 25% 20%)',
+            color: showPanel || activeCount > 0 ? 'white' : 'hsl(225 15% 60%)',
             backdropFilter: 'blur(12px)',
-            boxShadow: showPanel || activeCount > 0 ? '0 0 12px hsl(315 100% 53% / 0.5)' : 'none',
+            boxShadow: showPanel || activeCount > 0 ? '0 0 12px hsl(325 89% 50% / 0.5)' : 'none',
           }}
         >
           <Sliders size={14} />
           {activeCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-neon-cyan text-surface-1 text-[9px] font-black flex items-center justify-center">
+            <span
+              className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center"
+              style={{ background: 'white', color: 'hsl(325 89% 50%)' }}
+            >
               {activeCount}
             </span>
           )}
@@ -118,12 +121,13 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
       {/* Expanded filter panel */}
       {showPanel && (
         <div
-          className="mt-2 rounded-2xl border border-surface-4 overflow-hidden"
+          className="mt-2 rounded-2xl border overflow-hidden"
           style={{
-            background: 'hsl(258 55% 10% / 0.97)',
+            background: 'hsl(230 50% 8% / 0.97)',
+            borderColor: 'hsl(230 25% 18%)',
             backdropFilter: 'blur(20px)',
             animation: 'fade-in 0.2s ease-out',
-            boxShadow: '0 8px 32px hsl(258 60% 4% / 0.8)',
+            boxShadow: '0 8px 32px hsl(230 60% 4% / 0.8)',
           }}
         >
           <div className="p-3 space-y-3">
@@ -133,7 +137,7 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
                 <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
                   <Sliders size={11} /> Rayon de recherche
                 </span>
-                <span className="text-xs font-bold text-neon-cyan">{filters.radiusKm} km</span>
+                <span className="text-xs font-bold" style={{ color: 'hsl(325 89% 50%)' }}>{filters.radiusKm} km</span>
               </div>
               <input
                 type="range"
@@ -143,7 +147,7 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
                 onChange={e => onChange({ ...filters, radiusKm: Number(e.target.value) })}
                 className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
                 style={{
-                  background: `linear-gradient(to right, hsl(183 100% 50%) 0%, hsl(183 100% 50%) ${(filters.radiusKm - 1) / 49 * 100}%, hsl(258 40% 20%) ${(filters.radiusKm - 1) / 49 * 100}%, hsl(258 40% 20%) 100%)`,
+                  background: `linear-gradient(to right, hsl(325 89% 50%) 0%, hsl(325 89% 50%) ${(filters.radiusKm - 1) / 49 * 100}%, hsl(230 30% 18%) ${(filters.radiusKm - 1) / 49 * 100}%, hsl(230 30% 18%) 100%)`,
                 }}
               />
             </div>
@@ -160,9 +164,9 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
                     onClick={() => onChange({ ...filters, price: p })}
                     className="flex-1 h-7 rounded-lg text-xs font-semibold border transition-all"
                     style={{
-                      background: filters.price === p ? 'hsl(315 100% 53% / 0.2)' : 'hsl(258 40% 14%)',
-                      borderColor: filters.price === p ? 'hsl(315 100% 53%)' : 'hsl(258 40% 20%)',
-                      color: filters.price === p ? 'hsl(315 100% 53%)' : 'hsl(240 20% 65%)',
+                      background: filters.price === p ? 'hsl(325 89% 50% / 0.2)' : 'hsl(230 35% 14%)',
+                      borderColor: filters.price === p ? 'hsl(325 89% 50%)' : 'hsl(230 25% 20%)',
+                      color: filters.price === p ? 'hsl(325 89% 55%)' : 'hsl(225 15% 60%)',
                     }}
                   >
                     {p === 'all' ? 'Tous' : p === 'free' ? 'Gratuit' : 'Payant'}
@@ -184,9 +188,9 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
                     onClick={() => toggleGenre(g)}
                     className="h-6 px-2.5 rounded-full text-xs font-medium border transition-all"
                     style={{
-                      background: filters.genres.includes(g) ? 'hsl(275 71% 58% / 0.2)' : 'hsl(258 40% 14%)',
-                      borderColor: filters.genres.includes(g) ? 'hsl(275 71% 58%)' : 'hsl(258 40% 20%)',
-                      color: filters.genres.includes(g) ? 'hsl(275 71% 58%)' : 'hsl(240 20% 60%)',
+                      background: filters.genres.includes(g) ? 'hsl(325 89% 50% / 0.2)' : 'hsl(230 35% 14%)',
+                      borderColor: filters.genres.includes(g) ? 'hsl(325 89% 50%)' : 'hsl(230 25% 20%)',
+                      color: filters.genres.includes(g) ? 'hsl(325 89% 55%)' : 'hsl(225 15% 55%)',
                     }}
                   >
                     {g}
@@ -208,9 +212,9 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
                     onClick={() => toggleVibe(v.key)}
                     className="h-6 px-2.5 rounded-full text-xs font-medium border transition-all"
                     style={{
-                      background: filters.vibes.includes(v.key) ? 'hsl(183 100% 50% / 0.15)' : 'hsl(258 40% 14%)',
-                      borderColor: filters.vibes.includes(v.key) ? 'hsl(183 100% 50%)' : 'hsl(258 40% 20%)',
-                      color: filters.vibes.includes(v.key) ? 'hsl(183 100% 50%)' : 'hsl(240 20% 60%)',
+                      background: filters.vibes.includes(v.key) ? 'hsl(325 89% 50% / 0.15)' : 'hsl(230 35% 14%)',
+                      borderColor: filters.vibes.includes(v.key) ? 'hsl(325 89% 55%)' : 'hsl(230 25% 20%)',
+                      color: filters.vibes.includes(v.key) ? 'hsl(325 89% 55%)' : 'hsl(225 15% 55%)',
                     }}
                   >
                     {v.emoji} {v.label}
@@ -223,7 +227,11 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
             {activeCount > 0 && (
               <button
                 onClick={() => onChange({ date: 'all', price: 'all', genres: [], vibes: [], radiusKm: 10 })}
-                className="w-full h-7 rounded-lg text-xs font-semibold text-muted-foreground border border-surface-4 hover:text-foreground transition-colors"
+                className="w-full h-7 rounded-lg text-xs font-semibold border transition-colors"
+                style={{
+                  borderColor: 'hsl(230 25% 20%)',
+                  color: 'hsl(225 15% 55%)',
+                }}
               >
                 Réinitialiser les filtres
               </button>

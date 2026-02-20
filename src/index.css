@@ -6,69 +6,69 @@
 
 @layer base {
   :root {
-    /* NightMap Dark Nightlife Design System */
-    --background: 258 60% 8%;
-    --foreground: 240 20% 95%;
+    /* NightMap Dark Nightlife Design System — Midnight Navy */
+    --background: 230 60% 6%;
+    --foreground: 220 20% 95%;
 
-    --card: 258 55% 11%;
-    --card-foreground: 240 20% 95%;
+    --card: 230 50% 10%;
+    --card-foreground: 220 20% 95%;
 
-    --popover: 258 55% 11%;
-    --popover-foreground: 240 20% 95%;
+    --popover: 230 50% 10%;
+    --popover-foreground: 220 20% 95%;
 
-    /* Neon Cyan as primary */
-    --primary: 183 100% 50%;
-    --primary-foreground: 258 60% 8%;
+    /* Hot Pink as primary */
+    --primary: 325 89% 50%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 258 40% 18%;
-    --secondary-foreground: 240 20% 90%;
+    --secondary: 230 35% 16%;
+    --secondary-foreground: 220 20% 90%;
 
-    --muted: 258 40% 15%;
-    --muted-foreground: 258 20% 60%;
+    --muted: 230 35% 14%;
+    --muted-foreground: 225 15% 55%;
 
-    /* Neon Pink as accent */
-    --accent: 315 100% 53%;
+    /* Pink accent */
+    --accent: 325 89% 50%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 258 40% 20%;
-    --input: 258 40% 16%;
-    --ring: 183 100% 50%;
+    --border: 230 30% 18%;
+    --input: 230 35% 14%;
+    --ring: 325 89% 50%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
     /* Custom NightMap tokens */
     --neon-cyan: 183 100% 50%;
-    --neon-pink: 315 100% 53%;
+    --neon-pink: 325 89% 50%;
     --neon-purple: 275 71% 58%;
-    --surface-1: 258 60% 8%;
-    --surface-2: 258 55% 11%;
-    --surface-3: 258 45% 16%;
-    --surface-4: 258 40% 20%;
+    --surface-1: 230 60% 6%;
+    --surface-2: 230 50% 10%;
+    --surface-3: 230 40% 14%;
+    --surface-4: 230 30% 18%;
 
     /* Gradients */
-    --gradient-card: linear-gradient(135deg, hsl(258 55% 11%), hsl(258 45% 15%));
-    --gradient-hero: linear-gradient(180deg, transparent 0%, hsl(258 60% 8% / 0.95) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(230 50% 10%), hsl(230 40% 14%));
+    --gradient-hero: linear-gradient(180deg, transparent 0%, hsl(230 60% 6% / 0.95) 100%);
+    --gradient-neon-pink: linear-gradient(135deg, hsl(325 89% 50%), hsl(340 85% 55%));
     --gradient-neon-cyan: linear-gradient(135deg, hsl(183 100% 50%), hsl(195 100% 45%));
-    --gradient-neon-pink: linear-gradient(135deg, hsl(315 100% 53%), hsl(285 100% 55%));
-    --gradient-badge: linear-gradient(135deg, hsl(275 71% 25%), hsl(315 60% 20%));
+    --gradient-badge: linear-gradient(135deg, hsl(275 71% 25%), hsl(325 60% 20%));
 
     /* Glows */
     --glow-cyan: 0 0 20px hsl(183 100% 50% / 0.4), 0 0 40px hsl(183 100% 50% / 0.2);
-    --glow-pink: 0 0 20px hsl(315 100% 53% / 0.4), 0 0 40px hsl(315 100% 53% / 0.2);
+    --glow-pink: 0 0 20px hsl(325 89% 50% / 0.5), 0 0 40px hsl(325 89% 50% / 0.25);
     --glow-purple: 0 0 20px hsl(275 71% 58% / 0.3);
 
-    /* Sidebar (same as main) */
-    --sidebar-background: 258 60% 8%;
-    --sidebar-foreground: 240 20% 95%;
-    --sidebar-primary: 183 100% 50%;
-    --sidebar-primary-foreground: 258 60% 8%;
-    --sidebar-accent: 258 40% 18%;
-    --sidebar-accent-foreground: 240 20% 95%;
-    --sidebar-border: 258 40% 20%;
-    --sidebar-ring: 183 100% 50%;
+    /* Sidebar */
+    --sidebar-background: 230 60% 6%;
+    --sidebar-foreground: 220 20% 95%;
+    --sidebar-primary: 325 89% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 230 35% 16%;
+    --sidebar-accent-foreground: 220 20% 95%;
+    --sidebar-border: 230 30% 18%;
+    --sidebar-ring: 325 89% 50%;
   }
 }
 
@@ -132,7 +132,7 @@
 
 /* Leaflet custom styles */
 .leaflet-container {
-  background: hsl(258 60% 8%);
+  background: hsl(230 60% 6%);
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
@@ -153,30 +153,30 @@
 }
 
 .leaflet-control-zoom {
-  border: 1px solid hsl(258 40% 20%) !important;
-  border-radius: 12px !important;
+  border: 1px solid hsl(230 30% 18%) !important;
+  border-radius: 16px !important;
   overflow: hidden;
 }
 
 .leaflet-control-zoom a {
-  background: hsl(258 55% 11%) !important;
-  color: hsl(183 100% 50%) !important;
-  border-color: hsl(258 40% 20%) !important;
+  background: hsl(230 50% 10%) !important;
+  color: hsl(325 89% 50%) !important;
+  border-color: hsl(230 30% 18%) !important;
   font-weight: 700;
 }
 
 .leaflet-control-zoom a:hover {
-  background: hsl(258 45% 16%) !important;
+  background: hsl(230 40% 14%) !important;
 }
 
 .leaflet-control-attribution {
-  background: hsl(258 60% 8% / 0.7) !important;
-  color: hsl(258 20% 50%) !important;
+  background: hsl(230 60% 6% / 0.7) !important;
+  color: hsl(230 15% 45%) !important;
   font-size: 10px;
 }
 
 .leaflet-control-attribution a {
-  color: hsl(183 100% 50%) !important;
+  color: hsl(325 89% 50%) !important;
 }
 
 /* Custom event marker */
