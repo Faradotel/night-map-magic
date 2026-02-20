@@ -16,6 +16,8 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
     ? getDistance(userLocation[0], userLocation[1], event.lat, event.lng).toFixed(1)
     : null;
 
+  const source = event.id.startsWith('tm-') ? 'Ticketmaster' : event.id.startsWith('shotgun-') ? 'Shotgun' : null;
+
   return (
     <div className="absolute bottom-20 left-3 right-3 z-[450] pointer-events-auto">
       <div
@@ -58,8 +60,11 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
             </p>
           </div>
 
-          {/* Actions */}
+          {/* Source + Actions */}
           <div className="flex items-center gap-2 shrink-0">
+            {source && (
+              <span className="text-[8px] uppercase tracking-wider opacity-40 font-medium">{source}</span>
+            )}
             <button
               onClick={onDetails}
               className="px-3 py-1.5 rounded-full text-[11px] font-bold text-white active:scale-95"
