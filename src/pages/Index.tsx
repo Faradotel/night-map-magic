@@ -230,7 +230,7 @@ export default function Index() {
             </div>
 
             {/* Location mode + filter chips */}
-            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hidden pb-1">
+            <div className="overflow-x-auto scrollbar-hidden pb-1 -mx-3 px-3">
               <LocationMode
                 mode={locationMode}
                 selectedCity={selectedCityName}
