@@ -7,7 +7,9 @@ import { SearchScreen } from '@/components/SearchScreen';
 import { ProfileScreen } from '@/components/ProfileScreen';
 import { AddEventSheet } from '@/components/AddEventSheet';
 import { mockEvents, NightEvent, getDistance } from '@/data/mockEvents';
+import { reverseGeocodeCity, fetchShotgunEvents } from '@/lib/api/shotgun';
 import { MapPin, Locate, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
 type Tab = 'map' | 'search' | 'profile';
 
@@ -23,6 +25,9 @@ export default function Index() {
   const [locating, setLocating] = useState(false);
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [userEvents, setUserEvents] = useState<NightEvent[]>([]);
+  const [shotgunEvents, setShotgunEvents] = useState<NightEvent[]>([]);
+  const [shotgunLoading, setShotgunLoading] = useState(false);
+  const [shotgunCity, setShotgunCity] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>({
     date: 'all',
     price: 'all',
@@ -31,16 +36,36 @@ export default function Index() {
     radiusKm: 10,
   });
 
-  // Request geolocation on load
+  // Request geolocation on load + fetch Shotgun events
   useEffect(() => {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
-        pos => {
+        async (pos) => {
           const loc: [number, number] = [pos.coords.latitude, pos.coords.longitude];
           setUserLocation(loc);
-          // Only center on user if they appear to be in France
           if (pos.coords.latitude > 41 && pos.coords.latitude < 52 && pos.coords.longitude > -5 && pos.coords.longitude < 10) {
             setMapCenter(loc);
+          }
+
+          // Reverse-geocode to detect city, then fetch Shotgun events
+          const city = await reverseGeocodeCity(pos.coords.latitude, pos.coords.longitude);
+          if (city) {
+            setShotgunCity(city);
+            setShotgunLoading(true);
+            toast.info(`Recherche des événements Shotgun à ${city}…`);
+            try {
+              const events = await fetchShotgunEvents(city);
+              setShotgunEvents(events);
+              if (events.length > 0) {
+                toast.success(`${events.length} événements Shotgun trouvés à ${city} !`);
+              } else {
+                toast.info(`Aucun événement Shotgun trouvé à ${city}`);
+              }
+            } catch {
+              toast.error('Erreur lors de la récupération des événements Shotgun');
+            } finally {
+              setShotgunLoading(false);
+            }
           }
         },
         () => {/* permission denied, keep Paris center */},
@@ -50,7 +75,7 @@ export default function Index() {
   }, []);
 
   // Filter events
-  const allEvents = [...mockEvents, ...userEvents];
+  const allEvents = [...mockEvents, ...userEvents, ...shotgunEvents];
 
   const filteredEvents = allEvents.filter(event => {
     // Price filter
