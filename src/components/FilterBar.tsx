@@ -69,7 +69,7 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
   }
 
   return (
-    <div className="absolute top-3 left-3 right-3 z-[400]" ref={panelRef}>
+    <div className="absolute top-14 left-3 right-3 z-[400]" ref={panelRef}>
       {/* Main filter row */}
       <div className="flex items-center gap-2">
         {/* Date pills */}
