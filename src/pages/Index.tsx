@@ -8,7 +8,7 @@ import { SearchScreen } from '@/components/SearchScreen';
 import { ProfileScreen } from '@/components/ProfileScreen';
 import { AddEventSheet } from '@/components/AddEventSheet';
 import { mockEvents, NightEvent, getDistance } from '@/data/mockEvents';
-import { reverseGeocodeCity, fetchShotgunEvents } from '@/lib/api/shotgun';
+import { reverseGeocodeCity, fetchShotgunEvents, fetchTicketmasterEvents, deduplicateEvents } from '@/lib/api/shotgun';
 import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
 import { MapPin, Locate, Plus, Search, Sliders } from 'lucide-react';
 import { toast } from 'sonner';
@@ -44,19 +44,29 @@ export default function Index() {
     radiusKm: NEARBY_RADIUS_DEFAULT
   });
 
-  // Load all Shotgun events for all cities on mount
+  // Load all events (Shotgun + Ticketmaster) for all cities on mount
   useEffect(() => {
     if (shotgunLoaded) return;
     
     async function loadAllEvents() {
       setShotgunLoading(true);
       try {
-        const results = await Promise.allSettled(
-          CITIES.map(city => fetchShotgunEvents(city.name))
-        );
-        const allEvents = results
+        // Fetch from both sources in parallel
+        const [shotgunResults, tmResults] = await Promise.all([
+          Promise.allSettled(CITIES.map(city => fetchShotgunEvents(city.name))),
+          Promise.allSettled(CITIES.map(city => fetchTicketmasterEvents(city.name))),
+        ]);
+
+        const shotgunEvents = shotgunResults
           .filter((r): r is PromiseFulfilledResult<NightEvent[]> => r.status === 'fulfilled')
           .flatMap(r => r.value);
+        
+        const tmEvents = tmResults
+          .filter((r): r is PromiseFulfilledResult<NightEvent[]> => r.status === 'fulfilled')
+          .flatMap(r => r.value);
+
+        // Merge and deduplicate (Shotgun events prioritized since they come first)
+        const allEvents = deduplicateEvents([...shotgunEvents, ...tmEvents]);
         setAllShotgunEvents(allEvents);
         setShotgunLoaded(true);
         if (allEvents.length > 0) {

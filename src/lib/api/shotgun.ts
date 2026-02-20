@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { NightEvent, MusicGenre, EventVibe } from '@/data/mockEvents';
+import { NightEvent, MusicGenre, EventVibe, getDistance } from '@/data/mockEvents';
 
 interface ShotgunRawEvent {
   id: string;
@@ -183,6 +183,92 @@ export async function fetchShotgunEvents(city: string): Promise<NightEvent[]> {
     console.error('Failed to fetch Shotgun events:', err);
     return [];
   }
+}
+
+/**
+ * Fetch Ticketmaster events for a city via edge function
+ */
+export async function fetchTicketmasterEvents(city: string): Promise<NightEvent[]> {
+  try {
+    const { data, error } = await supabase.functions.invoke('fetch-ticketmaster', {
+      body: { city },
+    });
+
+    if (error) {
+      console.error('Ticketmaster edge function error:', error);
+      return [];
+    }
+
+    if (!data?.success || !data?.events) {
+      console.warn('No Ticketmaster events found for', city);
+      return [];
+    }
+
+    return data.events.map((e: any): NightEvent => {
+      const genres = mapGenres(e.genres || []);
+      const vibe = deduceVibe(genres, e.name);
+      const type = deduceType(e.name);
+
+      return {
+        id: e.id,
+        name: e.name.toUpperCase(),
+        type,
+        vibe,
+        genres,
+        lat: e.lat,
+        lng: e.lng,
+        address: e.address,
+        city: e.city,
+        startTime: e.startTime,
+        endTime: e.endTime,
+        priceRange: parsePriceRange(e.price),
+        description: e.description,
+        venue: e.venue,
+        ticketUrl: e.ticketUrl,
+        imageColor: '#1a0f2e',
+        isLive: false,
+      };
+    });
+  } catch (err) {
+    console.error('Failed to fetch Ticketmaster events:', err);
+    return [];
+  }
+}
+
+/**
+ * Deduplicate events: if two events are within 200m and have similar names, keep only one (prefer Shotgun)
+ */
+export function deduplicateEvents(events: NightEvent[]): NightEvent[] {
+  const kept: NightEvent[] = [];
+
+  for (const event of events) {
+    const isDuplicate = kept.some(existing => {
+      const dist = getDistance(existing.lat, existing.lng, event.lat, event.lng);
+      if (dist > 0.2) return false; // > 200m apart
+
+      // Check name similarity
+      const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const n1 = normalize(existing.name);
+      const n2 = normalize(event.name);
+      if (n1 === n2) return true;
+      if (n1.includes(n2) || n2.includes(n1)) return true;
+
+      // Same venue = duplicate
+      if (existing.venue && event.venue) {
+        const v1 = normalize(existing.venue);
+        const v2 = normalize(event.venue);
+        if (v1 === v2 && v1.length > 3) return true;
+      }
+
+      return false;
+    });
+
+    if (!isDuplicate) {
+      kept.push(event);
+    }
+  }
+
+  return kept;
 }
 
 function parsePriceRange(price?: string | null): 'gratuit' | '€1-10' | '€10-20' | '€20+' {
