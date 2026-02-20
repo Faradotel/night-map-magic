@@ -70,27 +70,27 @@ export function LocationMode({ mode, selectedCity, onModeChange, onCitySelect, l
     setShowSearch(false);
   }
 
+  const pillStyle = (active: boolean, color: string = 'hsl(275 71% 58%)') => ({
+    background: active ? color : 'rgba(26, 13, 21, 0.8)',
+    backdropFilter: 'blur(12px)',
+    border: active ? 'none' : '1px solid hsl(325 89% 50% / 0.1)',
+    color: active ? 'white' : 'hsl(225 15% 70%)',
+    boxShadow: active ? `0 0 16px ${color.replace(')', ' / 0.3)')}` : '0 2px 8px rgba(0,0,0,0.3)',
+  });
+
   return (
-    <div className="flex items-center gap-1.5" style={{ width: 'max-content' }}>
-      {/* Near me pill */}
+    <div className="flex items-center gap-1.5 w-full min-w-0">
+      {/* Fixed: Near me pill */}
       <button
         onClick={handleSwitchToNearby}
         className="flex items-center gap-1.5 h-9 px-3.5 rounded-full text-xs font-semibold transition-all shrink-0"
-        style={{
-          background: mode === 'nearby'
-            ? 'hsl(325 89% 50%)'
-            : 'rgba(26, 13, 21, 0.8)',
-          backdropFilter: 'blur(12px)',
-          border: mode === 'nearby' ? 'none' : '1px solid hsl(325 89% 50% / 0.1)',
-          color: mode === 'nearby' ? 'white' : 'hsl(225 15% 70%)',
-          boxShadow: mode === 'nearby' ? '0 0 16px hsl(325 89% 50% / 0.3)' : '0 2px 8px rgba(0,0,0,0.3)',
-        }}
+        style={pillStyle(mode === 'nearby', 'hsl(325 89% 50%)')}
       >
         <Navigation size={11} className={locating && mode === 'nearby' ? 'animate-spin' : ''} />
         <span>Près de moi</span>
       </button>
 
-      {/* Search toggle */}
+      {/* Fixed: Search toggle */}
       <button
         onClick={() => setShowSearch(!showSearch)}
         className="flex items-center justify-center w-9 h-9 rounded-full shrink-0 transition-all"
@@ -105,55 +105,50 @@ export function LocationMode({ mode, selectedCity, onModeChange, onCitySelect, l
         {showSearch ? <X size={12} /> : <Search size={12} />}
       </button>
 
-      {/* Search input (inline) */}
-      {showSearch && (
+      {/* Search input (replaces city scroll when active) */}
+      {showSearch ? (
         <div
-          className="flex items-center gap-1.5 h-9 px-3 rounded-full shrink-0"
+          className="flex items-center gap-1.5 h-9 px-3 rounded-full flex-1 min-w-0"
           style={{
             background: 'rgba(26, 13, 21, 0.9)',
             backdropFilter: 'blur(12px)',
             border: '1px solid hsl(325 89% 50% / 0.2)',
-            minWidth: '140px',
           }}
         >
-          <Search size={10} style={{ color: 'hsl(225 15% 50%)' }} />
+          <Search size={10} className="shrink-0" style={{ color: 'hsl(225 15% 50%)' }} />
           <input
             type="text"
-            placeholder="Ville…"
+            placeholder="Rechercher une ville…"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             autoFocus
-            className="flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground w-20"
+            className="flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground min-w-0"
             style={{ color: 'hsl(220 20% 90%)' }}
           />
           {searchQuery && (
-            <button onClick={() => setSearchQuery('')}>
+            <button onClick={() => setSearchQuery('')} className="shrink-0">
               <X size={10} style={{ color: 'hsl(225 15% 50%)' }} />
             </button>
           )}
         </div>
-      )}
+      ) : null}
 
-      {/* Scrollable city pills */}
-      {filteredCities.map(city => (
-        <button
-          key={city.name}
-          onClick={() => handleCityClick(city)}
-          className="flex items-center gap-1 h-9 px-3 rounded-full text-xs font-semibold transition-all shrink-0 whitespace-nowrap"
-          style={{
-            background: selectedCity === city.name
-              ? 'hsl(275 71% 58%)'
-              : 'rgba(26, 13, 21, 0.8)',
-            backdropFilter: 'blur(12px)',
-            border: selectedCity === city.name ? 'none' : '1px solid hsl(325 89% 50% / 0.1)',
-            color: selectedCity === city.name ? 'white' : 'hsl(225 15% 70%)',
-            boxShadow: selectedCity === city.name ? '0 0 16px hsl(275 71% 58% / 0.3)' : '0 2px 8px rgba(0,0,0,0.3)',
-          }}
-        >
-          <MapPin size={10} />
-          {city.name}
-        </button>
-      ))}
+      {/* Scrollable city band — takes remaining space */}
+      <div className="flex-1 min-w-0 overflow-x-auto scrollbar-hidden">
+        <div className="flex items-center gap-1.5" style={{ width: 'max-content' }}>
+          {filteredCities.map(city => (
+            <button
+              key={city.name}
+              onClick={() => handleCityClick(city)}
+              className="flex items-center gap-1 h-9 px-3 rounded-full text-xs font-semibold transition-all shrink-0 whitespace-nowrap"
+              style={pillStyle(selectedCity === city.name)}
+            >
+              <MapPin size={10} />
+              {city.name}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
