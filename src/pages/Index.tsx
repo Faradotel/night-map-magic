@@ -296,7 +296,7 @@ export default function Index() {
           display: activeTab !== 'map' ? 'none' : 'flex'
         }}>
 
-        <div className="flex items-center gap-2 pointer-events-auto">
+        <div className="flex items-center justify-center w-full pointer-events-auto">
           
 
 
