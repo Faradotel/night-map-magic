@@ -61,6 +61,65 @@ interface ParsedEvent {
   url: string;
 }
 
+/**
+ * Parse a French date string like "sam. 21 févr. 23:59" or "ven. 6 mars 20:00" into an ISO string.
+ * Returns null if parsing fails.
+ */
+function parseFrenchDate(dateStr: string): string | null {
+  if (!dateStr) return null;
+
+  const monthMap: Record<string, number> = {
+    'jan': 0, 'janv': 0, 'janvier': 0,
+    'fev': 1, 'févr': 1, 'février': 1, 'fevr': 1,
+    'mars': 2, 'mar': 2,
+    'avr': 3, 'avril': 3,
+    'mai': 4,
+    'juin': 5, 'jun': 5,
+    'juil': 6, 'juillet': 6, 'jul': 6,
+    'août': 7, 'aout': 7, 'aoû': 7,
+    'sep': 8, 'sept': 8, 'septembre': 8,
+    'oct': 9, 'octobre': 9,
+    'nov': 10, 'novembre': 10,
+    'déc': 11, 'dec': 11, 'décembre': 11,
+  };
+
+  // Clean the string
+  const clean = dateStr.replace(/\./g, '').replace(/,/g, '').trim();
+
+  // Try to extract: day (number), month (word), optional year, optional time
+  const match = clean.match(/(\d{1,2})\s+([\wéûô]+)(?:\s+(\d{4}))?\s*(\d{1,2}:\d{2})?/i);
+  if (!match) return null;
+
+  const day = parseInt(match[1]);
+  const monthWord = match[2].toLowerCase().replace(/\./g, '');
+  const year = match[3] ? parseInt(match[3]) : null;
+  const time = match[4] || '20:00';
+
+  const monthIndex = monthMap[monthWord];
+  if (monthIndex === undefined) return null;
+
+  const [hours, minutes] = time.split(':').map(Number);
+
+  // Determine year: if no year specified, use current or next year
+  const now = new Date();
+  let eventYear = year || now.getFullYear();
+  if (!year) {
+    const candidate = new Date(eventYear, monthIndex, day);
+    // If the date is more than 30 days in the past, assume next year
+    if (candidate.getTime() < now.getTime() - 30 * 24 * 60 * 60 * 1000) {
+      eventYear++;
+    }
+  }
+
+  // Build date in Paris timezone (UTC+1 in winter, UTC+2 in summer)
+  // Use a simple approach: create the date and adjust
+  const date = new Date(Date.UTC(eventYear, monthIndex, day, hours, minutes));
+  // Approximate Paris offset: subtract 1h (winter) — good enough for filtering
+  date.setUTCHours(date.getUTCHours() - 1);
+
+  return date.toISOString();
+}
+
 function parseEventsFromCityPage(markdown: string): ParsedEvent[] {
   const events: ParsedEvent[] = [];
 
@@ -246,7 +305,7 @@ Deno.serve(async (req) => {
         city,
         lat,
         lng,
-        startTime: new Date().toISOString(),
+        startTime: parseFrenchDate(raw.date) || new Date().toISOString(),
         description,
         ticketUrl: ticketUrl || `https://shotgun.live/fr/cities/${slug}`,
         price: raw.price || null,
