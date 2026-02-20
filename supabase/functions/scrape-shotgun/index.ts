@@ -21,8 +21,8 @@ interface ShotgunEvent {
 const CITY_SLUGS: Record<string, string> = {
   'paris': 'paris',
   'lyon': 'lyon',
-  'marseille': 'marseille',
-  'nice': 'nice',
+  'marseille': 'aix-marseille',
+  'nice': 'cote-d-azur',
   'bordeaux': 'bordeaux',
   'lille': 'lille',
   'toulouse': 'toulouse',
