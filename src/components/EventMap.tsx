@@ -57,11 +57,10 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       center,
       zoom,
       zoomControl: false,
-      attributionControl: true,
+      attributionControl: false,
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png?language=fr', {
       maxZoom: 19,
     }).addTo(map);
 
