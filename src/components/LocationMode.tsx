@@ -9,8 +9,8 @@ export interface City {
 
 export const CITIES: City[] = [
   { name: 'Paris', lat: 48.8566, lng: 2.3522 },
-  { name: 'Lyon', lat: 45.7640, lng: 4.8357 },
   { name: 'Marseille', lat: 43.2965, lng: 5.3698 },
+  { name: 'Lyon', lat: 45.7640, lng: 4.8357 },
   { name: 'Toulouse', lat: 43.6047, lng: 1.4442 },
   { name: 'Nice', lat: 43.7102, lng: 7.2620 },
   { name: 'Nantes', lat: 47.2184, lng: -1.5536 },
@@ -38,6 +38,27 @@ export const CITIES: City[] = [
   { name: 'Perpignan', lat: 42.6887, lng: 2.8948 },
   { name: 'Orléans', lat: 47.9029, lng: 1.9093 },
   { name: 'Caen', lat: 49.1829, lng: -0.3707 },
+  { name: 'Mulhouse', lat: 47.7508, lng: 7.3359 },
+  { name: 'Nancy', lat: 48.6921, lng: 6.1844 },
+  { name: 'Saint-Denis (Réunion)', lat: -20.8823, lng: 55.4504 },
+  { name: 'Argenteuil', lat: 48.9472, lng: 2.2467 },
+  { name: 'Montreuil', lat: 48.8638, lng: 2.4484 },
+  { name: 'Roubaix', lat: 50.6942, lng: 3.1746 },
+  { name: 'Tourcoing', lat: 50.7239, lng: 3.1612 },
+  { name: 'Dunkerque', lat: 51.0343, lng: 2.3768 },
+  { name: 'Avignon', lat: 43.9493, lng: 4.8055 },
+  { name: 'Nanterre', lat: 48.8924, lng: 2.2071 },
+  { name: 'Poitiers', lat: 46.5802, lng: 0.3404 },
+  { name: 'Versailles', lat: 48.8014, lng: 2.1301 },
+  { name: 'Courbevoie', lat: 48.8966, lng: 2.2529 },
+  { name: 'Vitry-sur-Seine', lat: 48.7875, lng: 2.3924 },
+  { name: 'Créteil', lat: 48.7909, lng: 2.4551 },
+  { name: 'Pau', lat: 43.2951, lng: -0.3708 },
+  { name: 'Colombes', lat: 48.9226, lng: 2.2537 },
+  { name: 'La Rochelle', lat: 46.1603, lng: -1.1511 },
+  { name: 'Besançon', lat: 47.2378, lng: 6.0241 },
+  { name: 'Valence', lat: 44.9334, lng: 4.8924 },
+  { name: 'Monaco', lat: 43.7384, lng: 7.4246 },
 ];
 
 export type LocationModeType = 'nearby' | 'city';
