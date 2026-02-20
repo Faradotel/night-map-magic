@@ -208,15 +208,23 @@ export default function Index() {
         {/* ── Top Controls ── */}
         <div className="absolute top-0 left-0 right-0 z-[500] pointer-events-none"
           style={{ background: 'linear-gradient(to bottom, hsl(230 60% 4% / 0.8) 0%, transparent 100%)' }}>
-          <div className="px-3 pt-10 pb-2 space-y-3 pointer-events-auto">
-            {/* Search bar + Filter button */}
+          <div className="px-3 pt-10 pb-2 pointer-events-auto">
+            {/* Row: Location pills left + Settings button right */}
             <div className="flex items-center gap-2">
+              <div className="flex-1 min-w-0">
+                <LocationMode
+                  mode={locationMode}
+                  selectedCity={selectedCityName}
+                  onModeChange={handleModeChange}
+                  onCitySelect={handleCitySelect}
+                  locating={locating} />
+              </div>
               <button
                 onClick={() => {
                   const el = document.querySelector('[data-filter-toggle]') as HTMLButtonElement;
                   el?.click();
                 }}
-                className="w-14 h-14 rounded-full flex items-center justify-center border shrink-0"
+                className="w-10 h-10 rounded-full flex items-center justify-center border shrink-0"
                 style={{
                   background: 'rgba(26, 13, 21, 0.8)',
                   backdropFilter: 'blur(12px)',
@@ -225,18 +233,8 @@ export default function Index() {
                   color: 'hsl(325 89% 50%)',
                 }}
               >
-                <Sliders size={18} />
+                <Sliders size={16} />
               </button>
-            </div>
-
-            {/* Location mode + filter chips */}
-            <div className="pb-1">
-              <LocationMode
-                mode={locationMode}
-                selectedCity={selectedCityName}
-                onModeChange={handleModeChange}
-                onCitySelect={handleCitySelect}
-                locating={locating} />
             </div>
           </div>
         </div>
