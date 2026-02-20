@@ -5,11 +5,12 @@ import { FilterBar, Filters } from '@/components/FilterBar';
 import { BottomNav } from '@/components/BottomNav';
 import { SearchScreen } from '@/components/SearchScreen';
 import { ProfileScreen } from '@/components/ProfileScreen';
+import { ShotgunScreen } from '@/components/ShotgunScreen';
 import { AddEventSheet } from '@/components/AddEventSheet';
 import { mockEvents, NightEvent, getDistance } from '@/data/mockEvents';
 import { MapPin, Locate, Plus } from 'lucide-react';
 
-type Tab = 'map' | 'search' | 'profile';
+type Tab = 'map' | 'search' | 'shotgun' | 'profile';
 
 const DEFAULT_CENTER: [number, number] = [48.8566, 2.3522]; // Paris
 const DEFAULT_ZOOM = 12;
@@ -207,6 +208,11 @@ export default function Index() {
       {/* ── SEARCH SCREEN ── */}
       {activeTab === 'search' && (
         <SearchScreen onEventSelect={handleEventSelect} />
+      )}
+
+      {/* ── SHOTGUN SCREEN ── */}
+      {activeTab === 'shotgun' && (
+        <ShotgunScreen onGoToMap={() => setActiveTab('map')} />
       )}
 
       {/* ── PROFILE SCREEN ── */}
