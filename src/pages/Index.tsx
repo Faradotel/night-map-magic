@@ -8,7 +8,7 @@ import { ProfileScreen } from '@/components/ProfileScreen';
 import { AddEventSheet } from '@/components/AddEventSheet';
 import { mockEvents, NightEvent, getDistance } from '@/data/mockEvents';
 import { reverseGeocodeCity, fetchShotgunEvents } from '@/lib/api/shotgun';
-import { CitySelector, City, CITIES } from '@/components/CitySelector';
+import { LocationMode, City, LocationModeType } from '@/components/LocationMode';
 import { MapPin, Locate, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -16,6 +16,8 @@ type Tab = 'map' | 'search' | 'profile';
 
 const DEFAULT_CENTER: [number, number] = [48.8566, 2.3522]; // Paris
 const DEFAULT_ZOOM = 12;
+const NEARBY_RADIUS_DEFAULT = 15;
+const CITY_RADIUS_DEFAULT = 40;
 
 export default function Index() {
   const [activeTab, setActiveTab] = useState<Tab>('map');
@@ -28,23 +30,27 @@ export default function Index() {
   const [userEvents, setUserEvents] = useState<NightEvent[]>([]);
   const [shotgunEvents, setShotgunEvents] = useState<NightEvent[]>([]);
   const [shotgunLoading, setShotgunLoading] = useState(false);
-  const [shotgunCity, setShotgunCity] = useState<string | null>(null);
+  const [locationMode, setLocationMode] = useState<LocationModeType>('nearby');
   const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
+  const [filterCenter, setFilterCenter] = useState<[number, number] | null>(null);
   const [filters, setFilters] = useState<Filters>({
     date: 'all',
     price: 'all',
     genres: [],
     vibes: [],
-    radiusKm: 10,
+    radiusKm: NEARBY_RADIUS_DEFAULT,
   });
 
   // Request geolocation on load + fetch Shotgun events
   useEffect(() => {
     if ('geolocation' in navigator) {
+      setLocating(true);
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const loc: [number, number] = [pos.coords.latitude, pos.coords.longitude];
           setUserLocation(loc);
+          setFilterCenter(loc);
+          setLocating(false);
           if (pos.coords.latitude > 41 && pos.coords.latitude < 52 && pos.coords.longitude > -5 && pos.coords.longitude < 10) {
             setMapCenter(loc);
           }
@@ -52,39 +58,33 @@ export default function Index() {
           // Reverse-geocode to detect city, then fetch Shotgun events
           const city = await reverseGeocodeCity(pos.coords.latitude, pos.coords.longitude);
           if (city) {
-            setShotgunCity(city);
             setShotgunLoading(true);
-            toast.info(`Recherche des événements Shotgun à ${city}…`);
             try {
               const events = await fetchShotgunEvents(city);
               setShotgunEvents(events);
               if (events.length > 0) {
-                toast.success(`${events.length} événements Shotgun trouvés à ${city} !`);
-              } else {
-                toast.info(`Aucun événement Shotgun trouvé à ${city}`);
+                toast.success(`${events.length} événements trouvés près de vous`);
               }
             } catch {
-              toast.error('Erreur lors de la récupération des événements Shotgun');
+              // silent
             } finally {
               setShotgunLoading(false);
             }
           }
         },
-        () => {/* permission denied, keep Paris center */},
+        () => { setLocating(false); },
         { enableHighAccuracy: true, timeout: 8000 }
       );
     }
   }, []);
 
-  // Filter events
+  // Filter events using filterCenter (user location or city center)
   const allEvents = [...mockEvents, ...userEvents, ...shotgunEvents];
 
   const filteredEvents = allEvents.filter(event => {
-    // Price filter
     if (filters.price === 'free' && event.priceRange !== 'gratuit') return false;
     if (filters.price === 'paid' && event.priceRange === 'gratuit') return false;
 
-    // Date filter
     if (filters.date !== 'all') {
       const eventDate = new Date(event.startTime);
       const now = new Date();
@@ -105,39 +105,54 @@ export default function Index() {
       if (filters.date === 'week' && eventDate > weekEnd) return false;
     }
 
-    // Genre filter
     if (filters.genres.length > 0 && !event.genres.some(g => filters.genres.includes(g as any))) return false;
-
-    // Vibe filter
     if (filters.vibes.length > 0 && !filters.vibes.includes(event.vibe as any)) return false;
 
-    // Distance filter (only if user location known)
-    if (userLocation) {
-      const dist = getDistance(userLocation[0], userLocation[1], event.lat, event.lng);
+    // Distance filter using filterCenter (works in both modes)
+    if (filterCenter) {
+      const dist = getDistance(filterCenter[0], filterCenter[1], event.lat, event.lng);
       if (dist > filters.radiusKm) return false;
     }
 
     return true;
   });
 
+  // Switch to "nearby" mode
+  const handleModeChange = useCallback((mode: LocationModeType) => {
+    setLocationMode(mode);
+    if (mode === 'nearby') {
+      setSelectedCityName(null);
+      setFilters(prev => ({ ...prev, radiusKm: NEARBY_RADIUS_DEFAULT }));
+      if (userLocation) {
+        setFilterCenter(userLocation);
+        setMapCenter(userLocation);
+        setMapZoom(13);
+      }
+    }
+  }, [userLocation]);
+
   // Handle manual city selection
   const handleCitySelect = useCallback(async (city: City) => {
     setSelectedCityName(city.name);
-    setMapCenter([city.lat, city.lng]);
+    setLocationMode('city');
+    const cityCenter: [number, number] = [city.lat, city.lng];
+    setFilterCenter(cityCenter);
+    setMapCenter(cityCenter);
     setMapZoom(12);
-    setShotgunCity(city.name);
+    setFilters(prev => ({ ...prev, radiusKm: CITY_RADIUS_DEFAULT }));
+
     setShotgunLoading(true);
-    toast.info(`Recherche des événements Shotgun à ${city.name}…`);
+    toast.info(`Recherche des événements à ${city.name}…`);
     try {
       const events = await fetchShotgunEvents(city.name);
       setShotgunEvents(events);
       if (events.length > 0) {
-        toast.success(`${events.length} événements Shotgun trouvés à ${city.name} !`);
+        toast.success(`${events.length} événements trouvés à ${city.name} !`);
       } else {
-        toast.info(`Aucun événement Shotgun trouvé à ${city.name}`);
+        toast.info(`Aucun événement trouvé à ${city.name}`);
       }
     } catch {
-      toast.error('Erreur lors de la récupération des événements Shotgun');
+      toast.error('Erreur lors de la récupération des événements');
     } finally {
       setShotgunLoading(false);
     }
@@ -145,13 +160,17 @@ export default function Index() {
 
   const handleLocate = useCallback(() => {
     setLocating(true);
+    setLocationMode('nearby');
+    setSelectedCityName(null);
     navigator.geolocation.getCurrentPosition(
       pos => {
         const loc: [number, number] = [pos.coords.latitude, pos.coords.longitude];
         setUserLocation(loc);
+        setFilterCenter(loc);
         setMapCenter(loc);
         setMapZoom(13);
         setLocating(false);
+        setFilters(prev => ({ ...prev, radiusKm: NEARBY_RADIUS_DEFAULT }));
       },
       () => setLocating(false),
       { enableHighAccuracy: true, timeout: 8000 }
@@ -259,8 +278,6 @@ export default function Index() {
         <SearchScreen onEventSelect={handleEventSelect} />
       )}
 
-
-
       {/* ── PROFILE SCREEN ── */}
       {activeTab === 'profile' && (
         <ProfileScreen />
@@ -281,7 +298,7 @@ export default function Index() {
       >
         <div className="flex items-center gap-2 pointer-events-auto">
           <div
-            className="w-7 h-7 rounded-lg flex items-center justify-center"
+            className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
             style={{
               background: 'linear-gradient(135deg, hsl(183 100% 40%), hsl(275 71% 50%))',
               boxShadow: '0 0 12px hsl(183 100% 50% / 0.4)',
@@ -290,7 +307,7 @@ export default function Index() {
             <MapPin size={14} className="text-white" />
           </div>
           <span
-            className="text-base font-black tracking-tight"
+            className="text-base font-black tracking-tight shrink-0"
             style={{
               background: 'linear-gradient(90deg, hsl(183 100% 60%), hsl(275 71% 70%))',
               WebkitBackgroundClip: 'text',
@@ -299,7 +316,15 @@ export default function Index() {
           >
             NightMap
           </span>
-          <CitySelector selectedCity={selectedCityName} onCitySelect={handleCitySelect} />
+          <div className="ml-1">
+            <LocationMode
+              mode={locationMode}
+              selectedCity={selectedCityName}
+              onModeChange={handleModeChange}
+              onCitySelect={handleCitySelect}
+              locating={locating}
+            />
+          </div>
         </div>
       </div>
     </div>
