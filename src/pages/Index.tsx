@@ -10,7 +10,7 @@ import { AddEventSheet } from '@/components/AddEventSheet';
 import { mockEvents, NightEvent, getDistance } from '@/data/mockEvents';
 import { reverseGeocodeCity, fetchShotgunEvents } from '@/lib/api/shotgun';
 import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
-import { MapPin, Locate, Plus } from 'lucide-react';
+import { MapPin, Locate, Plus, Search, Sliders } from 'lucide-react';
 import { toast } from 'sonner';
 
 type Tab = 'map' | 'search' | 'profile';
@@ -203,60 +203,90 @@ export default function Index() {
             selectedEvent={selectedEvent}
             userLocation={userLocation}
             radiusKm={filters.radiusKm} />
-
         </div>
 
-        {/* Filters */}
+        {/* ── Top Controls ── */}
+        <div className="absolute top-0 left-0 right-0 z-[500] pointer-events-none"
+          style={{ background: 'linear-gradient(to bottom, hsl(230 60% 4% / 0.8) 0%, transparent 100%)' }}>
+          <div className="px-3 pt-10 pb-2 space-y-3 pointer-events-auto">
+            {/* Search bar + Filter button */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => { setActiveTab('search'); setSelectedEvent(null); }}
+                className="flex-1 flex items-center h-14 px-4 rounded-full border"
+                style={{
+                  background: 'rgba(26, 13, 21, 0.8)',
+                  backdropFilter: 'blur(12px)',
+                  borderColor: 'hsl(325 89% 50% / 0.1)',
+                  boxShadow: '0 4px 20px hsl(230 60% 4% / 0.5)',
+                }}
+              >
+                <Search size={18} style={{ color: 'hsl(325 89% 50%)' }} className="mr-3 shrink-0" />
+                <span className="text-sm font-medium" style={{ color: 'hsl(225 15% 45%)' }}>
+                  Où sort-on ce soir ?
+                </span>
+              </button>
+              <button
+                onClick={() => {
+                  const el = document.querySelector('[data-filter-toggle]') as HTMLButtonElement;
+                  el?.click();
+                }}
+                className="w-14 h-14 rounded-full flex items-center justify-center border shrink-0"
+                style={{
+                  background: 'rgba(26, 13, 21, 0.8)',
+                  backdropFilter: 'blur(12px)',
+                  borderColor: 'hsl(325 89% 50% / 0.1)',
+                  boxShadow: '0 4px 20px hsl(230 60% 4% / 0.5)',
+                  color: 'hsl(325 89% 50%)',
+                }}
+              >
+                <Sliders size={18} />
+              </button>
+            </div>
+
+            {/* Location mode + filter chips */}
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hidden pb-1">
+              <LocationMode
+                mode={locationMode}
+                selectedCity={selectedCityName}
+                onModeChange={handleModeChange}
+                onCitySelect={handleCitySelect}
+                locating={locating} />
+            </div>
+          </div>
+        </div>
+
+        {/* Filters (hidden toggle, uses data attribute) */}
         <FilterBar filters={filters} onChange={setFilters} />
 
-        {/* App title overlay */}
-        <div
-          className="absolute top-14 left-3 z-[400] pointer-events-none"
-          style={{ opacity: 0.9 }}>
-
-        </div>
-
-        {/* Add event button */}
-        <button
-          onClick={() => setShowAddEvent(true)}
-          className="absolute right-3 bottom-32 z-[400] w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-90"
-          style={{
-            background: 'hsl(325 89% 50%)',
-            boxShadow: '0 0 20px hsl(325 89% 50% / 0.5), 0 4px 16px hsl(230 60% 4% / 0.6)'
-          }}>
-
-          <Plus size={18} className="text-white" />
-        </button>
-
-        {/* Locate me button */}
+        {/* ── Bottom right controls ── */}
+        {/* Locate me */}
         <button
           onClick={handleLocate}
           disabled={locating}
-          className="absolute right-3 bottom-20 z-[400] w-12 h-12 rounded-full flex items-center justify-center border transition-all"
+          className="absolute right-3 z-[400] w-12 h-12 rounded-full flex items-center justify-center border transition-all"
           style={{
-            background: 'hsl(230 50% 10% / 0.95)',
-            borderColor: 'hsl(230 30% 18%)',
+            bottom: selectedEvent ? '220px' : '80px',
+            background: 'rgba(26, 13, 21, 0.8)',
             backdropFilter: 'blur(12px)',
-            boxShadow: '0 2px 12px hsl(230 60% 4% / 0.6)',
-            color: locating ? 'hsl(325 89% 50%)' : 'hsl(225 15% 55%)'
+            borderColor: 'hsl(325 89% 50% / 0.1)',
+            boxShadow: '0 4px 20px hsl(230 60% 4% / 0.5)',
+            color: locating ? 'hsl(325 89% 50%)' : 'hsl(225 20% 80%)',
           }}>
-
-          <Locate size={17} className={locating ? 'animate-spin' : ''} />
+          <Locate size={20} className={locating ? 'animate-spin' : ''} />
         </button>
 
-        {/* Event count badge */}
-        <div
-          className="absolute right-3 bottom-44 z-[400] px-3 py-1.5 rounded-full border flex items-center gap-1.5"
+        {/* Add event */}
+        <button
+          onClick={() => setShowAddEvent(true)}
+          className="absolute right-3 z-[400] w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-90"
           style={{
-            background: 'hsl(230 50% 10% / 0.95)',
-            borderColor: 'hsl(230 30% 18%)',
-            backdropFilter: 'blur(12px)'
+            bottom: selectedEvent ? '276px' : '136px',
+            background: 'hsl(325 89% 50%)',
+            boxShadow: '0 0 20px hsl(325 89% 50% / 0.5), 0 4px 16px hsl(230 60% 4% / 0.6)',
           }}>
-
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'hsl(325 89% 50%)', boxShadow: '0 0 6px hsl(325 89% 50%)' }} />
-          <span className="text-xs font-bold" style={{ color: 'hsl(325 89% 50%)' }}>{filteredEvents.length}</span>
-          <span className="text-[10px] text-muted-foreground">événements</span>
-        </div>
+          <Plus size={20} className="text-white" />
+        </button>
 
         {/* Small event preview card on map */}
         {selectedEvent && (
@@ -264,6 +294,7 @@ export default function Index() {
             event={selectedEvent}
             onClose={() => setSelectedEvent(null)}
             onDetails={() => setShowDetail(true)}
+            userLocation={userLocation}
           />
         )}
 
@@ -280,7 +311,6 @@ export default function Index() {
           open={showAddEvent}
           onClose={() => setShowAddEvent(false)}
           onAdd={handleAddEvent} />
-
       </div>
 
       {/* ── SEARCH SCREEN ── */}
@@ -295,48 +325,6 @@ export default function Index() {
 
       {/* ── BOTTOM NAV ── */}
       <BottomNav activeTab={activeTab} onTabChange={(tab) => {setActiveTab(tab);setSelectedEvent(null);}} />
-
-      {/* Header wordmark - always visible */}
-      <div
-        className="absolute top-0 left-0 right-0 h-12 z-[500] flex items-center px-4 pointer-events-none"
-        style={{
-          background: activeTab === 'map' ?
-          'linear-gradient(to bottom, hsl(230 60% 6% / 0.85) 0%, transparent 100%)' :
-          'transparent',
-          display: activeTab !== 'map' ? 'none' : 'flex'
-        }}>
-
-        <div className="flex items-center justify-center w-full pointer-events-auto">
-          
-
-
-
-
-
-
-
-
-          <span
-            className="text-base font-extrabold tracking-tight shrink-0"
-            style={{
-              background: 'linear-gradient(90deg, hsl(325 89% 55%), hsl(275 71% 70%))',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
-            }}>
-
-            ​
-          </span>
-          <div className="ml-1">
-            <LocationMode
-              mode={locationMode}
-              selectedCity={selectedCityName}
-              onModeChange={handleModeChange}
-              onCitySelect={handleCitySelect}
-              locating={locating} />
-
-          </div>
-        </div>
-      </div>
     </div>);
 
 }

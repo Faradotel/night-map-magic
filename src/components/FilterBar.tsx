@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Sliders, Calendar, Music, Zap, ChevronDown } from 'lucide-react';
+import { Sliders, Music, Zap } from 'lucide-react';
 
 type DateFilter = 'today' | 'weekend' | 'week' | 'all';
 type PriceFilter = 'all' | 'free' | 'paid';
@@ -19,13 +19,6 @@ interface FilterBarProps {
   onChange: (f: Filters) => void;
 }
 
-const dateLabels: Record<DateFilter, string> = {
-  today: 'Aujourd\'hui',
-  weekend: 'Ce week-end',
-  week: 'Cette semaine',
-  all: 'Tout',
-};
-
 const genreOptions: GenreFilter[] = ['electro', 'techno', 'house', 'pop', 'rock', 'indie', 'r&b', 'jazz'];
 const vibeOptions: { key: VibeFilter; label: string; emoji: string }[] = [
   { key: 'rave', label: 'Rave', emoji: '⚡' },
@@ -33,6 +26,13 @@ const vibeOptions: { key: VibeFilter; label: string; emoji: string }[] = [
   { key: 'afterwork', label: 'Afterwork', emoji: '🥂' },
   { key: 'cosy', label: 'Cosy', emoji: '🕯️' },
   { key: 'concert', label: 'Concert', emoji: '🎸' },
+];
+
+const dateChips: { key: DateFilter; label: string }[] = [
+  { key: 'today', label: 'Ce soir' },
+  { key: 'weekend', label: 'Week-end' },
+  { key: 'week', label: 'Semaine' },
+  { key: 'all', label: 'Tout' },
 ];
 
 export function FilterBar({ filters, onChange }: FilterBarProps) {
@@ -69,74 +69,52 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
   }
 
   return (
-    <div className="absolute top-14 left-3 right-3 z-[400]" ref={panelRef}>
-      {/* Main filter row */}
-      <div className="flex items-center gap-2">
-        {/* Date pills */}
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hidden flex-1">
-          {(Object.keys(dateLabels) as DateFilter[]).map(d => (
-            <button
-              key={d}
-              onClick={() => onChange({ ...filters, date: filters.date === d ? 'all' : d })}
-              className="shrink-0 h-8 px-3 rounded-full text-xs font-semibold border transition-all"
-              style={{
-                background: filters.date === d
-                  ? 'hsl(325 89% 50%)'
-                  : 'hsl(230 50% 10% / 0.92)',
-                color: filters.date === d ? 'white' : 'hsl(225 15% 70%)',
-                borderColor: filters.date === d ? 'hsl(325 89% 50%)' : 'hsl(230 25% 20%)',
-                backdropFilter: 'blur(12px)',
-                boxShadow: filters.date === d ? '0 0 12px hsl(325 89% 50% / 0.4)' : 'none',
-              }}
-            >
-              {d === 'today' ? 'Soir' : d === 'weekend' ? 'Week-end' : d === 'week' ? 'Semaine' : 'Tout'}
-            </button>
-          ))}
-        </div>
-
-        {/* Filter toggle */}
-        <button
-          onClick={() => setShowPanel(!showPanel)}
-          className="shrink-0 h-8 w-8 rounded-full flex items-center justify-center border transition-all relative"
-          style={{
-            background: showPanel || activeCount > 0 ? 'hsl(325 89% 50%)' : 'hsl(230 50% 10% / 0.92)',
-            borderColor: showPanel || activeCount > 0 ? 'hsl(325 89% 50%)' : 'hsl(230 25% 20%)',
-            color: showPanel || activeCount > 0 ? 'white' : 'hsl(225 15% 60%)',
-            backdropFilter: 'blur(12px)',
-            boxShadow: showPanel || activeCount > 0 ? '0 0 12px hsl(325 89% 50% / 0.5)' : 'none',
-          }}
-        >
-          <Sliders size={14} />
-          {activeCount > 0 && (
-            <span
-              className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center"
-              style={{ background: 'white', color: 'hsl(325 89% 50%)' }}
-            >
-              {activeCount}
-            </span>
-          )}
-        </button>
-      </div>
+    <div className="absolute top-32 left-3 right-3 z-[600]" ref={panelRef}>
+      {/* Hidden toggle button triggered from parent */}
+      <button
+        data-filter-toggle
+        onClick={() => setShowPanel(!showPanel)}
+        className="hidden"
+      />
 
       {/* Expanded filter panel */}
       {showPanel && (
         <div
-          className="mt-2 rounded-2xl border overflow-hidden"
+          className="rounded-2xl border overflow-hidden"
           style={{
-            background: 'hsl(230 50% 8% / 0.97)',
-            borderColor: 'hsl(230 25% 18%)',
+            background: 'rgba(26, 13, 21, 0.95)',
+            borderColor: 'hsl(325 89% 50% / 0.15)',
             backdropFilter: 'blur(20px)',
             animation: 'fade-in 0.2s ease-out',
-            boxShadow: '0 8px 32px hsl(230 60% 4% / 0.8)',
+            boxShadow: '0 12px 40px hsl(230 60% 4% / 0.8)',
           }}
         >
-          <div className="p-3 space-y-3">
+          <div className="p-4 space-y-4">
+            {/* Date chips */}
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Quand</span>
+              <div className="flex gap-2">
+                {dateChips.map(d => (
+                  <button
+                    key={d.key}
+                    onClick={() => onChange({ ...filters, date: filters.date === d.key ? 'all' : d.key })}
+                    className="h-10 px-4 rounded-full text-sm font-semibold transition-all"
+                    style={{
+                      background: filters.date === d.key ? 'hsl(325 89% 50%)' : 'hsl(0 0% 100% / 0.08)',
+                      color: filters.date === d.key ? 'white' : 'hsl(225 15% 70%)',
+                      boxShadow: filters.date === d.key ? '0 0 16px hsl(325 89% 50% / 0.3)' : 'none',
+                    }}
+                  >
+                    {d.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Radius */}
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-                  <Sliders size={11} /> Rayon de recherche
-                </span>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Rayon</span>
                 <span className="text-xs font-bold" style={{ color: 'hsl(325 89% 50%)' }}>{filters.radiusKm} km</span>
               </div>
               <input
@@ -147,26 +125,24 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
                 onChange={e => onChange({ ...filters, radiusKm: Number(e.target.value) })}
                 className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
                 style={{
-                  background: `linear-gradient(to right, hsl(325 89% 50%) 0%, hsl(325 89% 50%) ${(filters.radiusKm - 1) / 49 * 100}%, hsl(230 30% 18%) ${(filters.radiusKm - 1) / 49 * 100}%, hsl(230 30% 18%) 100%)`,
+                  background: `linear-gradient(to right, hsl(325 89% 50%) 0%, hsl(325 89% 50%) ${(filters.radiusKm - 1) / 49 * 100}%, hsl(0 0% 100% / 0.1) ${(filters.radiusKm - 1) / 49 * 100}%, hsl(0 0% 100% / 0.1) 100%)`,
                 }}
               />
             </div>
 
             {/* Price */}
             <div>
-              <div className="flex items-center gap-1 mb-1.5">
-                <span className="text-xs font-semibold text-muted-foreground">💶 Prix</span>
-              </div>
-              <div className="flex gap-1.5">
-                {(['all', 'free', 'paid'] as PriceFilter[]).map(p => (
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Prix</span>
+              <div className="flex gap-2">
+                {(['all', 'free', 'paid'] as const).map(p => (
                   <button
                     key={p}
                     onClick={() => onChange({ ...filters, price: p })}
-                    className="flex-1 h-7 rounded-lg text-xs font-semibold border transition-all"
+                    className="flex-1 h-10 rounded-full text-sm font-semibold transition-all"
                     style={{
-                      background: filters.price === p ? 'hsl(325 89% 50% / 0.2)' : 'hsl(230 35% 14%)',
-                      borderColor: filters.price === p ? 'hsl(325 89% 50%)' : 'hsl(230 25% 20%)',
+                      background: filters.price === p ? 'hsl(325 89% 50% / 0.2)' : 'hsl(0 0% 100% / 0.06)',
                       color: filters.price === p ? 'hsl(325 89% 55%)' : 'hsl(225 15% 60%)',
+                      border: filters.price === p ? '1px solid hsl(325 89% 50% / 0.5)' : '1px solid transparent',
                     }}
                   >
                     {p === 'all' ? 'Tous' : p === 'free' ? 'Gratuit' : 'Payant'}
@@ -177,20 +153,17 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
 
             {/* Genres */}
             <div>
-              <div className="flex items-center gap-1 mb-1.5">
-                <Music size={11} className="text-muted-foreground" />
-                <span className="text-xs font-semibold text-muted-foreground">Genres musicaux</span>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Genres</span>
+              <div className="flex flex-wrap gap-2">
                 {genreOptions.map(g => (
                   <button
                     key={g}
                     onClick={() => toggleGenre(g)}
-                    className="h-6 px-2.5 rounded-full text-xs font-medium border transition-all"
+                    className="h-10 px-4 rounded-full text-sm font-semibold transition-all"
                     style={{
-                      background: filters.genres.includes(g) ? 'hsl(325 89% 50% / 0.2)' : 'hsl(230 35% 14%)',
-                      borderColor: filters.genres.includes(g) ? 'hsl(325 89% 50%)' : 'hsl(230 25% 20%)',
-                      color: filters.genres.includes(g) ? 'hsl(325 89% 55%)' : 'hsl(225 15% 55%)',
+                      background: filters.genres.includes(g) ? 'hsl(325 89% 50%)' : 'hsl(0 0% 100% / 0.08)',
+                      color: filters.genres.includes(g) ? 'white' : 'hsl(225 15% 65%)',
+                      boxShadow: filters.genres.includes(g) ? '0 0 12px hsl(325 89% 50% / 0.3)' : 'none',
                     }}
                   >
                     {g}
@@ -201,20 +174,17 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
 
             {/* Vibes */}
             <div>
-              <div className="flex items-center gap-1 mb-1.5">
-                <Zap size={11} className="text-muted-foreground" />
-                <span className="text-xs font-semibold text-muted-foreground">Ambiance</span>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Ambiance</span>
+              <div className="flex flex-wrap gap-2">
                 {vibeOptions.map(v => (
                   <button
                     key={v.key}
                     onClick={() => toggleVibe(v.key)}
-                    className="h-6 px-2.5 rounded-full text-xs font-medium border transition-all"
+                    className="h-10 px-4 rounded-full text-sm font-semibold transition-all"
                     style={{
-                      background: filters.vibes.includes(v.key) ? 'hsl(325 89% 50% / 0.15)' : 'hsl(230 35% 14%)',
-                      borderColor: filters.vibes.includes(v.key) ? 'hsl(325 89% 55%)' : 'hsl(230 25% 20%)',
-                      color: filters.vibes.includes(v.key) ? 'hsl(325 89% 55%)' : 'hsl(225 15% 55%)',
+                      background: filters.vibes.includes(v.key) ? 'hsl(325 89% 50%)' : 'hsl(0 0% 100% / 0.08)',
+                      color: filters.vibes.includes(v.key) ? 'white' : 'hsl(225 15% 65%)',
+                      boxShadow: filters.vibes.includes(v.key) ? '0 0 12px hsl(325 89% 50% / 0.3)' : 'none',
                     }}
                   >
                     {v.emoji} {v.label}
@@ -227,13 +197,10 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
             {activeCount > 0 && (
               <button
                 onClick={() => onChange({ date: 'all', price: 'all', genres: [], vibes: [], radiusKm: 10 })}
-                className="w-full h-7 rounded-lg text-xs font-semibold border transition-colors"
-                style={{
-                  borderColor: 'hsl(230 25% 20%)',
-                  color: 'hsl(225 15% 55%)',
-                }}
+                className="w-full h-10 rounded-full text-sm font-semibold transition-colors"
+                style={{ background: 'hsl(0 0% 100% / 0.06)', color: 'hsl(225 15% 55%)' }}
               >
-                Réinitialiser les filtres
+                Réinitialiser
               </button>
             )}
           </div>
