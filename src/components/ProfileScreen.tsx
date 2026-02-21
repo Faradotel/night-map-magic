@@ -8,11 +8,13 @@ import { useAttendance } from '@/hooks/useAttendance';
 import { usePreferredCity } from '@/hooks/usePreferredCity';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useDistanceUnit, DistanceUnit } from '@/hooks/useDistanceUnit';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
 export function ProfileScreen() {
   const { theme, toggleTheme } = useTheme();
+  const { unit, cycleUnit } = useDistanceUnit();
   const { stats, attended } = useAttendance();
   const { preferredCity } = usePreferredCity();
   const { user, signOut } = useAuth();
@@ -362,22 +364,27 @@ export function ProfileScreen() {
             className="rounded-2xl border border-surface-4 overflow-hidden"
             style={{ background: 'var(--profile-card-bg)' }}
           >
-            {[
-              { label: 'Unité de distance', sub: 'Kilomètres' },
-              { label: 'Confidentialité', sub: '' },
-            ].map((item, i, arr) => (
-              <button
-                key={item.label}
-                className="w-full flex items-center justify-between px-4 py-3 text-left"
-                style={{ borderBottom: i < arr.length - 1 ? '1px solid var(--profile-divider)' : 'none' }}
-              >
-                <div>
-                  <p className="text-sm font-medium">{item.label}</p>
-                  {item.sub && <p className="text-xs text-muted-foreground">{item.sub}</p>}
-                </div>
-                <ChevronRight size={14} className="text-muted-foreground" />
-              </button>
-            ))}
+            <button
+              onClick={cycleUnit}
+              className="w-full flex items-center justify-between px-4 py-3 text-left"
+              style={{ borderBottom: '1px solid var(--profile-divider)' }}
+            >
+              <div>
+                <p className="text-sm font-medium">Unité de distance</p>
+                <p className="text-xs text-muted-foreground">
+                  {unit === 'km' ? 'Kilomètres' : unit === 'miles' ? 'Miles' : 'Mètres'}
+                </p>
+              </div>
+              <ChevronRight size={14} className="text-muted-foreground" />
+            </button>
+            <button
+              className="w-full flex items-center justify-between px-4 py-3 text-left"
+            >
+              <div>
+                <p className="text-sm font-medium">Confidentialité</p>
+              </div>
+              <ChevronRight size={14} className="text-muted-foreground" />
+            </button>
           </div>
         </div>
       </div>
