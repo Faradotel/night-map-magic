@@ -1,9 +1,11 @@
 import { allBadges } from '@/data/badges';
 import { Settings, ChevronRight, MapPin, Calendar, Star, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
+import { useAttendance } from '@/hooks/useAttendance';
 
 export function ProfileScreen() {
   const { theme, toggleTheme } = useTheme();
+  const { stats, attended } = useAttendance();
   const unlockedBadges = allBadges.filter(b => b.unlocked);
   const lockedBadges = allBadges.filter(b => !b.unlocked);
 
@@ -58,7 +60,6 @@ export function ProfileScreen() {
               <p className="text-xs text-muted-foreground">Paris, France</p>
               <div className="flex items-center gap-3 mt-2">
                 <div className="flex items-center gap-1">
-                  <Star size={11} className="text-neon-cyan" />
                   <span className="text-xs font-bold text-neon-cyan">{unlockedBadges.length}</span>
                   <span className="text-xs text-muted-foreground">badges</span>
                 </div>
@@ -80,9 +81,9 @@ export function ProfileScreen() {
         {/* Stats row */}
         <div className="mx-4 mb-5 grid grid-cols-3 gap-2">
           {[
-            { label: 'Check-ins', value: '12', color: 'hsl(183 100% 50%)' },
-            { label: 'Cette semaine', value: '3', color: 'hsl(315 100% 53%)' },
-            { label: 'Villes', value: '3', color: 'hsl(275 71% 58%)' },
+            { label: 'Check-ins', value: String(stats.totalEvents), color: 'hsl(183 100% 50%)' },
+            { label: 'Cette semaine', value: String(attended.filter(e => { const d = new Date(e.date); const now = new Date(); const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); return d >= weekAgo; }).length), color: 'hsl(315 100% 53%)' },
+            { label: 'Villes', value: String(stats.uniqueCities), color: 'hsl(275 71% 58%)' },
           ].map(stat => (
             <div
               key={stat.label}

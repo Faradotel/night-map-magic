@@ -1,15 +1,16 @@
 import { X, MapPin, Clock, Ticket, ExternalLink, Check, ArrowLeft, Share2, Music, Users, Info } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, formatTime, formatDate } from '@/data/mockEvents';
-import { useState } from 'react';
+import type { useAttendance } from '@/hooks/useAttendance';
 
 interface EventDetailPageProps {
   event: NightEvent;
   onClose: () => void;
   userLocation?: [number, number] | null;
+  attendance: ReturnType<typeof useAttendance>;
 }
 
-export function EventDetailPage({ event, onClose, userLocation }: EventDetailPageProps) {
-  const [checkedIn, setCheckedIn] = useState(false);
+export function EventDetailPage({ event, onClose, userLocation, attendance }: EventDetailPageProps) {
+  const checkedIn = attendance.isAttended(event.id);
   const vibe = vibeConfig[event.vibe];
   const type = typeConfig[event.type];
 
@@ -278,7 +279,7 @@ export function EventDetailPage({ event, onClose, userLocation }: EventDetailPag
       >
         <div className="flex gap-2">
           <button
-            onClick={() => setCheckedIn(!checkedIn)}
+            onClick={() => attendance.toggleAttendance({ id: event.id, name: event.name, city: event.city, date: event.startTime })}
             className="flex-1 h-12 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95"
             style={{
               background: checkedIn ? 'hsl(var(--accent) / 0.15)' : 'hsl(var(--accent))',

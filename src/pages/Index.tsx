@@ -1,17 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { EventMap } from '@/components/EventMap';
-import { EventDetailSheet } from '@/components/EventDetailSheet';
 import { EventDetailPage } from '@/components/EventDetailPage';
 import { MapEventCard } from '@/components/MapEventCard';
 import { FilterBar, Filters } from '@/components/FilterBar';
 import { BottomNav } from '@/components/BottomNav';
 import { SearchScreen } from '@/components/SearchScreen';
 import { ProfileScreen } from '@/components/ProfileScreen';
-import { AddEventSheet } from '@/components/AddEventSheet';
 import { mockEvents, NightEvent, getDistance } from '@/data/mockEvents';
+import { useAttendance } from '@/hooks/useAttendance';
 import { reverseGeocodeCity, fetchShotgunEvents, fetchTicketmasterEvents, deduplicateEvents } from '@/lib/api/shotgun';
 import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
-import { MapPin, Locate, Plus, Search, Sliders } from 'lucide-react';
+import { MapPin, Locate, Sliders } from 'lucide-react';
 import { toast } from 'sonner';
 
 type Tab = 'map' | 'search' | 'profile';
@@ -29,8 +28,7 @@ export default function Index() {
   const [mapCenter, setMapCenter] = useState<[number, number]>(DEFAULT_CENTER);
   const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
   const [locating, setLocating] = useState(false);
-  const [showAddEvent, setShowAddEvent] = useState(false);
-  const [userEvents, setUserEvents] = useState<NightEvent[]>([]);
+  const attendance = useAttendance();
   const [allShotgunEvents, setAllShotgunEvents] = useState<NightEvent[]>([]);
   const [shotgunLoading, setShotgunLoading] = useState(false);
   const [shotgunLoaded, setShotgunLoaded] = useState(false);
@@ -104,7 +102,7 @@ export default function Index() {
   }, []);
 
   // Filter events using filterCenter (user location or city center)
-  const allEvents = [...mockEvents, ...userEvents, ...allShotgunEvents];
+  const allEvents = [...mockEvents, ...allShotgunEvents];
 
   const filteredEvents = allEvents.filter((event) => {
     if (filters.price === 'free' && event.priceRange !== 'gratuit') return false;
@@ -198,13 +196,6 @@ export default function Index() {
     if (activeTab !== 'map') setActiveTab('map');
   }
 
-  function handleAddEvent(event: NightEvent) {
-    setUserEvents((prev) => [...prev, event]);
-    setSelectedEvent(event);
-    setMapCenter([event.lat, event.lng]);
-    setMapZoom(15);
-  }
-
   return (
     <div className="relative w-full h-full overflow-hidden" style={{ background: 'var(--map-bg)' }}>
       {/* ── MAP SCREEN (always mounted, hidden via visibility) ── */}
@@ -275,18 +266,6 @@ export default function Index() {
           <Locate size={20} className={locating ? 'animate-spin' : ''} />
         </button>
 
-        {/* Add event */}
-        <button
-          onClick={() => setShowAddEvent(true)}
-          className="absolute right-3 z-[400] w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-90"
-          style={{
-            bottom: selectedEvent ? '276px' : '136px',
-            background: 'hsl(var(--accent))',
-            boxShadow: '0 0 20px hsl(var(--accent) / 0.5), 0 4px 16px hsl(var(--background) / 0.6)',
-          }}>
-          <Plus size={20} className="text-white" />
-        </button>
-
         {/* Small event preview card on map */}
         {selectedEvent && (
           <MapEventCard
@@ -303,14 +282,9 @@ export default function Index() {
             event={selectedEvent}
             onClose={() => setShowDetail(false)}
             userLocation={userLocation}
+            attendance={attendance}
           />
         )}
-
-        {/* Add event sheet */}
-        <AddEventSheet
-          open={showAddEvent}
-          onClose={() => setShowAddEvent(false)}
-          onAdd={handleAddEvent} />
       </div>
 
       {/* ── SEARCH SCREEN ── */}
