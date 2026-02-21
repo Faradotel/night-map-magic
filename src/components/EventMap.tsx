@@ -49,6 +49,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
   const mapRef = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
+  const prevSelectedRef = useRef<string | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
   const radiusCircleRef = useRef<L.Circle | null>(null);
 
@@ -114,7 +115,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     }
   }, [userLocation, radiusKm]);
 
-  // Event markers
+  // Event markers – full rebuild only when events list changes
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -123,15 +124,42 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     markersRef.current.clear();
 
     events.forEach(event => {
-      const isSelected = selectedEvent?.id === event.id;
       const marker = L.marker([event.lat, event.lng], {
-        icon: createEventIcon(event, isSelected),
-        zIndexOffset: isSelected ? 500 : 0,
+        icon: createEventIcon(event, false),
       }).addTo(map);
       marker.on('click', () => onEventSelect(event));
       markersRef.current.set(event.id, marker);
     });
-  }, [events, selectedEvent, onEventSelect]);
+  }, [events, onEventSelect]);
+
+  // Selection highlight – only update the 2 affected markers
+  useEffect(() => {
+    const prevId = prevSelectedRef.current;
+    const newId = selectedEvent?.id ?? null;
+
+    if (prevId === newId) return;
+
+    // Deselect previous
+    if (prevId) {
+      const prevMarker = markersRef.current.get(prevId);
+      const prevEvent = events.find(e => e.id === prevId);
+      if (prevMarker && prevEvent) {
+        prevMarker.setIcon(createEventIcon(prevEvent, false));
+        prevMarker.setZIndexOffset(0);
+      }
+    }
+
+    // Select new
+    if (newId && selectedEvent) {
+      const newMarker = markersRef.current.get(newId);
+      if (newMarker) {
+        newMarker.setIcon(createEventIcon(selectedEvent, true));
+        newMarker.setZIndexOffset(500);
+      }
+    }
+
+    prevSelectedRef.current = newId;
+  }, [selectedEvent, events]);
 
   return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />;
 }
