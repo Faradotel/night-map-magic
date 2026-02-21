@@ -1,15 +1,59 @@
 import { allBadges } from '@/data/badges';
-import { Settings, ChevronRight, MapPin, Calendar, Star, Sun, Moon } from 'lucide-react';
+import { Settings, ChevronRight, MapPin, Calendar, Star, Sun, Moon, LogOut, Bell } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useAttendance } from '@/hooks/useAttendance';
 import { usePreferredCity } from '@/hooks/usePreferredCity';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from 'react';
 
 export function ProfileScreen() {
   const { theme, toggleTheme } = useTheme();
   const { stats, attended } = useAttendance();
   const { preferredCity } = usePreferredCity();
+  const { user, signOut } = useAuth();
+  const [username, setUsername] = useState('NightRider');
+  const [friendNotifs, setFriendNotifs] = useState(true);
+
   const unlockedBadges = allBadges.filter(b => b.unlocked);
   const lockedBadges = allBadges.filter(b => !b.unlocked);
+
+  // Load profile data
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (profile) setUsername(profile.username);
+
+      const { data: prefs } = await supabase
+        .from('notification_preferences')
+        .select('friend_attendance_enabled')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (prefs) setFriendNotifs(prefs.friend_attendance_enabled);
+    })();
+  }, [user]);
+
+  const toggleFriendNotifs = async () => {
+    const next = !friendNotifs;
+    setFriendNotifs(next);
+    if (user) {
+      await supabase
+        .from('notification_preferences')
+        .update({ friend_attendance_enabled: next })
+        .eq('user_id', user.id);
+    }
+  };
+
+  const thisWeekCount = attended.filter(e => {
+    const d = new Date(e.date);
+    const now = new Date();
+    return d >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  }).length;
 
   return (
     <div
@@ -34,8 +78,8 @@ export function ProfileScreen() {
               Mon <span className="text-neon-cyan">NightMap</span>
             </h1>
           </div>
-          <button className="w-9 h-9 rounded-full flex items-center justify-center border border-surface-4 text-muted-foreground">
-            <Settings size={16} />
+          <button onClick={signOut} className="w-9 h-9 rounded-full flex items-center justify-center border border-surface-4 text-muted-foreground">
+            <LogOut size={16} />
           </button>
         </div>
 
@@ -45,7 +89,6 @@ export function ProfileScreen() {
             className="rounded-2xl p-4 border border-surface-4 flex items-center gap-4"
             style={{ background: 'var(--profile-card-bg)' }}
           >
-            {/* Avatar */}
             <div
               className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shrink-0 border-2"
               style={{
@@ -58,21 +101,22 @@ export function ProfileScreen() {
             </div>
 
             <div className="flex-1 min-w-0">
-              <h2 className="font-black text-lg tracking-tight">NightRider_42</h2>
+              <h2 className="font-black text-lg tracking-tight">{username}</h2>
               <p className="text-xs text-muted-foreground">{preferredCity}, France</p>
               <div className="flex items-center gap-3 mt-2">
                 <div className="flex items-center gap-1">
+                  <Star size={11} className="text-neon-cyan" />
                   <span className="text-xs font-bold text-neon-cyan">{unlockedBadges.length}</span>
                   <span className="text-xs text-muted-foreground">badges</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Calendar size={11} className="text-neon-pink" />
-                  <span className="text-xs font-bold text-foreground">12</span>
+                  <span className="text-xs font-bold text-foreground">{stats.totalEvents}</span>
                   <span className="text-xs text-muted-foreground">soirées</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <MapPin size={11} className="text-neon-purple" />
-                  <span className="text-xs font-bold text-foreground">3</span>
+                  <span className="text-xs font-bold text-foreground">{stats.uniqueCities}</span>
                   <span className="text-xs text-muted-foreground">villes</span>
                 </div>
               </div>
@@ -84,7 +128,7 @@ export function ProfileScreen() {
         <div className="mx-4 mb-5 grid grid-cols-3 gap-2">
           {[
             { label: 'Check-ins', value: String(stats.totalEvents), color: 'hsl(183 100% 50%)' },
-            { label: 'Cette semaine', value: String(attended.filter(e => { const d = new Date(e.date); const now = new Date(); const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); return d >= weekAgo; }).length), color: 'hsl(315 100% 53%)' },
+            { label: 'Cette semaine', value: String(thisWeekCount), color: 'hsl(315 100% 53%)' },
             { label: 'Villes', value: String(stats.uniqueCities), color: 'hsl(275 71% 58%)' },
           ].map(stat => (
             <div
@@ -128,8 +172,43 @@ export function ProfileScreen() {
           </div>
         </div>
 
-        {/* Theme toggle */}
+        {/* Notifications toggle */}
         <div className="mx-4 mt-5 mb-3">
+          <h3 className="text-sm font-black mb-2 text-muted-foreground">Notifications</h3>
+          <div
+            className="rounded-2xl border border-surface-4 overflow-hidden"
+            style={{ background: 'var(--profile-card-bg)' }}
+          >
+            <button
+              onClick={toggleFriendNotifs}
+              className="w-full flex items-center justify-between px-4 py-3 text-left"
+            >
+              <div className="flex items-center gap-3">
+                <Bell size={16} style={{ color: 'hsl(var(--accent))' }} />
+                <div>
+                  <p className="text-sm font-medium">Soirées des amis</p>
+                  <p className="text-xs text-muted-foreground">
+                    {friendNotifs ? 'Notifié quand un ami va à une soirée' : 'Notifications désactivées'}
+                  </p>
+                </div>
+              </div>
+              <div
+                className="w-10 h-6 rounded-full relative transition-colors"
+                style={{
+                  background: friendNotifs ? 'hsl(var(--accent))' : 'hsl(var(--surface-4))',
+                }}
+              >
+                <div
+                  className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"
+                  style={{ left: friendNotifs ? '18px' : '2px' }}
+                />
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Theme toggle */}
+        <div className="mx-4 mt-2 mb-3">
           <h3 className="text-sm font-black mb-2 text-muted-foreground">Apparence</h3>
           <div
             className="rounded-2xl border border-surface-4 overflow-hidden"
@@ -171,7 +250,6 @@ export function ProfileScreen() {
             style={{ background: 'var(--profile-card-bg)' }}
           >
             {[
-              { label: 'Notifications soirées proches', sub: 'Activées' },
               { label: 'Unité de distance', sub: 'Kilomètres' },
               { label: 'Confidentialité', sub: '' },
             ].map((item, i, arr) => (
@@ -205,7 +283,6 @@ function BadgeCard({ badge, unlocked }: { badge: import('@/data/badges').Badge; 
         boxShadow: unlocked ? `0 4px 16px ${badge.color}22` : 'none',
       }}
     >
-      {/* Shine effect for unlocked */}
       {unlocked && (
         <div
           className="absolute top-0 left-0 right-0 h-px opacity-50"

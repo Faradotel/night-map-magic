@@ -6,15 +6,19 @@ import { FilterBar, Filters } from '@/components/FilterBar';
 import { BottomNav } from '@/components/BottomNav';
 import { SearchScreen } from '@/components/SearchScreen';
 import { ProfileScreen } from '@/components/ProfileScreen';
+import { FriendsScreen } from '@/components/FriendsScreen';
+import { AuthScreen } from '@/components/AuthScreen';
+import { NotificationsSheet, useNotifications } from '@/components/NotificationsSheet';
+import { useAuth } from '@/hooks/useAuth';
 import { mockEvents, NightEvent, getDistance } from '@/data/mockEvents';
 import { useAttendance } from '@/hooks/useAttendance';
 import { usePreferredCity } from '@/hooks/usePreferredCity';
 import { reverseGeocodeCity, fetchShotgunEvents, fetchTicketmasterEvents, deduplicateEvents } from '@/lib/api/shotgun';
 import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
-import { MapPin, Locate, Sliders } from 'lucide-react';
+import { MapPin, Locate, Sliders, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 
-type Tab = 'map' | 'search' | 'profile';
+type Tab = 'map' | 'search' | 'friends' | 'profile';
 
 const DEFAULT_CENTER: [number, number] = [48.8566, 2.3522]; // Paris
 const DEFAULT_ZOOM = 12;
@@ -22,6 +26,7 @@ const NEARBY_RADIUS_DEFAULT = 15;
 const CITY_RADIUS_DEFAULT = 40;
 
 export default function Index() {
+  const { user, loading: authLoading } = useAuth();
   const { preferredCity, setPreferredCity } = usePreferredCity();
   const savedCity = CITIES.find(c => c.name === preferredCity);
   const initCenter: [number, number] = savedCity ? [savedCity.lat, savedCity.lng] : DEFAULT_CENTER;
@@ -34,6 +39,7 @@ export default function Index() {
   const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
   const [locating, setLocating] = useState(false);
   const attendance = useAttendance();
+  const [showNotifications, setShowNotifications] = useState(false);
   const [allShotgunEvents, setAllShotgunEvents] = useState<NightEvent[]>([]);
   const [shotgunLoading, setShotgunLoading] = useState(false);
   const [shotgunLoaded, setShotgunLoaded] = useState(false);
@@ -202,6 +208,22 @@ export default function Index() {
     if (activeTab !== 'map') setActiveTab('map');
   }
 
+  // Show auth screen if not logged in
+  if (!authLoading && !user) {
+    return <AuthScreen />;
+  }
+
+  if (authLoading) {
+    return (
+      <div className="w-full h-full flex items-center justify-center" style={{ background: 'hsl(var(--background))' }}>
+        <div className="text-center">
+          <h1 className="text-2xl font-black">Night<span style={{ color: 'hsl(var(--primary))' }}>Map</span></h1>
+          <p className="text-xs text-muted-foreground mt-2">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full h-full overflow-hidden" style={{ background: 'var(--map-bg)' }}>
       {/* ── MAP SCREEN (always mounted, hidden via visibility) ── */}
@@ -232,6 +254,19 @@ export default function Index() {
                   onCitySelect={handleCitySelect}
                   locating={locating} />
               </div>
+              <button
+                onClick={() => setShowNotifications(true)}
+                className="w-10 h-10 rounded-full flex items-center justify-center border shrink-0 relative"
+                style={{
+                  background: 'var(--controls-bg)',
+                  backdropFilter: 'blur(12px)',
+                  borderColor: 'var(--controls-border)',
+                  boxShadow: 'var(--controls-shadow)',
+                  color: 'hsl(var(--foreground))',
+                }}
+              >
+                <Bell size={16} />
+              </button>
               <button
                 onClick={() => {
                   const el = document.querySelector('[data-filter-toggle]') as HTMLButtonElement;
@@ -298,10 +333,28 @@ export default function Index() {
       <SearchScreen onEventSelect={handleEventSelect} events={filteredEvents} />
       }
 
+      {/* ── FRIENDS SCREEN ── */}
+      {activeTab === 'friends' &&
+      <FriendsScreen allEvents={allEvents} attendance={attendance} />
+      }
+
       {/* ── PROFILE SCREEN ── */}
       {activeTab === 'profile' &&
       <ProfileScreen />
       }
+
+      {/* ── NOTIFICATIONS ── */}
+      <NotificationsSheet
+        open={showNotifications}
+        onClose={() => setShowNotifications(false)}
+        onEventClick={(eventId) => {
+          const ev = allEvents.find(e => e.id === eventId);
+          if (ev) {
+            handleEventSelect(ev);
+            setShowNotifications(false);
+          }
+        }}
+      />
 
       {/* ── BOTTOM NAV ── */}
       <BottomNav activeTab={activeTab} onTabChange={(tab) => {setActiveTab(tab);setSelectedEvent(null);}} />
