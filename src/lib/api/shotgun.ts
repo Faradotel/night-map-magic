@@ -236,25 +236,36 @@ export async function fetchTicketmasterEvents(city: string): Promise<NightEvent[
 }
 
 /**
- * Deduplicate events: if two events are within 200m and have similar names, keep only one (prefer Shotgun)
+ * Deduplicate events: if two events have very similar names (regardless of distance), keep only one.
+ * Also dedup by same venue within 500m. Prefer Shotgun over Ticketmaster.
  */
 export function deduplicateEvents(events: NightEvent[]): NightEvent[] {
   const kept: NightEvent[] = [];
+  const seenNames = new Map<string, number>(); // normalized name -> index in kept
+
+  const normalize = (s: string) => s.toLowerCase().replace(/[^a-zà-ÿ0-9]/g, '').slice(0, 60);
 
   for (const event of events) {
+    const normName = normalize(event.name);
+    
+    // Check exact name match (anywhere in France)
+    if (normName.length > 5 && seenNames.has(normName)) {
+      continue; // skip duplicate
+    }
+
     const isDuplicate = kept.some(existing => {
       const dist = getDistance(existing.lat, existing.lng, event.lat, event.lng);
-      if (dist > 0.2) return false; // > 200m apart
 
-      // Check name similarity
-      const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const n1 = normalize(existing.name);
-      const n2 = normalize(event.name);
-      if (n1 === n2) return true;
-      if (n1.includes(n2) || n2.includes(n1)) return true;
+      // Same name within 5km = duplicate (same event, slightly different coords)
+      if (dist < 5) {
+        const n1 = normalize(existing.name);
+        const n2 = normName;
+        if (n1 === n2) return true;
+        if (n1.length > 8 && n2.length > 8 && (n1.includes(n2) || n2.includes(n1))) return true;
+      }
 
-      // Same venue = duplicate
-      if (existing.venue && event.venue) {
+      // Same venue within 500m = duplicate  
+      if (dist < 0.5 && existing.venue && event.venue) {
         const v1 = normalize(existing.venue);
         const v2 = normalize(event.venue);
         if (v1 === v2 && v1.length > 3) return true;
@@ -265,6 +276,9 @@ export function deduplicateEvents(events: NightEvent[]): NightEvent[] {
 
     if (!isDuplicate) {
       kept.push(event);
+      if (normName.length > 5) {
+        seenNames.set(normName, kept.length - 1);
+      }
     }
   }
 

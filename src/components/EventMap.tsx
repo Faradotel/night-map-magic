@@ -25,7 +25,7 @@ function createEventIcon(event: NightEvent, isSelected: boolean): L.DivIcon {
     html: `
       <div style="position:relative;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;">
         ${isSelected ? `<div style="position:absolute;inset:-4px;border-radius:50%;border:2px solid ${color};animation:ping-slow 1.5s ease-out infinite;opacity:0.3;pointer-events:none;"></div>` : ''}
-        ${event.isLive ? `<div style="position:absolute;inset:0;border-radius:50%;background:${color}22;animation:ping-slow 1.5s ease-out infinite;pointer-events:none;"></div>` : ''}
+        ${isSelected && event.isLive ? `<div style="position:absolute;inset:0;border-radius:50%;background:${color}22;animation:ping-slow 1.5s ease-out infinite;pointer-events:none;"></div>` : ''}
         <div style="width:${size - 6}px;height:${size - 6}px;border-radius:50%;background:rgba(26,13,21,0.85);backdrop-filter:blur(8px);border:2px solid ${color};display:flex;align-items:center;justify-content:center;font-size:${isSelected ? 22 : 18}px;box-shadow:0 0 ${isSelected ? 24 : 14}px ${color}55,0 4px 12px rgba(0,0,0,.5);cursor:pointer;position:relative;z-index:1;">${typeEmoji}</div>
         ${event.isLive ? `<div style="position:absolute;top:0;right:0;width:10px;height:10px;border-radius:50%;background:hsl(142,71%,45%);border:2px solid rgba(26,13,21,0.9);z-index:2;box-shadow:0 0 8px hsl(142,71%,45%,0.6);pointer-events:none;"></div>` : ''}
       </div>`,
