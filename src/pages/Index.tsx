@@ -208,21 +208,7 @@ export default function Index() {
     if (activeTab !== 'map') setActiveTab('map');
   }
 
-  // Show auth screen if not logged in
-  if (!authLoading && !user) {
-    return <AuthScreen />;
-  }
 
-  if (authLoading) {
-    return (
-      <div className="w-full h-full flex items-center justify-center" style={{ background: 'hsl(var(--background))' }}>
-        <div className="text-center">
-          <h1 className="text-2xl font-black">Night<span style={{ color: 'hsl(var(--primary))' }}>Map</span></h1>
-          <p className="text-xs text-muted-foreground mt-2">Chargement...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="relative w-full h-full overflow-hidden" style={{ background: 'var(--map-bg)' }}>
