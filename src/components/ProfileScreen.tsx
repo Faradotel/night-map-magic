@@ -1,4 +1,5 @@
 import { allBadges } from '@/data/badges';
+import { AllBadgesScreen } from '@/components/AllBadgesScreen';
 import { Settings, ChevronRight, MapPin, Calendar, Star, Sun, Moon, LogOut, Bell, Pencil, Check, X } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useAttendance } from '@/hooks/useAttendance';
@@ -16,6 +17,7 @@ export function ProfileScreen() {
   const [username, setUsername] = useState('NightRider');
   const [editingUsername, setEditingUsername] = useState(false);
   const [editValue, setEditValue] = useState('');
+  const [showAllBadges, setShowAllBadges] = useState(false);
   const [friendNotifs, setFriendNotifs] = useState(true);
 
   const unlockedBadges = allBadges.filter(b => b.unlocked);
@@ -210,17 +212,40 @@ export function ProfileScreen() {
           </div>
         </div>
 
-        {/* Locked badges */}
+        {/* Locked badges preview */}
         <div className="px-4 mt-4">
-          <h3 className="text-sm font-black mb-3 text-muted-foreground flex items-center gap-2">
-            🔒 À débloquer
-          </h3>
+          <button
+            onClick={() => setShowAllBadges(true)}
+            className="w-full text-left"
+          >
+            <h3 className="text-sm font-black mb-3 text-muted-foreground flex items-center gap-2">
+              🔒 À débloquer
+              <span
+                className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                style={{ background: 'hsl(var(--surface-4))' }}
+              >
+                {lockedBadges.length}
+              </span>
+              <ChevronRight size={14} className="ml-auto text-muted-foreground" />
+            </h3>
+          </button>
           <div className="grid grid-cols-3 gap-2">
-            {lockedBadges.map(badge => (
+            {lockedBadges.slice(0, 6).map(badge => (
               <BadgeCard key={badge.id} badge={badge} unlocked={false} />
             ))}
           </div>
+          {lockedBadges.length > 6 && (
+            <button
+              onClick={() => setShowAllBadges(true)}
+              className="w-full mt-3 py-2.5 rounded-xl border border-surface-4 text-xs font-bold text-muted-foreground transition-colors"
+              style={{ background: 'var(--profile-card-bg)' }}
+            >
+              Voir les {lockedBadges.length} badges →
+            </button>
+          )}
         </div>
+
+        {showAllBadges && <AllBadgesScreen onBack={() => setShowAllBadges(false)} />}
 
         {/* Notifications toggle */}
         <div className="mx-4 mt-5 mb-3">
