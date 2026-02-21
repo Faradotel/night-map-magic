@@ -1,6 +1,7 @@
 import { allBadges } from '@/data/badges';
 import { AllBadgesScreen } from '@/components/AllBadgesScreen';
 import { useUnlockedBadges } from '@/hooks/useUnlockedBadges';
+import { AuthScreen } from '@/components/AuthScreen';
 import { Settings, ChevronRight, MapPin, Calendar, Star, Sun, Moon, LogOut, Bell, Pencil, Check, X } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useAttendance } from '@/hooks/useAttendance';
@@ -15,7 +16,10 @@ export function ProfileScreen() {
   const { stats, attended } = useAttendance();
   const { preferredCity } = usePreferredCity();
   const { user, signOut } = useAuth();
-  const [username, setUsername] = useState('NightRider');
+  const [username, setUsername] = useState(() => {
+    const funnyNames = ['Fantôme Dansant 👻', 'Hibou Anonyme 🦉', 'Ninja du Dancefloor 🥷', 'Licorne Nocturne 🦄', 'Loup Solitaire 🐺'];
+    return funnyNames[Math.floor(Math.random() * funnyNames.length)];
+  });
   const [editingUsername, setEditingUsername] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [showAllBadges, setShowAllBadges] = useState(false);
@@ -113,9 +117,11 @@ export function ProfileScreen() {
               Mon <span className="text-neon-cyan">NightMap</span>
             </h1>
           </div>
-          <button onClick={signOut} className="w-9 h-9 rounded-full flex items-center justify-center border border-surface-4 text-muted-foreground">
-            <LogOut size={16} />
-          </button>
+          {user && (
+            <button onClick={signOut} className="w-9 h-9 rounded-full flex items-center justify-center border border-surface-4 text-muted-foreground">
+              <LogOut size={16} />
+            </button>
+          )}
         </div>
 
         {/* User card */}
@@ -151,9 +157,11 @@ export function ProfileScreen() {
               ) : (
                 <div className="flex items-center gap-1.5">
                   <h2 className="font-black text-lg tracking-tight">{username}</h2>
-                  <button onClick={() => { setEditValue(username); setEditingUsername(true); }} className="text-muted-foreground hover:text-foreground transition-colors">
-                    <Pencil size={12} />
-                  </button>
+                  {user && (
+                    <button onClick={() => { setEditValue(username); setEditingUsername(true); }} className="text-muted-foreground hover:text-foreground transition-colors">
+                      <Pencil size={12} />
+                    </button>
+                  )}
                 </div>
               )}
               <p className="text-xs text-muted-foreground">{preferredCity}, France</p>
@@ -196,59 +204,82 @@ export function ProfileScreen() {
           ))}
         </div>
 
-        {/* Unlocked badges */}
-        <div className="px-4 mb-2">
-          <h3 className="text-sm font-black mb-3 flex items-center gap-2">
-            🏆 Badges débloqués
-            <span
-              className="text-xs font-bold px-2 py-0.5 rounded-full"
-              style={{ background: 'hsl(183 100% 50% / 0.15)', color: 'hsl(183 100% 50%)' }}
-            >
-              {unlockedBadges.length}/{allBadges.length}
-            </span>
-          </h3>
-          <div className="grid grid-cols-3 gap-2">
-            {unlockedBadges.map(badge => (
-              <BadgeCard key={badge.id} badge={badge} unlocked={true} />
-            ))}
-          </div>
-        </div>
+        {user ? (
+          <>
+            {/* Unlocked badges */}
+            <div className="px-4 mb-2">
+              <h3 className="text-sm font-black mb-3 flex items-center gap-2">
+                🏆 Badges débloqués
+                <span
+                  className="text-xs font-bold px-2 py-0.5 rounded-full"
+                  style={{ background: 'hsl(183 100% 50% / 0.15)', color: 'hsl(183 100% 50%)' }}
+                >
+                  {unlockedBadges.length}/{allBadges.length}
+                </span>
+              </h3>
+              {unlockedBadges.length > 0 ? (
+                <div className="grid grid-cols-3 gap-2">
+                  {unlockedBadges.map(badge => (
+                    <BadgeCard key={badge.id} badge={badge} unlocked={true} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground text-center py-4">
+                  Aucun badge débloqué pour l'instant. Fais ton premier check-in ! 🚀
+                </p>
+              )}
+            </div>
 
-        {/* Locked badges preview */}
-        <div className="px-4 mt-4">
-          <button
-            onClick={() => setShowAllBadges(true)}
-            className="w-full text-left"
-          >
-            <h3 className="text-sm font-black mb-3 text-muted-foreground flex items-center gap-2">
-              🔒 À débloquer
-              <span
-                className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                style={{ background: 'hsl(var(--surface-4))' }}
+            {/* Locked badges preview */}
+            <div className="px-4 mt-4">
+              <button
+                onClick={() => setShowAllBadges(true)}
+                className="w-full text-left"
               >
-                {lockedBadges.length}
-              </span>
-              <ChevronRight size={14} className="ml-auto text-muted-foreground" />
-            </h3>
-          </button>
-          <div className="grid grid-cols-3 gap-2">
-            {lockedBadges.slice(0, 6).map(badge => (
-              <BadgeCard key={badge.id} badge={badge} unlocked={false} />
-            ))}
-          </div>
-          {lockedBadges.length > 6 && (
-            <button
-              onClick={() => setShowAllBadges(true)}
-              className="w-full mt-3 py-2.5 rounded-xl border border-surface-4 text-xs font-bold text-muted-foreground transition-colors"
+                <h3 className="text-sm font-black mb-3 text-muted-foreground flex items-center gap-2">
+                  🔒 À débloquer
+                  <span
+                    className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                    style={{ background: 'hsl(var(--surface-4))' }}
+                  >
+                    {lockedBadges.length}
+                  </span>
+                  <ChevronRight size={14} className="ml-auto text-muted-foreground" />
+                </h3>
+              </button>
+              <div className="grid grid-cols-3 gap-2">
+                {lockedBadges.slice(0, 6).map(badge => (
+                  <BadgeCard key={badge.id} badge={badge} unlocked={false} />
+                ))}
+              </div>
+              {lockedBadges.length > 6 && (
+                <button
+                  onClick={() => setShowAllBadges(true)}
+                  className="w-full mt-3 py-2.5 rounded-xl border border-surface-4 text-xs font-bold text-muted-foreground transition-colors"
+                  style={{ background: 'var(--profile-card-bg)' }}
+                >
+                  Voir les {lockedBadges.length} badges →
+                </button>
+              )}
+            </div>
+
+            {showAllBadges && <AllBadgesScreen onBack={() => setShowAllBadges(false)} attended={attended} />}
+          </>
+        ) : (
+          <div className="mx-4 mt-2 mb-4">
+            <div
+              className="rounded-2xl p-5 border border-surface-4 text-center"
               style={{ background: 'var(--profile-card-bg)' }}
             >
-              Voir les {lockedBadges.length} badges →
-            </button>
-          )}
-        </div>
-
-        {showAllBadges && <AllBadgesScreen onBack={() => setShowAllBadges(false)} attended={attended} />}
-
+              <p className="text-3xl mb-2">🔐</p>
+              <h3 className="text-sm font-black mb-1">Connecte-toi pour débloquer les badges</h3>
+              <p className="text-xs text-muted-foreground mb-4">
+                Crée un compte pour suivre ta progression, personnaliser ton pseudo et collectionner des badges !
+              </p>
+              <AuthScreen inline />
+            </div>
+          </div>
+        )}
         {/* Notifications toggle */}
         <div className="mx-4 mt-5 mb-3">
           <h3 className="text-sm font-black mb-2 text-muted-foreground">Notifications</h3>
