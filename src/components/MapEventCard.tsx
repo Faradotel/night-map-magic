@@ -1,5 +1,6 @@
 import { X, MapPin, Navigation, Heart } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, formatTime, getDistance } from '@/data/mockEvents';
+import { useDistanceUnit } from '@/hooks/useDistanceUnit';
 
 interface MapEventCardProps {
   event: NightEvent;
@@ -12,8 +13,9 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
   const vibe = vibeConfig[event.vibe];
   const type = typeConfig[event.type];
 
-  const distance = userLocation
-    ? getDistance(userLocation[0], userLocation[1], event.lat, event.lng).toFixed(1)
+  const { formatDistance } = useDistanceUnit();
+  const distanceKm = userLocation
+    ? getDistance(userLocation[0], userLocation[1], event.lat, event.lng)
     : null;
 
   const source = event.id.startsWith('tm-') ? 'Ticketmaster' : event.id.startsWith('shotgun-') ? 'Shotgun' : null;
@@ -56,7 +58,7 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
             <h3 className="text-sm font-bold tracking-tight leading-tight truncate">{event.name}</h3>
             <p className="text-[11px]" style={{ color: 'hsl(225 15% 50%)' }}>
               {event.genres[0] || type.label}
-              {distance && ` • ${distance}km`}
+              {distanceKm != null && ` • ${formatDistance(distanceKm)}`}
             </p>
           </div>
 

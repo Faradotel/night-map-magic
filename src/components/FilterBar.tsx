@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Sliders, Music, Zap } from 'lucide-react';
+import { useDistanceUnit, convertDistance } from '@/hooks/useDistanceUnit';
 
 type DateFilter = 'today' | 'weekend' | 'week' | 'all';
 type PriceFilter = 'all' | 'free' | 'paid';
@@ -39,6 +40,7 @@ const dateChips: { key: DateFilter; label: string }[] = [
 export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBarProps) {
   const [showPanel, setShowPanel] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+  const { unit, cycleUnit, unitLabel } = useDistanceUnit();
 
   useEffect(() => {
     function onOutside(e: MouseEvent) {
@@ -131,7 +133,15 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Rayon</span>
-                  <span className="text-[11px] font-bold" style={{ color: 'hsl(325 89% 50%)' }}>{filters.radiusKm} km</span>
+                  <button
+                    onClick={cycleUnit}
+                    className="text-[11px] font-bold px-1.5 py-0.5 rounded-md transition-colors"
+                    style={{ color: 'hsl(325 89% 50%)', background: 'hsl(325 89% 50% / 0.1)' }}
+                  >
+                    {unit === 'meters'
+                      ? `${Math.round(convertDistance(filters.radiusKm, unit))} ${unitLabel}`
+                      : `${convertDistance(filters.radiusKm, unit).toFixed(1)} ${unitLabel}`}
+                  </button>
                 </div>
                 <input
                   type="range"
