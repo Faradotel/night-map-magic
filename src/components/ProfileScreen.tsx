@@ -1,5 +1,6 @@
 import { allBadges } from '@/data/badges';
 import { AllBadgesScreen } from '@/components/AllBadgesScreen';
+import { useUnlockedBadges } from '@/hooks/useUnlockedBadges';
 import { Settings, ChevronRight, MapPin, Calendar, Star, Sun, Moon, LogOut, Bell, Pencil, Check, X } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useAttendance } from '@/hooks/useAttendance';
@@ -20,8 +21,9 @@ export function ProfileScreen() {
   const [showAllBadges, setShowAllBadges] = useState(false);
   const [friendNotifs, setFriendNotifs] = useState(true);
 
-  const unlockedBadges = allBadges.filter(b => b.unlocked);
-  const lockedBadges = allBadges.filter(b => !b.unlocked);
+  const badges = useUnlockedBadges(attended);
+  const unlockedBadges = badges.filter(b => b.unlocked);
+  const lockedBadges = badges.filter(b => !b.unlocked);
 
   // Load profile data
   useEffect(() => {
@@ -245,7 +247,7 @@ export function ProfileScreen() {
           )}
         </div>
 
-        {showAllBadges && <AllBadgesScreen onBack={() => setShowAllBadges(false)} />}
+        {showAllBadges && <AllBadgesScreen onBack={() => setShowAllBadges(false)} attended={attended} />}
 
         {/* Notifications toggle */}
         <div className="mx-4 mt-5 mb-3">

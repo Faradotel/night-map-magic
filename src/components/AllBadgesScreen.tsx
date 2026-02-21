@@ -1,13 +1,17 @@
-import { allBadges, badgeCategories, Badge } from '@/data/badges';
+import { badgeCategories, Badge } from '@/data/badges';
+import { useUnlockedBadges, UnlockedBadge } from '@/hooks/useUnlockedBadges';
+import { AttendedEvent } from '@/hooks/useAttendance';
 import { ArrowLeft } from 'lucide-react';
 
 interface AllBadgesScreenProps {
   onBack: () => void;
+  attended: AttendedEvent[];
 }
 
-export function AllBadgesScreen({ onBack }: AllBadgesScreenProps) {
-  const unlockedBadges = allBadges.filter(b => b.unlocked);
-  const lockedBadges = allBadges.filter(b => !b.unlocked);
+export function AllBadgesScreen({ onBack, attended }: AllBadgesScreenProps) {
+  const badges = useUnlockedBadges(attended);
+  const unlockedBadges = badges.filter(b => b.unlocked);
+  const lockedBadges = badges.filter(b => !b.unlocked);
 
   const categories = Object.entries(badgeCategories) as [Badge['category'], { label: string; emoji: string }][];
 
@@ -50,13 +54,13 @@ export function AllBadgesScreen({ onBack }: AllBadgesScreenProps) {
             <div
               className="h-full rounded-full transition-all"
               style={{
-                width: `${(unlockedBadges.length / allBadges.length) * 100}%`,
+                width: `${(unlockedBadges.length / badges.length) * 100}%`,
                 background: 'linear-gradient(90deg, hsl(183 100% 50%), hsl(275 71% 58%))',
               }}
             />
           </div>
           <p className="text-[10px] text-muted-foreground mt-1 text-right">
-            {unlockedBadges.length}/{allBadges.length}
+            {unlockedBadges.length}/{badges.length}
           </p>
         </div>
 
@@ -89,7 +93,7 @@ export function AllBadgesScreen({ onBack }: AllBadgesScreenProps) {
   );
 }
 
-function BadgeCard({ badge, unlocked }: { badge: Badge; unlocked: boolean }) {
+function BadgeCard({ badge, unlocked }: { badge: UnlockedBadge; unlocked: boolean }) {
   return (
     <div
       className="rounded-xl p-2.5 border flex flex-col items-center gap-1.5 relative overflow-hidden transition-all"
