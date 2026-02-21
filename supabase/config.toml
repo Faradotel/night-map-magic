@@ -1,1 +1,7 @@
 project_id = "rhzojoyxldrllxroyyqt"
+
+[functions.fetch-ticketmaster]
+verify_jwt = false
+
+[functions.scrape-shotgun]
+verify_jwt = false
