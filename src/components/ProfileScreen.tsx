@@ -2,10 +2,12 @@ import { allBadges } from '@/data/badges';
 import { Settings, ChevronRight, MapPin, Calendar, Star, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useAttendance } from '@/hooks/useAttendance';
+import { usePreferredCity } from '@/hooks/usePreferredCity';
 
 export function ProfileScreen() {
   const { theme, toggleTheme } = useTheme();
   const { stats, attended } = useAttendance();
+  const { preferredCity } = usePreferredCity();
   const unlockedBadges = allBadges.filter(b => b.unlocked);
   const lockedBadges = allBadges.filter(b => !b.unlocked);
 
@@ -57,7 +59,7 @@ export function ProfileScreen() {
 
             <div className="flex-1 min-w-0">
               <h2 className="font-black text-lg tracking-tight">NightRider_42</h2>
-              <p className="text-xs text-muted-foreground">Paris, France</p>
+              <p className="text-xs text-muted-foreground">{preferredCity}, France</p>
               <div className="flex items-center gap-3 mt-2">
                 <div className="flex items-center gap-1">
                   <span className="text-xs font-bold text-neon-cyan">{unlockedBadges.length}</span>

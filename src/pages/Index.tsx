@@ -8,6 +8,7 @@ import { SearchScreen } from '@/components/SearchScreen';
 import { ProfileScreen } from '@/components/ProfileScreen';
 import { mockEvents, NightEvent, getDistance } from '@/data/mockEvents';
 import { useAttendance } from '@/hooks/useAttendance';
+import { usePreferredCity } from '@/hooks/usePreferredCity';
 import { reverseGeocodeCity, fetchShotgunEvents, fetchTicketmasterEvents, deduplicateEvents } from '@/lib/api/shotgun';
 import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
 import { MapPin, Locate, Sliders } from 'lucide-react';
@@ -21,20 +22,24 @@ const NEARBY_RADIUS_DEFAULT = 15;
 const CITY_RADIUS_DEFAULT = 40;
 
 export default function Index() {
+  const { preferredCity, setPreferredCity } = usePreferredCity();
+  const savedCity = CITIES.find(c => c.name === preferredCity);
+  const initCenter: [number, number] = savedCity ? [savedCity.lat, savedCity.lng] : DEFAULT_CENTER;
+
   const [activeTab, setActiveTab] = useState<Tab>('map');
   const [selectedEvent, setSelectedEvent] = useState<NightEvent | null>(null);
   const [showDetail, setShowDetail] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [mapCenter, setMapCenter] = useState<[number, number]>(DEFAULT_CENTER);
+  const [mapCenter, setMapCenter] = useState<[number, number]>(initCenter);
   const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
   const [locating, setLocating] = useState(false);
   const attendance = useAttendance();
   const [allShotgunEvents, setAllShotgunEvents] = useState<NightEvent[]>([]);
   const [shotgunLoading, setShotgunLoading] = useState(false);
   const [shotgunLoaded, setShotgunLoaded] = useState(false);
-  const [locationMode, setLocationMode] = useState<LocationModeType>('nearby');
-  const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
-  const [filterCenter, setFilterCenter] = useState<[number, number] | null>(null);
+  const [locationMode, setLocationMode] = useState<LocationModeType>(savedCity && savedCity.name !== 'Paris' ? 'city' : 'nearby');
+  const [selectedCityName, setSelectedCityName] = useState<string | null>(savedCity ? savedCity.name : null);
+  const [filterCenter, setFilterCenter] = useState<[number, number] | null>(initCenter);
   const [filters, setFilters] = useState<Filters>({
     date: 'all',
     price: 'all',
@@ -162,13 +167,14 @@ export default function Index() {
   // Handle manual city selection
   const handleCitySelect = useCallback((city: City) => {
     setSelectedCityName(city.name);
+    setPreferredCity(city.name);
     setLocationMode('city');
     const cityCenter: [number, number] = [city.lat, city.lng];
     setFilterCenter(cityCenter);
     setMapCenter(cityCenter);
     setMapZoom(12);
     setFilters((prev) => ({ ...prev, radiusKm: CITY_RADIUS_DEFAULT }));
-  }, []);
+  }, [setPreferredCity]);
 
   const handleLocate = useCallback(() => {
     setLocating(true);
