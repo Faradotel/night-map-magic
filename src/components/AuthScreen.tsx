@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Mail, Lock, User, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
-export function AuthScreen() {
+export function AuthScreen({ inline = false }: { inline?: boolean }) {
   const { signIn, signUp } = useAuth();
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
@@ -36,7 +36,7 @@ export function AuthScreen() {
 
   if (confirmSent) {
     return (
-      <div className="absolute inset-0 z-[700] flex flex-col items-center justify-center px-6" style={{ background: 'hsl(var(--background))' }}>
+      <div className={inline ? "text-center" : "absolute inset-0 z-[700] flex flex-col items-center justify-center px-6"} style={inline ? {} : { background: 'hsl(var(--background))' }}>
         <div className="text-center max-w-xs">
           <div className="text-5xl mb-4">📧</div>
           <h2 className="text-xl font-black text-foreground mb-2">Confirme ton email</h2>
@@ -51,6 +51,51 @@ export function AuthScreen() {
             Retour à la connexion
           </button>
         </div>
+      </div>
+    );
+  }
+
+  const formFields = (
+    <>
+      {mode === 'signup' && (
+        <div className="relative">
+          <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input type="text" placeholder="Pseudo" value={username} onChange={e => setUsername(e.target.value)}
+            className="w-full h-10 pl-9 pr-3 rounded-xl border text-xs font-medium bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            style={{ borderColor: 'hsl(var(--border))' }} required />
+        </div>
+      )}
+      <div className="relative">
+        <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)}
+          className="w-full h-10 pl-9 pr-3 rounded-xl border text-xs font-medium bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          style={{ borderColor: 'hsl(var(--border))' }} required />
+      </div>
+      <div className="relative">
+        <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <input type={showPassword ? 'text' : 'password'} placeholder="Mot de passe" value={password} onChange={e => setPassword(e.target.value)}
+          className="w-full h-10 pl-9 pr-9 rounded-xl border text-xs font-medium bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          style={{ borderColor: 'hsl(var(--border))' }} required minLength={6} />
+        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+          {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+        </button>
+      </div>
+    </>
+  );
+
+  if (inline) {
+    return (
+      <div>
+        <form onSubmit={handleSubmit} className="space-y-2.5 text-left">
+          {formFields}
+          {error && <p className="text-xs font-medium text-center" style={{ color: 'hsl(var(--destructive))' }}>{error}</p>}
+          <button type="submit" disabled={loading} className="w-full h-10 rounded-xl font-bold text-xs transition-all active:scale-95 disabled:opacity-50" style={{ background: 'hsl(var(--accent))', color: 'white' }}>
+            {loading ? '...' : mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
+          </button>
+        </form>
+        <button onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(null); }} className="mt-3 text-xs text-muted-foreground">
+          {mode === 'login' ? <>Pas de compte ? <span className="font-bold" style={{ color: 'hsl(var(--primary))' }}>Inscription</span></> : <>Déjà un compte ? <span className="font-bold" style={{ color: 'hsl(var(--primary))' }}>Connexion</span></>}
+        </button>
       </div>
     );
   }

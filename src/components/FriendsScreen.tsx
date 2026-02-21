@@ -183,7 +183,28 @@ export function FriendsScreen({ allEvents, attendance }: FriendsScreenProps) {
   const pendingIncoming = requests.filter(r => r.to_user_id === user?.id);
 
   if (!user) {
-    return <AuthScreen />;
+    return (
+      <div className="absolute inset-0 z-[300] overflow-y-auto scrollbar-hidden" style={{ background: 'hsl(var(--background))' }}>
+        <div className="relative pb-20">
+          <div className="px-4 pt-10 pb-4">
+            <p className="text-xs text-muted-foreground font-medium mb-0.5">Social</p>
+            <h1 className="text-2xl font-black tracking-tight">
+              Mes <span style={{ color: 'hsl(var(--primary))' }}>Amis</span>
+            </h1>
+          </div>
+          <div className="px-4">
+            <div className="rounded-2xl border p-6 text-center" style={{ borderColor: 'hsl(var(--border))', background: 'var(--profile-card-bg)' }}>
+              <div className="text-4xl mb-3">👥</div>
+              <h2 className="text-base font-black text-foreground mb-1">Connecte-toi</h2>
+              <p className="text-xs text-muted-foreground mb-4">
+                Crée un compte ou connecte-toi pour ajouter des amis et voir leurs soirées.
+              </p>
+              <AuthScreen inline />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (detailEvent) {
