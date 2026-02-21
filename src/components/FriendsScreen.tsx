@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Users, Search, X, UserPlus, Link2, Copy, Check, Clock, UserCheck, UserX, ChevronRight } from 'lucide-react';
 import { EventDetailPage } from '@/components/EventDetailPage';
+import { AuthScreen } from '@/components/AuthScreen';
 import { NightEvent } from '@/data/mockEvents';
 import { toast } from 'sonner';
 
@@ -180,6 +181,10 @@ export function FriendsScreen({ allEvents, attendance }: FriendsScreenProps) {
   };
 
   const pendingIncoming = requests.filter(r => r.to_user_id === user?.id);
+
+  if (!user) {
+    return <AuthScreen />;
+  }
 
   if (detailEvent) {
     return <EventDetailPage event={detailEvent} onClose={() => setDetailEvent(null)} attendance={attendance} />;
