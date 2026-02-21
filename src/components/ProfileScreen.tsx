@@ -165,44 +165,49 @@ export function ProfileScreen() {
                 </div>
               )}
               <p className="text-xs text-muted-foreground">{preferredCity}, France</p>
-              <div className="flex items-center gap-3 mt-2">
-                <div className="flex items-center gap-1">
-                  <Star size={11} className="text-neon-cyan" />
-                  <span className="text-xs font-bold text-neon-cyan">{unlockedBadges.length}</span>
-                  <span className="text-xs text-muted-foreground">badges</span>
+              {user ? (
+                <div className="flex items-center gap-3 mt-2">
+                  <div className="flex items-center gap-1">
+                    <Star size={11} className="text-neon-cyan" />
+                    <span className="text-xs font-bold text-neon-cyan">{unlockedBadges.length}</span>
+                    <span className="text-xs text-muted-foreground">badges</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Calendar size={11} className="text-neon-pink" />
+                    <span className="text-xs font-bold text-foreground">{stats.totalEvents}</span>
+                    <span className="text-xs text-muted-foreground">soirées</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <MapPin size={11} className="text-neon-purple" />
+                    <span className="text-xs font-bold text-foreground">{stats.uniqueCities}</span>
+                    <span className="text-xs text-muted-foreground">villes</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Calendar size={11} className="text-neon-pink" />
-                  <span className="text-xs font-bold text-foreground">{stats.totalEvents}</span>
-                  <span className="text-xs text-muted-foreground">soirées</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <MapPin size={11} className="text-neon-purple" />
-                  <span className="text-xs font-bold text-foreground">{stats.uniqueCities}</span>
-                  <span className="text-xs text-muted-foreground">villes</span>
-                </div>
-              </div>
+              ) : (
+                <p className="text-[10px] text-muted-foreground mt-1">Connecte-toi pour voir tes stats</p>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Stats row */}
-        <div className="mx-4 mb-5 grid grid-cols-3 gap-2">
-          {[
-            { label: 'Check-ins', value: String(stats.totalEvents), color: 'hsl(183 100% 50%)' },
-            { label: 'Cette semaine', value: String(thisWeekCount), color: 'hsl(315 100% 53%)' },
-            { label: 'Villes', value: String(stats.uniqueCities), color: 'hsl(275 71% 58%)' },
-          ].map(stat => (
-            <div
-              key={stat.label}
-              className="rounded-xl p-3 border border-surface-4 text-center"
-              style={{ background: 'var(--profile-card-bg)' }}
-            >
-              <p className="text-xl font-black" style={{ color: stat.color }}>{stat.value}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{stat.label}</p>
-            </div>
-          ))}
-        </div>
+        {user && (
+          <div className="mx-4 mb-5 grid grid-cols-3 gap-2">
+            {[
+              { label: 'Check-ins', value: String(stats.totalEvents), color: 'hsl(183 100% 50%)' },
+              { label: 'Cette semaine', value: String(thisWeekCount), color: 'hsl(315 100% 53%)' },
+              { label: 'Villes', value: String(stats.uniqueCities), color: 'hsl(275 71% 58%)' },
+            ].map(stat => (
+              <div
+                key={stat.label}
+                className="rounded-xl p-3 border border-surface-4 text-center"
+                style={{ background: 'var(--profile-card-bg)' }}
+              >
+                <p className="text-xl font-black" style={{ color: stat.color }}>{stat.value}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
         {user ? (
           <>
