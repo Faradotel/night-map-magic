@@ -1,11 +1,12 @@
 import { allBadges } from '@/data/badges';
-import { Settings, ChevronRight, MapPin, Calendar, Star, Sun, Moon, LogOut, Bell } from 'lucide-react';
+import { Settings, ChevronRight, MapPin, Calendar, Star, Sun, Moon, LogOut, Bell, Pencil, Check, X } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useAttendance } from '@/hooks/useAttendance';
 import { usePreferredCity } from '@/hooks/usePreferredCity';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 
 export function ProfileScreen() {
   const { theme, toggleTheme } = useTheme();
@@ -13,6 +14,8 @@ export function ProfileScreen() {
   const { preferredCity } = usePreferredCity();
   const { user, signOut } = useAuth();
   const [username, setUsername] = useState('NightRider');
+  const [editingUsername, setEditingUsername] = useState(false);
+  const [editValue, setEditValue] = useState('');
   const [friendNotifs, setFriendNotifs] = useState(true);
 
   const unlockedBadges = allBadges.filter(b => b.unlocked);
@@ -47,6 +50,34 @@ export function ProfileScreen() {
         .update({ friend_attendance_enabled: next })
         .eq('user_id', user.id);
     }
+  };
+
+  const saveUsername = async () => {
+    const trimmed = editValue.trim();
+    if (trimmed.length < 3) {
+      toast.error('Le pseudo doit faire au moins 3 caractères');
+      return;
+    }
+    if (trimmed === username) {
+      setEditingUsername(false);
+      return;
+    }
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('username', trimmed)
+      .neq('user_id', user?.id ?? '')
+      .maybeSingle();
+    if (existing) {
+      toast.error('Ce pseudo est déjà pris');
+      return;
+    }
+    if (user) {
+      await supabase.from('profiles').update({ username: trimmed }).eq('user_id', user.id);
+      setUsername(trimmed);
+      toast.success('Pseudo mis à jour !');
+    }
+    setEditingUsername(false);
   };
 
   const thisWeekCount = attended.filter(e => {
@@ -101,7 +132,26 @@ export function ProfileScreen() {
             </div>
 
             <div className="flex-1 min-w-0">
-              <h2 className="font-black text-lg tracking-tight">{username}</h2>
+              {editingUsername ? (
+                <div className="flex items-center gap-1.5">
+                  <input
+                    value={editValue}
+                    onChange={e => setEditValue(e.target.value)}
+                    autoFocus
+                    className="font-black text-lg tracking-tight bg-transparent border-b border-muted-foreground focus:outline-none focus:border-foreground w-28"
+                    onKeyDown={e => { if (e.key === 'Enter') saveUsername(); if (e.key === 'Escape') setEditingUsername(false); }}
+                  />
+                  <button onClick={saveUsername} className="text-neon-cyan"><Check size={16} /></button>
+                  <button onClick={() => setEditingUsername(false)} className="text-muted-foreground"><X size={16} /></button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <h2 className="font-black text-lg tracking-tight">{username}</h2>
+                  <button onClick={() => { setEditValue(username); setEditingUsername(true); }} className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Pencil size={12} />
+                  </button>
+                </div>
+              )}
               <p className="text-xs text-muted-foreground">{preferredCity}, France</p>
               <div className="flex items-center gap-3 mt-2">
                 <div className="flex items-center gap-1">
