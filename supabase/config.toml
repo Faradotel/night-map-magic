@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.scrape-shotgun]
 verify_jwt = false
+
+[functions.refresh-events]
+verify_jwt = false

@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      cached_events: {
+        Row: {
+          address: string
+          city: string
+          created_at: string
+          description: string
+          end_time: string | null
+          genres: string[]
+          id: string
+          image_color: string
+          lat: number
+          lng: number
+          name: string
+          price_range: string
+          source: string
+          start_time: string
+          ticket_url: string | null
+          type: string
+          updated_at: string
+          venue: string
+          vibe: string
+        }
+        Insert: {
+          address?: string
+          city: string
+          created_at?: string
+          description?: string
+          end_time?: string | null
+          genres?: string[]
+          id: string
+          image_color?: string
+          lat: number
+          lng: number
+          name: string
+          price_range?: string
+          source?: string
+          start_time: string
+          ticket_url?: string | null
+          type: string
+          updated_at?: string
+          venue?: string
+          vibe: string
+        }
+        Update: {
+          address?: string
+          city?: string
+          created_at?: string
+          description?: string
+          end_time?: string | null
+          genres?: string[]
+          id?: string
+          image_color?: string
+          lat?: number
+          lng?: number
+          name?: string
+          price_range?: string
+          source?: string
+          start_time?: string
+          ticket_url?: string | null
+          type?: string
+          updated_at?: string
+          venue?: string
+          vibe?: string
+        }
+        Relationships: []
+      }
       event_attendance: {
         Row: {
           created_at: string

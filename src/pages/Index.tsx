@@ -13,7 +13,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { mockEvents, NightEvent, getDistance } from '@/data/mockEvents';
 import { useAttendance } from '@/hooks/useAttendance';
 import { usePreferredCity } from '@/hooks/usePreferredCity';
+import { supabase } from '@/integrations/supabase/client';
 import { reverseGeocodeCity, fetchShotgunEvents, fetchTicketmasterEvents, deduplicateEvents } from '@/lib/api/shotgun';
+import { mapGenres, deduceVibe, deduceType, parsePriceRange } from '@/lib/api/shotgun';
 import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
 import { MapPin, Locate, Sliders, Bell } from 'lucide-react';
 import { toast } from 'sonner';
@@ -54,14 +56,51 @@ export default function Index() {
     radiusKm: NEARBY_RADIUS_DEFAULT
   });
 
-  // Load all events (Shotgun + Ticketmaster) for all cities on mount
+  // Load events: first from cache, then fallback to live scraping
   useEffect(() => {
     if (shotgunLoaded) return;
     
     async function loadAllEvents() {
       setShotgunLoading(true);
       try {
-        // Fetch from both sources in parallel
+        // Try loading from cached_events table first
+        const { data: cachedData, error: cacheError } = await supabase
+          .from('cached_events')
+          .select('*');
+
+        if (!cacheError && cachedData && cachedData.length > 0) {
+          const events: NightEvent[] = cachedData.map((e: any) => {
+            const genres = mapGenres(e.genres || []);
+            const vibe = deduceVibe(genres, e.name);
+            const type = deduceType(e.name);
+            return {
+              id: e.id,
+              name: e.name.toUpperCase(),
+              type,
+              vibe,
+              genres,
+              lat: e.lat,
+              lng: e.lng,
+              address: e.address,
+              city: e.city,
+              startTime: e.start_time,
+              endTime: e.end_time,
+              priceRange: parsePriceRange(e.price_range),
+              description: e.description,
+              venue: e.venue,
+              ticketUrl: e.ticket_url,
+              imageColor: '#1a0f2e',
+              isLive: false,
+            };
+          });
+          const dedupedEvents = deduplicateEvents(events);
+          setAllShotgunEvents(dedupedEvents);
+          setShotgunLoaded(true);
+          toast.success(`${dedupedEvents.length} événements chargés`);
+          return;
+        }
+
+        // Fallback: fetch live from edge functions
         const [shotgunResults, tmResults] = await Promise.all([
           Promise.allSettled(CITIES.map(city => fetchShotgunEvents(city.name))),
           Promise.allSettled(CITIES.map(city => fetchTicketmasterEvents(city.name))),
@@ -75,7 +114,6 @@ export default function Index() {
           .filter((r): r is PromiseFulfilledResult<NightEvent[]> => r.status === 'fulfilled')
           .flatMap(r => r.value);
 
-        // Merge and deduplicate (Shotgun events prioritized since they come first)
         const allEvents = deduplicateEvents([...shotgunEvents, ...tmEvents]);
         setAllShotgunEvents(allEvents);
         setShotgunLoaded(true);

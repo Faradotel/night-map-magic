@@ -23,8 +23,9 @@ export function EventDetailPage({ event, onClose, userLocation, attendance }: Ev
     event.priceRange === '€10-20' ? 'hsl(45 100% 55%)' : 'hsl(var(--accent))';
 
   const handleShare = async () => {
+    const shareText = `Hey, rejoins-moi ici ! 🎶\n${event.name} — ${event.venue}, ${event.city}`;
     if (navigator.share) {
-      await navigator.share({ title: event.name, text: `${event.name} — ${event.venue}, ${event.city}`, url: event.ticketUrl || window.location.href });
+      await navigator.share({ title: event.name, text: shareText, url: event.ticketUrl || window.location.href });
     }
   };
 

@@ -75,7 +75,7 @@ const GENRE_MAP: Record<string, MusicGenre> = {
 };
 
 // Deduce vibe from genres
-function deduceVibe(genres: MusicGenre[], name: string): EventVibe {
+export function deduceVibe(genres: MusicGenre[], name: string): EventVibe {
   const nameLower = name.toLowerCase();
 
   if (/afterwork|after[\s-]?work|apéro|happy\s?hour/i.test(nameLower)) return 'afterwork';
@@ -91,7 +91,7 @@ function deduceVibe(genres: MusicGenre[], name: string): EventVibe {
   return 'rave';
 }
 
-function mapGenres(rawGenres: string[]): MusicGenre[] {
+export function mapGenres(rawGenres: string[]): MusicGenre[] {
   const mapped = new Set<MusicGenre>();
   for (const raw of rawGenres) {
     const lower = raw.toLowerCase().trim();
@@ -110,7 +110,7 @@ function mapGenres(rawGenres: string[]): MusicGenre[] {
   return mapped.size > 0 ? Array.from(mapped) : ['electro'];
 }
 
-function deduceType(name: string): 'soirée' | 'club' | 'bar' | 'concert' | 'afterwork' {
+export function deduceType(name: string): 'soirée' | 'club' | 'bar' | 'concert' | 'afterwork' {
   const lower = name.toLowerCase();
   if (/concert|live|showcase|festival/i.test(lower)) return 'concert';
   if (/afterwork|after[\s-]?work|apéro/i.test(lower)) return 'afterwork';
@@ -285,7 +285,7 @@ export function deduplicateEvents(events: NightEvent[]): NightEvent[] {
   return kept;
 }
 
-function parsePriceRange(price?: string | null): 'gratuit' | '€1-10' | '€10-20' | '€20+' {
+export function parsePriceRange(price?: string | null): 'gratuit' | '€1-10' | '€10-20' | '€20+' {
   if (!price) return '€10-20';
   const lower = price.toLowerCase();
   if (lower.includes('gratuit') || lower.includes('free') || lower === '0') return 'gratuit';
