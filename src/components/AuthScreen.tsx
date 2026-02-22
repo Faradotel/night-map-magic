@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
 import { Mail, Lock, User, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 export function AuthScreen({ inline = false }: { inline?: boolean }) {
   const { signIn, signUp } = useAuth();
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
@@ -13,11 +14,22 @@ export function AuthScreen({ inline = false }: { inline?: boolean }) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [confirmSent, setConfirmSent] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
+    if (mode === 'forgot') {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) setError(error.message);
+      else setResetSent(true);
+      setLoading(false);
+      return;
+    }
 
     if (mode === 'signup') {
       if (username.length < 3) {
@@ -34,6 +46,27 @@ export function AuthScreen({ inline = false }: { inline?: boolean }) {
     }
     setLoading(false);
   };
+
+  if (resetSent) {
+    return (
+      <div className={inline ? "text-center" : "absolute inset-0 z-[700] flex flex-col items-center justify-center px-6"} style={inline ? {} : { background: 'hsl(var(--background))' }}>
+        <div className="text-center max-w-xs">
+          <div className="text-5xl mb-4">🔑</div>
+          <h2 className="text-xl font-black text-foreground mb-2">Email envoyé !</h2>
+          <p className="text-sm text-muted-foreground mb-6">
+            Un lien de réinitialisation a été envoyé à <strong className="text-foreground">{email}</strong>. Vérifie ta boîte mail (et tes spams).
+          </p>
+          <button
+            onClick={() => { setResetSent(false); setMode('login'); }}
+            className="text-sm font-bold"
+            style={{ color: 'hsl(var(--primary))' }}
+          >
+            Retour à la connexion
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (confirmSent) {
     return (
@@ -72,15 +105,22 @@ export function AuthScreen({ inline = false }: { inline?: boolean }) {
           className="w-full h-10 pl-9 pr-3 rounded-xl border text-xs font-medium bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           style={{ borderColor: 'hsl(var(--border))' }} required />
       </div>
-      <div className="relative">
-        <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <input type={showPassword ? 'text' : 'password'} placeholder="Mot de passe" value={password} onChange={e => setPassword(e.target.value)}
-          className="w-full h-10 pl-9 pr-9 rounded-xl border text-xs font-medium bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          style={{ borderColor: 'hsl(var(--border))' }} required minLength={6} />
-        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-          {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+      {mode !== 'forgot' && (
+        <div className="relative">
+          <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input type={showPassword ? 'text' : 'password'} placeholder="Mot de passe" value={password} onChange={e => setPassword(e.target.value)}
+            className="w-full h-10 pl-9 pr-9 rounded-xl border text-xs font-medium bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            style={{ borderColor: 'hsl(var(--border))' }} required minLength={6} />
+          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+            {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+          </button>
+        </div>
+      )}
+      {mode === 'login' && (
+        <button type="button" onClick={() => { setMode('forgot'); setError(null); }} className="text-[10px] text-muted-foreground text-right w-full -mt-1">
+          Mot de passe oublié ?
         </button>
-      </div>
+      )}
     </>
   );
 
@@ -99,7 +139,7 @@ export function AuthScreen({ inline = false }: { inline?: boolean }) {
           {formFields}
           {error && <p className="text-xs font-medium text-center" style={{ color: 'hsl(var(--destructive))' }}>{error}</p>}
           <button type="submit" disabled={loading} className="w-full h-10 rounded-xl font-bold text-xs transition-all active:scale-95 disabled:opacity-50" style={{ background: 'hsl(var(--accent))', color: 'white' }}>
-            {loading ? '...' : mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
+            {loading ? '...' : mode === 'forgot' ? 'Envoyer le lien' : mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
           </button>
         </form>
         <div className="flex gap-2 mt-2.5">
@@ -137,7 +177,7 @@ export function AuthScreen({ inline = false }: { inline?: boolean }) {
             Night<span style={{ color: 'hsl(var(--primary))' }}>Map</span>
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
-            {mode === 'login' ? 'Content de te revoir !' : 'Rejoins la communauté'}
+            {mode === 'forgot' ? 'Réinitialise ton mot de passe' : mode === 'login' ? 'Content de te revoir !' : 'Rejoins la communauté'}
           </p>
         </div>
 
@@ -146,63 +186,46 @@ export function AuthScreen({ inline = false }: { inline?: boolean }) {
           {mode === 'signup' && (
             <div className="relative">
               <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Pseudo"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
+              <input type="text" placeholder="Pseudo" value={username} onChange={e => setUsername(e.target.value)}
                 className="w-full h-12 pl-10 pr-4 rounded-xl border text-sm font-medium bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                style={{ borderColor: 'hsl(var(--border))' }}
-                required
-              />
+                style={{ borderColor: 'hsl(var(--border))' }} required />
             </div>
           )}
 
           <div className="relative">
             <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+            <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)}
               className="w-full h-12 pl-10 pr-4 rounded-xl border text-sm font-medium bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2"
-              style={{ borderColor: 'hsl(var(--border))' }}
-              required
-            />
+              style={{ borderColor: 'hsl(var(--border))' }} required />
           </div>
 
-          <div className="relative">
-            <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type={showPassword ? 'text' : 'password'}
-              placeholder="Mot de passe"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="w-full h-12 pl-10 pr-10 rounded-xl border text-sm font-medium bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2"
-              style={{ borderColor: 'hsl(var(--border))' }}
-              required
-              minLength={6}
-            />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          {mode !== 'forgot' && (
+            <div className="relative">
+              <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input type={showPassword ? 'text' : 'password'} placeholder="Mot de passe" value={password} onChange={e => setPassword(e.target.value)}
+                className="w-full h-12 pl-10 pr-10 rounded-xl border text-sm font-medium bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2"
+                style={{ borderColor: 'hsl(var(--border))' }} required minLength={6} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          )}
+
+          {mode === 'login' && (
+            <button type="button" onClick={() => { setMode('forgot'); setError(null); }} className="text-xs text-muted-foreground text-right w-full -mt-1">
+              Mot de passe oublié ?
             </button>
-          </div>
+          )}
 
           {error && (
             <p className="text-xs font-medium text-center" style={{ color: 'hsl(var(--destructive))' }}>{error}</p>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
+          <button type="submit" disabled={loading}
             className="w-full h-12 rounded-xl font-bold text-sm transition-all active:scale-95 disabled:opacity-50"
-            style={{
-              background: 'hsl(var(--accent))',
-              color: 'white',
-              boxShadow: '0 0 20px hsl(var(--accent) / 0.4)',
-            }}
+            style={{ background: 'hsl(var(--accent))', color: 'white', boxShadow: '0 0 20px hsl(var(--accent) / 0.4)' }}
           >
-            {loading ? '...' : mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
+            {loading ? '...' : mode === 'forgot' ? 'Envoyer le lien' : mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
           </button>
         </form>
 
@@ -234,10 +257,12 @@ export function AuthScreen({ inline = false }: { inline?: boolean }) {
         </div>
 
         <button
-          onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(null); }}
+          onClick={() => { setMode(mode === 'forgot' ? 'login' : mode === 'login' ? 'signup' : 'login'); setError(null); }}
           className="mt-4 text-xs text-muted-foreground"
         >
-          {mode === 'login' ? (
+          {mode === 'forgot' ? (
+            <><ArrowLeft size={12} className="inline mr-1" />Retour à la <span className="font-bold" style={{ color: 'hsl(var(--primary))' }}>connexion</span></>
+          ) : mode === 'login' ? (
             <>Pas de compte ? <span className="font-bold" style={{ color: 'hsl(var(--primary))' }}>Inscription</span></>
           ) : (
             <>Déjà un compte ? <span className="font-bold" style={{ color: 'hsl(var(--primary))' }}>Connexion</span></>

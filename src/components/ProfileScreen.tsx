@@ -2,6 +2,7 @@ import { allBadges } from '@/data/badges';
 import { AllBadgesScreen } from '@/components/AllBadgesScreen';
 import { useUnlockedBadges } from '@/hooks/useUnlockedBadges';
 import { AuthScreen } from '@/components/AuthScreen';
+import { PrivacyPolicyScreen } from '@/components/PrivacyPolicyScreen';
 import { Settings, ChevronRight, MapPin, Calendar, Star, Sun, Moon, LogOut, Bell, Pencil, Check, X } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useAttendance } from '@/hooks/useAttendance';
@@ -25,6 +26,7 @@ export function ProfileScreen() {
   const [editingUsername, setEditingUsername] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [showAllBadges, setShowAllBadges] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
   const [friendNotifs, setFriendNotifs] = useState(true);
 
   const badges = useUnlockedBadges(attended);
@@ -378,15 +380,19 @@ export function ProfileScreen() {
               <ChevronRight size={14} className="text-muted-foreground" />
             </button>
             <button
+              onClick={() => setShowPrivacy(true)}
               className="w-full flex items-center justify-between px-4 py-3 text-left"
             >
               <div>
                 <p className="text-sm font-medium">Confidentialité</p>
+                <p className="text-xs text-muted-foreground">RGPD & données personnelles</p>
               </div>
               <ChevronRight size={14} className="text-muted-foreground" />
             </button>
           </div>
         </div>
+
+        {showPrivacy && <PrivacyPolicyScreen onBack={() => setShowPrivacy(false)} />}
       </div>
     </div>
   );
