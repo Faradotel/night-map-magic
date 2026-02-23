@@ -295,16 +295,30 @@ Deno.serve(async (req) => {
       let lat = cityLat + (Math.random() - 0.5) * 0.02;
       let lng = cityLng + (Math.random() - 0.5) * 0.02;
 
+      let resolvedAddress = `${raw.venue}, ${city}`;
+
       if (raw.venue && raw.venue !== raw.name) {
         try {
           const geoRes = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(raw.venue + ', ' + city + ', France')}&limit=1`,
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(raw.venue + ', ' + city + ', France')}&limit=1&addressdetails=1`,
             { headers: { 'User-Agent': 'NightMap/1.0' } }
           );
           const geoData = await geoRes.json();
           if (geoData.length > 0) {
             lat = parseFloat(geoData[0].lat);
             lng = parseFloat(geoData[0].lon);
+            // Use the real address from Nominatim
+            const addr = geoData[0].address;
+            if (addr) {
+              const parts = [
+                addr.road ? `${addr.house_number ? addr.house_number + ' ' : ''}${addr.road}` : null,
+                addr.postcode,
+                addr.city || addr.town || addr.village || city,
+              ].filter(Boolean);
+              if (parts.length > 0) {
+                resolvedAddress = parts.join(', ');
+              }
+            }
           }
           await new Promise(r => setTimeout(r, 200));
         } catch { /* use fallback */ }
@@ -322,7 +336,7 @@ Deno.serve(async (req) => {
         id: `shotgun-${slug}-${geocodedEvents.length}`,
         name: raw.name,
         venue: raw.venue,
-        address: `${raw.venue}, ${city}`,
+        address: resolvedAddress,
         city,
         lat,
         lng,
