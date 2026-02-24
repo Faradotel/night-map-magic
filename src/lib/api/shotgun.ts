@@ -286,40 +286,88 @@ export function deduplicateEvents(events: NightEvent[]): NightEvent[] {
 }
 
 /**
- * Load cached events from DB for a specific city (fast, no edge function call)
+ * Load events for a city: try cache first, fallback to live scraping
  */
-export async function loadCachedEventsForCity(city: string): Promise<NightEvent[]> {
+export async function loadEventsForCity(city: string): Promise<NightEvent[]> {
+  // 1. Try cache
   const { data, error } = await supabase
     .from('cached_events')
     .select('*')
     .eq('city', city);
 
-  if (error || !data) return [];
+  if (!error && data && data.length > 0) {
+    return data.map(cachedToNightEvent);
+  }
 
-  return data.map((e: any): NightEvent => {
-    const genres = mapGenres(e.genres || []);
-    const vibe = deduceVibe(genres, e.name);
-    const type = deduceType(e.name);
-    return {
-      id: e.id,
-      name: e.name.toUpperCase(),
-      type,
-      vibe,
-      genres,
-      lat: e.lat,
-      lng: e.lng,
-      address: e.address,
-      city: e.city,
-      startTime: e.start_time,
-      endTime: e.end_time,
-      priceRange: parsePriceRange(e.price_range),
-      description: e.description,
-      venue: e.venue,
-      ticketUrl: e.ticket_url,
-      imageColor: '#1a0f2e',
-      isLive: false,
-    };
-  });
+  // 2. Fallback: live fetch from both sources in parallel
+  const [shotgun, tm] = await Promise.allSettled([
+    fetchShotgunEvents(city),
+    fetchTicketmasterEvents(city),
+  ]);
+
+  const shotgunEvents = shotgun.status === 'fulfilled' ? shotgun.value : [];
+  const tmEvents = tm.status === 'fulfilled' ? tm.value : [];
+
+  return [...shotgunEvents, ...tmEvents];
+}
+
+/**
+ * Load cached events near coordinates (for "nearby" mode)
+ */
+export async function loadEventsNearby(lat: number, lng: number, radiusKm: number): Promise<NightEvent[]> {
+  const latDelta = radiusKm / 111;
+  const lngDelta = radiusKm / (111 * Math.cos(lat * Math.PI / 180));
+
+  const { data, error } = await supabase
+    .from('cached_events')
+    .select('*')
+    .gte('lat', lat - latDelta)
+    .lte('lat', lat + latDelta)
+    .gte('lng', lng - lngDelta)
+    .lte('lng', lng + lngDelta);
+
+  if (!error && data && data.length > 0) {
+    return data.map(cachedToNightEvent);
+  }
+
+  // Fallback: try to find the nearest city and fetch live
+  const nearestCity = await reverseGeocodeCity(lat, lng);
+  if (nearestCity) {
+    const [shotgun, tm] = await Promise.allSettled([
+      fetchShotgunEvents(nearestCity),
+      fetchTicketmasterEvents(nearestCity),
+    ]);
+    const shotgunEvents = shotgun.status === 'fulfilled' ? shotgun.value : [];
+    const tmEvents = tm.status === 'fulfilled' ? tm.value : [];
+    return [...shotgunEvents, ...tmEvents];
+  }
+
+  return [];
+}
+
+function cachedToNightEvent(e: any): NightEvent {
+  const genres = mapGenres(e.genres || []);
+  const vibe = deduceVibe(genres, e.name);
+  const type = deduceType(e.name);
+  return {
+    id: e.id,
+    name: e.name.toUpperCase(),
+    type,
+    vibe,
+    genres,
+    lat: e.lat,
+    lng: e.lng,
+    address: e.address,
+    city: e.city,
+    startTime: e.start_time,
+    endTime: e.end_time,
+    priceRange: parsePriceRange(e.price_range),
+    description: e.description,
+    venue: e.venue,
+    ticketUrl: e.ticket_url,
+    imageColor: '#1a0f2e',
+    isLive: false,
+  };
 }
 
 /**
