@@ -17,7 +17,7 @@ interface EventMapProps {
 function createEventIcon(event: NightEvent, isSelected: boolean): L.DivIcon {
   const vibe = vibeConfig[event.vibe];
   const typeEmoji = typeConfig[event.type]?.emoji ?? '📍';
-  const color = isSelected ? 'hsl(325, 89%, 50%)' : vibe.color;
+  const color = vibe.color;
   const size = isSelected ? 52 : 42;
 
   return L.divIcon({
