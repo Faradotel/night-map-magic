@@ -28,17 +28,24 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 
-    console.log('Starting event refresh for all cities...');
+    // Accept optional "city" param to refresh a single city
+    let citiesToRefresh = CITIES;
+    try {
+      const body = await req.json();
+      if (body?.city) {
+        citiesToRefresh = [body.city];
+      }
+    } catch { /* no body = refresh all */ }
 
-    // Fetch from both sources for all cities in parallel batches
-    const batchSize = 5;
-    const allEvents: any[] = [];
+    console.log(`Refreshing ${citiesToRefresh.length} cities...`);
 
-    for (let i = 0; i < CITIES.length; i += batchSize) {
-      const batch = CITIES.slice(i, i + batchSize);
-      const results = await Promise.allSettled(
-        batch.flatMap(city => [
-          // Shotgun
+    let totalInserted = 0;
+
+    // Process cities ONE AT A TIME to avoid timeout
+    for (const city of citiesToRefresh) {
+      try {
+        // Fetch from both sources for this city
+        const [shotgunRes, tmRes] = await Promise.allSettled([
           fetch(`${supabaseUrl}/functions/v1/scrape-shotgun`, {
             method: 'POST',
             headers: {
@@ -46,8 +53,7 @@ Deno.serve(async (req) => {
               'Authorization': `Bearer ${anonKey}`,
             },
             body: JSON.stringify({ city }),
-          }).then(r => r.json()).then(d => ({ source: 'shotgun', city, events: d?.events || [] })),
-          // Ticketmaster
+          }).then(r => r.json()),
           fetch(`${supabaseUrl}/functions/v1/fetch-ticketmaster`, {
             method: 'POST',
             headers: {
@@ -55,74 +61,58 @@ Deno.serve(async (req) => {
               'Authorization': `Bearer ${anonKey}`,
             },
             body: JSON.stringify({ city }),
-          }).then(r => r.json()).then(d => ({ source: 'ticketmaster', city, events: d?.events || [] })),
-        ])
-      );
+          }).then(r => r.json()),
+        ]);
 
-      for (const result of results) {
-        if (result.status === 'fulfilled' && result.value.events) {
-          allEvents.push(...result.value.events);
+        const events: any[] = [];
+        if (shotgunRes.status === 'fulfilled' && shotgunRes.value?.events) {
+          events.push(...shotgunRes.value.events);
         }
-      }
+        if (tmRes.status === 'fulfilled' && tmRes.value?.events) {
+          events.push(...tmRes.value.events);
+        }
 
-      // Small delay between batches
-      if (i + batchSize < CITIES.length) {
-        await new Promise(r => setTimeout(r, 1000));
-      }
-    }
+        if (events.length === 0) continue;
 
-    console.log(`Fetched ${allEvents.length} total events from all sources`);
+        // Delete old events for this city, then insert new ones
+        await supabase.from('cached_events').delete().eq('city', city);
 
-    // Deduplicate by ID
-    const uniqueEvents = new Map<string, any>();
-    for (const e of allEvents) {
-      if (e.id && !uniqueEvents.has(e.id)) {
-        uniqueEvents.set(e.id, e);
-      }
-    }
+        const batch = events.map((e: any) => ({
+          id: e.id,
+          name: e.name || '',
+          type: 'soirée',
+          vibe: 'rave',
+          genres: e.genres || [],
+          lat: e.lat || 0,
+          lng: e.lng || 0,
+          address: e.address || '',
+          city: e.city || city,
+          start_time: e.startTime || new Date().toISOString(),
+          end_time: e.endTime || null,
+          price_range: e.price || '€10-20',
+          description: e.description || '',
+          venue: e.venue || '',
+          ticket_url: e.ticketUrl || null,
+          source: e.id?.startsWith('tm-') ? 'ticketmaster' : 'shotgun',
+          updated_at: new Date().toISOString(),
+        }));
 
-    console.log(`${uniqueEvents.size} unique events after dedup`);
-
-    // Clear old events and insert new ones
-    await supabase.from('cached_events').delete().neq('id', '');
-
-    // Insert in batches of 100
-    const eventsArray = Array.from(uniqueEvents.values());
-    let inserted = 0;
-
-    for (let i = 0; i < eventsArray.length; i += 100) {
-      const batch = eventsArray.slice(i, i + 100).map((e: any) => ({
-        id: e.id,
-        name: e.name || '',
-        type: 'soirée',
-        vibe: 'rave',
-        genres: e.genres || [],
-        lat: e.lat || 0,
-        lng: e.lng || 0,
-        address: e.address || '',
-        city: e.city || '',
-        start_time: e.startTime || new Date().toISOString(),
-        end_time: e.endTime || null,
-        price_range: e.price || null,
-        description: e.description || '',
-        venue: e.venue || '',
-        ticket_url: e.ticketUrl || null,
-        source: e.id?.startsWith('tm-') ? 'ticketmaster' : 'shotgun',
-        updated_at: new Date().toISOString(),
-      }));
-
-      const { error } = await supabase.from('cached_events').upsert(batch, { onConflict: 'id' });
-      if (error) {
-        console.error('Insert batch error:', error.message);
-      } else {
-        inserted += batch.length;
+        const { error } = await supabase.from('cached_events').upsert(batch, { onConflict: 'id' });
+        if (error) {
+          console.error(`Error inserting ${city}:`, error.message);
+        } else {
+          totalInserted += batch.length;
+          console.log(`${city}: ${batch.length} events cached`);
+        }
+      } catch (err) {
+        console.error(`Failed to refresh ${city}:`, err);
       }
     }
 
-    console.log(`Inserted ${inserted} events into cache`);
+    console.log(`Total: ${totalInserted} events cached`);
 
     return new Response(
-      JSON.stringify({ success: true, total: inserted }),
+      JSON.stringify({ success: true, total: totalInserted }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {

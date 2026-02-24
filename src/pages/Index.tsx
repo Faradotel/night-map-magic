@@ -14,7 +14,7 @@ import { mockEvents, NightEvent, getDistance } from '@/data/mockEvents';
 import { useAttendance } from '@/hooks/useAttendance';
 import { usePreferredCity } from '@/hooks/usePreferredCity';
 
-import { loadCachedEventsForCity, loadCachedEventsNearby, deduplicateEvents } from '@/lib/api/shotgun';
+import { loadEventsForCity, loadEventsNearby, deduplicateEvents } from '@/lib/api/shotgun';
 import { mapGenres, deduceVibe, deduceType, parsePriceRange } from '@/lib/api/shotgun';
 import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
 import { MapPin, Locate, Sliders, Bell } from 'lucide-react';
@@ -73,9 +73,9 @@ export default function Index() {
       try {
         let events: NightEvent[];
         if (locationMode === 'city' && selectedCityName) {
-          events = await loadCachedEventsForCity(selectedCityName);
+          events = await loadEventsForCity(selectedCityName);
         } else if (userLocation) {
-          events = await loadCachedEventsNearby(userLocation[0], userLocation[1], filters.radiusKm);
+          events = await loadEventsNearby(userLocation[0], userLocation[1], filters.radiusKm);
         } else {
           return;
         }
