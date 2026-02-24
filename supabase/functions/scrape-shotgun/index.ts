@@ -292,36 +292,63 @@ Deno.serve(async (req) => {
     const geocodedEvents: ShotgunEvent[] = [];
 
     for (const raw of rawEvents.slice(0, 25)) {
-      let lat = cityLat + (Math.random() - 0.5) * 0.02;
-      let lng = cityLng + (Math.random() - 0.5) * 0.02;
+      let lat = cityLat;
+      let lng = cityLng;
+      let geocoded = false;
 
       let resolvedAddress = `${raw.venue}, ${city}`;
 
       if (raw.venue && raw.venue !== raw.name) {
-        try {
-          const geoRes = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(raw.venue + ', ' + city + ', France')}&limit=1&addressdetails=1`,
-            { headers: { 'User-Agent': 'NightMap/1.0' } }
-          );
-          const geoData = await geoRes.json();
-          if (geoData.length > 0) {
-            lat = parseFloat(geoData[0].lat);
-            lng = parseFloat(geoData[0].lon);
-            // Use the real address from Nominatim
-            const addr = geoData[0].address;
-            if (addr) {
-              const parts = [
-                addr.road ? `${addr.house_number ? addr.house_number + ' ' : ''}${addr.road}` : null,
-                addr.postcode,
-                addr.city || addr.town || addr.village || city,
-              ].filter(Boolean);
-              if (parts.length > 0) {
-                resolvedAddress = parts.join(', ');
+        // Try multiple geocoding strategies
+        const queries = [
+          `${raw.venue}, ${city}, France`,
+          `${raw.venue}, France`,
+        ];
+
+        for (const query of queries) {
+          if (geocoded) break;
+          try {
+            const geoRes = await fetch(
+              `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&addressdetails=1&countrycodes=fr`,
+              { headers: { 'User-Agent': 'NightMap/1.0' } }
+            );
+            const geoData = await geoRes.json();
+            if (geoData.length > 0) {
+              const resultLat = parseFloat(geoData[0].lat);
+              const resultLng = parseFloat(geoData[0].lon);
+              
+              // Validate: result should be within ~100km of city center
+              const distKm = Math.sqrt(
+                Math.pow((resultLat - cityLat) * 111, 2) +
+                Math.pow((resultLng - cityLng) * 111 * Math.cos(cityLat * Math.PI / 180), 2)
+              );
+              
+              if (distKm < 100) {
+                lat = resultLat;
+                lng = resultLng;
+                geocoded = true;
+                const addr = geoData[0].address;
+                if (addr) {
+                  const parts = [
+                    addr.road ? `${addr.house_number ? addr.house_number + ' ' : ''}${addr.road}` : null,
+                    addr.postcode,
+                    addr.city || addr.town || addr.village || city,
+                  ].filter(Boolean);
+                  if (parts.length > 0) {
+                    resolvedAddress = parts.join(', ');
+                  }
+                }
               }
             }
-          }
-          await new Promise(r => setTimeout(r, 200));
-        } catch { /* use fallback */ }
+            await new Promise(r => setTimeout(r, 250));
+          } catch { /* try next query */ }
+        }
+      }
+
+      // If not geocoded, add small random offset around city center so markers don't stack
+      if (!geocoded) {
+        lat += (Math.random() - 0.5) * 0.01;
+        lng += (Math.random() - 0.5) * 0.01;
       }
 
       let ticketUrl = raw.url;
