@@ -13,8 +13,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { mockEvents, NightEvent, getDistance } from '@/data/mockEvents';
 import { useAttendance } from '@/hooks/useAttendance';
 import { usePreferredCity } from '@/hooks/usePreferredCity';
-import { supabase } from '@/integrations/supabase/client';
-import { reverseGeocodeCity, fetchShotgunEvents, fetchTicketmasterEvents, deduplicateEvents } from '@/lib/api/shotgun';
+
+import { loadCachedEventsForCity, loadCachedEventsNearby, deduplicateEvents } from '@/lib/api/shotgun';
 import { mapGenres, deduceVibe, deduceType, parsePriceRange } from '@/lib/api/shotgun';
 import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
 import { MapPin, Locate, Sliders, Bell } from 'lucide-react';
@@ -44,10 +44,10 @@ export default function Index() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [allShotgunEvents, setAllShotgunEvents] = useState<NightEvent[]>([]);
   const [shotgunLoading, setShotgunLoading] = useState(false);
-  const [shotgunLoaded, setShotgunLoaded] = useState(false);
   const [locationMode, setLocationMode] = useState<LocationModeType>(savedCity && savedCity.name !== 'Paris' ? 'city' : 'nearby');
   const [selectedCityName, setSelectedCityName] = useState<string | null>(savedCity ? savedCity.name : null);
   const [filterCenter, setFilterCenter] = useState<[number, number] | null>(initCenter);
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>({
     date: 'all',
     price: 'all',
@@ -56,79 +56,41 @@ export default function Index() {
     radiusKm: NEARBY_RADIUS_DEFAULT
   });
 
-  // Load events: first from cache, then fallback to live scraping
+  // Compute a loading key based on mode + city/location
+  const currentLoadKey = locationMode === 'city' && selectedCityName
+    ? `city:${selectedCityName}`
+    : userLocation
+      ? `nearby:${userLocation[0].toFixed(2)},${userLocation[1].toFixed(2)}`
+      : null;
+
+  // Load events from cache when city or location changes
   useEffect(() => {
-    if (shotgunLoaded) return;
-    
-    async function loadAllEvents() {
+    if (!currentLoadKey || currentLoadKey === loadedKey) return;
+
+    let cancelled = false;
+    async function load() {
       setShotgunLoading(true);
       try {
-        // Try loading from cached_events table first
-        const { data: cachedData, error: cacheError } = await supabase
-          .from('cached_events')
-          .select('*');
-
-        if (!cacheError && cachedData && cachedData.length > 0) {
-          const events: NightEvent[] = cachedData.map((e: any) => {
-            const genres = mapGenres(e.genres || []);
-            const vibe = deduceVibe(genres, e.name);
-            const type = deduceType(e.name);
-            return {
-              id: e.id,
-              name: e.name.toUpperCase(),
-              type,
-              vibe,
-              genres,
-              lat: e.lat,
-              lng: e.lng,
-              address: e.address,
-              city: e.city,
-              startTime: e.start_time,
-              endTime: e.end_time,
-              priceRange: parsePriceRange(e.price_range),
-              description: e.description,
-              venue: e.venue,
-              ticketUrl: e.ticket_url,
-              imageColor: '#1a0f2e',
-              isLive: false,
-            };
-          });
-          const dedupedEvents = deduplicateEvents(events);
-          setAllShotgunEvents(dedupedEvents);
-          setShotgunLoaded(true);
-          toast.success(`${dedupedEvents.length} événements chargés`);
+        let events: NightEvent[];
+        if (locationMode === 'city' && selectedCityName) {
+          events = await loadCachedEventsForCity(selectedCityName);
+        } else if (userLocation) {
+          events = await loadCachedEventsNearby(userLocation[0], userLocation[1], filters.radiusKm);
+        } else {
           return;
         }
-
-        // Fallback: fetch live from edge functions
-        const [shotgunResults, tmResults] = await Promise.all([
-          Promise.allSettled(CITIES.map(city => fetchShotgunEvents(city.name))),
-          Promise.allSettled(CITIES.map(city => fetchTicketmasterEvents(city.name))),
-        ]);
-
-        const shotgunEvents = shotgunResults
-          .filter((r): r is PromiseFulfilledResult<NightEvent[]> => r.status === 'fulfilled')
-          .flatMap(r => r.value);
-        
-        const tmEvents = tmResults
-          .filter((r): r is PromiseFulfilledResult<NightEvent[]> => r.status === 'fulfilled')
-          .flatMap(r => r.value);
-
-        const allEvents = deduplicateEvents([...shotgunEvents, ...tmEvents]);
-        setAllShotgunEvents(allEvents);
-        setShotgunLoaded(true);
-        if (allEvents.length > 0) {
-          toast.success(`${allEvents.length} événements chargés en France`);
+        if (!cancelled) {
+          const deduped = deduplicateEvents(events);
+          setAllShotgunEvents(deduped);
+          setLoadedKey(currentLoadKey);
         }
-      } catch {
-        // silent
       } finally {
-        setShotgunLoading(false);
+        if (!cancelled) setShotgunLoading(false);
       }
     }
-
-    loadAllEvents();
-  }, [shotgunLoaded]);
+    load();
+    return () => { cancelled = true; };
+  }, [currentLoadKey, locationMode, selectedCityName, userLocation, filters.radiusKm, loadedKey]);
 
   // Request geolocation on load
   useEffect(() => {
