@@ -289,26 +289,17 @@ export function deduplicateEvents(events: NightEvent[]): NightEvent[] {
  * Load events for a city: try cache first, fallback to live scraping
  */
 export async function loadEventsForCity(city: string): Promise<NightEvent[]> {
-  // 1. Try cache
   const { data, error } = await supabase
     .from('cached_events')
     .select('*')
     .eq('city', city);
 
-  if (!error && data && data.length > 0) {
-    return data.map(cachedToNightEvent);
+  if (error) {
+    console.error('Error loading cached events:', error);
+    return [];
   }
 
-  // 2. Fallback: live fetch from both sources in parallel
-  const [shotgun, tm] = await Promise.allSettled([
-    fetchShotgunEvents(city),
-    fetchTicketmasterEvents(city),
-  ]);
-
-  const shotgunEvents = shotgun.status === 'fulfilled' ? shotgun.value : [];
-  const tmEvents = tm.status === 'fulfilled' ? tm.value : [];
-
-  return [...shotgunEvents, ...tmEvents];
+  return (data || []).map(cachedToNightEvent);
 }
 
 /**
@@ -326,23 +317,12 @@ export async function loadEventsNearby(lat: number, lng: number, radiusKm: numbe
     .gte('lng', lng - lngDelta)
     .lte('lng', lng + lngDelta);
 
-  if (!error && data && data.length > 0) {
-    return data.map(cachedToNightEvent);
+  if (error) {
+    console.error('Error loading nearby cached events:', error);
+    return [];
   }
 
-  // Fallback: try to find the nearest city and fetch live
-  const nearestCity = await reverseGeocodeCity(lat, lng);
-  if (nearestCity) {
-    const [shotgun, tm] = await Promise.allSettled([
-      fetchShotgunEvents(nearestCity),
-      fetchTicketmasterEvents(nearestCity),
-    ]);
-    const shotgunEvents = shotgun.status === 'fulfilled' ? shotgun.value : [];
-    const tmEvents = tm.status === 'fulfilled' ? tm.value : [];
-    return [...shotgunEvents, ...tmEvents];
-  }
-
-  return [];
+  return (data || []).map(cachedToNightEvent);
 }
 
 function cachedToNightEvent(e: any): NightEvent {

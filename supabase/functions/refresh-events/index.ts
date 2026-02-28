@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
     for (const city of citiesToRefresh) {
       try {
         // Fetch from both sources for this city
-        const [shotgunRes, tmRes] = await Promise.allSettled([
+        const [shotgunRes, tmRes, ebRes] = await Promise.allSettled([
           fetch(`${supabaseUrl}/functions/v1/scrape-shotgun`, {
             method: 'POST',
             headers: {
@@ -62,6 +62,14 @@ Deno.serve(async (req) => {
             },
             body: JSON.stringify({ city }),
           }).then(r => r.json()),
+          fetch(`${supabaseUrl}/functions/v1/fetch-eventbrite`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${anonKey}`,
+            },
+            body: JSON.stringify({ city }),
+          }).then(r => r.json()),
         ]);
 
         const events: any[] = [];
@@ -70,6 +78,9 @@ Deno.serve(async (req) => {
         }
         if (tmRes.status === 'fulfilled' && tmRes.value?.events) {
           events.push(...tmRes.value.events);
+        }
+        if (ebRes.status === 'fulfilled' && ebRes.value?.events) {
+          events.push(...ebRes.value.events);
         }
 
         if (events.length === 0) continue;
@@ -93,7 +104,7 @@ Deno.serve(async (req) => {
           description: e.description || '',
           venue: e.venue || '',
           ticket_url: e.ticketUrl || null,
-          source: e.id?.startsWith('tm-') ? 'ticketmaster' : 'shotgun',
+          source: e.id?.startsWith('eb-') ? 'eventbrite' : e.id?.startsWith('tm-') ? 'ticketmaster' : 'shotgun',
           updated_at: new Date().toISOString(),
         }));
 

@@ -183,9 +183,14 @@ export default function Index() {
   }, [setPreferredCity]);
 
   const handleLocate = useCallback(() => {
+    if (!('geolocation' in navigator)) {
+      toast.error('Géolocalisation non disponible');
+      return;
+    }
     setLocating(true);
     setLocationMode('nearby');
     setSelectedCityName(null);
+    setLoadedKey(null); // Force reload for new location
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const loc: [number, number] = [pos.coords.latitude, pos.coords.longitude];
@@ -196,8 +201,12 @@ export default function Index() {
         setLocating(false);
         setFilters((prev) => ({ ...prev, radiusKm: NEARBY_RADIUS_DEFAULT }));
       },
-      () => setLocating(false),
-      { enableHighAccuracy: true, timeout: 8000 }
+      (err) => {
+        console.error('Geolocation error:', err);
+        setLocating(false);
+        toast.error('Impossible d\'obtenir votre position');
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
     );
   }, []);
 
