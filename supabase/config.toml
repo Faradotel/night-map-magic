@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.refresh-events]
 verify_jwt = false
+
+[functions.fetch-eventbrite]
+verify_jwt = false
