@@ -31,7 +31,8 @@ export default function Index() {
   const { user, loading: authLoading } = useAuth();
   const { preferredCity, setPreferredCity } = usePreferredCity();
   const savedCity = CITIES.find(c => c.name === preferredCity);
-  const initCenter: [number, number] = savedCity ? [savedCity.lat, savedCity.lng] : DEFAULT_CENTER;
+  const defaultCity = savedCity || CITIES.find(c => c.name === 'Paris')!;
+  const initCenter: [number, number] = [defaultCity.lat, defaultCity.lng];
 
   const [activeTab, setActiveTab] = useState<Tab>('map');
   const [selectedEvent, setSelectedEvent] = useState<NightEvent | null>(null);
@@ -44,8 +45,8 @@ export default function Index() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [allShotgunEvents, setAllShotgunEvents] = useState<NightEvent[]>([]);
   const [shotgunLoading, setShotgunLoading] = useState(false);
-  const [locationMode, setLocationMode] = useState<LocationModeType>(savedCity && savedCity.name !== 'Paris' ? 'city' : 'nearby');
-  const [selectedCityName, setSelectedCityName] = useState<string | null>(savedCity ? savedCity.name : null);
+  const [locationMode, setLocationMode] = useState<LocationModeType>('city');
+  const [selectedCityName, setSelectedCityName] = useState<string | null>(defaultCity.name);
   const [filterCenter, setFilterCenter] = useState<[number, number] | null>(initCenter);
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>({
