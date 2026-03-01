@@ -78,6 +78,10 @@ const GENRE_MAP: Record<string, MusicGenre> = {
 export function deduceVibe(genres: MusicGenre[], name: string): EventVibe {
   const nameLower = name.toLowerCase();
 
+  // New event categories
+  if (/\b(foot|rugby|basket|tennis|handball|match|stade|marathon|sport|boxe|mma)\b/i.test(nameLower)) return 'sport';
+  if (/\b(théâtre|theater|theatre|comédie|one.?man.?show|humour|stand.?up|exposition|expo|vernissage|musée|galerie|spectacle|cabaret|cirque|danse|ballet|opéra|magie)\b/i.test(nameLower)) return 'culture';
+
   if (/afterwork|after[\s-]?work|apéro|happy\s?hour/i.test(nameLower)) return 'afterwork';
   if (/concert|live|showcase/i.test(nameLower)) return 'concert';
   if (/chill|lounge|acoustic|acoustique|zen/i.test(nameLower)) return 'chill';
@@ -110,9 +114,14 @@ export function mapGenres(rawGenres: string[]): MusicGenre[] {
   return mapped.size > 0 ? Array.from(mapped) : ['electro'];
 }
 
-export function deduceType(name: string): 'soirée' | 'club' | 'bar' | 'concert' | 'afterwork' {
+export function deduceType(name: string): 'soirée' | 'club' | 'bar' | 'concert' | 'afterwork' | 'sport' | 'théâtre' | 'expo' | 'festival' | 'spectacle' {
   const lower = name.toLowerCase();
-  if (/concert|live|showcase|festival/i.test(lower)) return 'concert';
+  if (/\b(foot|rugby|basket|tennis|handball|volley|match|stade|marathon|course|cyclisme|sport|natation|athlétisme|boxe|mma|judo|karaté)\b/i.test(lower)) return 'sport';
+  if (/\b(théâtre|theater|theatre|comédie|tragédie|pièce de théâtre|one.?man.?show|humour|stand.?up|improvisation)\b/i.test(lower)) return 'théâtre';
+  if (/\b(exposition|expo|vernissage|musée|galerie|art contemporain)\b/i.test(lower)) return 'expo';
+  if (/\b(festival|fest\b|fête de la)/i.test(lower)) return 'festival';
+  if (/\b(spectacle|cabaret|cirque|danse|ballet|opéra|magie|marionnettes)\b/i.test(lower)) return 'spectacle';
+  if (/concert|live|showcase/i.test(lower)) return 'concert';
   if (/afterwork|after[\s-]?work|apéro/i.test(lower)) return 'afterwork';
   if (/bar|pub|tavern/i.test(lower)) return 'bar';
   if (/club|discotheque|discothèque/i.test(lower)) return 'club';

@@ -1,11 +1,11 @@
-export type EventVibe = 'rave' | 'chill' | 'afterwork' | 'cosy' | 'concert';
+export type EventVibe = 'rave' | 'chill' | 'afterwork' | 'cosy' | 'concert' | 'culture' | 'sport';
 export type MusicGenre = 'electro' | 'techno' | 'house' | 'pop' | 'rock' | 'indie' | 'r&b' | 'jazz';
 export type PriceRange = 'gratuit' | '€1-10' | '€10-20' | '€20+';
 
 export interface NightEvent {
   id: string;
   name: string;
-  type: 'soirée' | 'club' | 'bar' | 'concert' | 'afterwork';
+  type: 'soirée' | 'club' | 'bar' | 'concert' | 'afterwork' | 'sport' | 'théâtre' | 'expo' | 'festival' | 'spectacle';
   vibe: EventVibe;
   genres: MusicGenre[];
   lat: number;
@@ -54,6 +54,8 @@ export const vibeConfig: Record<EventVibe, { label: string; color: string; emoji
   afterwork: { label: 'Afterwork', color: 'hsl(45 100% 55%)', emoji: '🥂' },
   cosy: { label: 'Cosy', color: 'hsl(25 90% 55%)', emoji: '🕯️' },
   concert: { label: 'Concert', color: 'hsl(275 71% 58%)', emoji: '🎸' },
+  culture: { label: 'Culture', color: 'hsl(200 80% 55%)', emoji: '🎭' },
+  sport: { label: 'Sport', color: 'hsl(140 70% 45%)', emoji: '⚽' },
 };
 
 export const typeConfig: Record<string, { label: string; emoji: string }> = {
@@ -62,4 +64,9 @@ export const typeConfig: Record<string, { label: string; emoji: string }> = {
   bar: { label: 'Bar', emoji: '🍸' },
   concert: { label: 'Concert', emoji: '🎸' },
   afterwork: { label: 'Afterwork', emoji: '🥂' },
+  sport: { label: 'Sport', emoji: '⚽' },
+  théâtre: { label: 'Théâtre', emoji: '🎭' },
+  expo: { label: 'Expo', emoji: '🎨' },
+  festival: { label: 'Festival', emoji: '🎪' },
+  spectacle: { label: 'Spectacle', emoji: '🎤' },
 };

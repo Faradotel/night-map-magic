@@ -64,64 +64,78 @@ Deno.serve(async (req) => {
     }
 
     const slug = CITY_SLUGS[city] || city.toLowerCase().replace(/\s+/g, '-').replace(/[éèê]/g, 'e').replace(/[àâ]/g, 'a');
-    const url = `https://www.eventbrite.fr/d/france--${slug}/events--this-week/music/`;
+    
+    // Scrape multiple Eventbrite categories
+    const categories = [
+      { path: 'events--this-week/', label: 'all' },
+      { path: 'sports-and-fitness--events--this-week/', label: 'sport' },
+      { path: 'performing-visual-arts--events--this-week/', label: 'arts' },
+    ];
 
-    console.log(`Scraping Eventbrite for ${city}: ${url}`);
+    const allRawEvents: any[] = [];
 
-    // Use Firecrawl scrape with JSON extraction
-    const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${firecrawlKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url,
-        formats: ['extract'],
-        extract: {
-          schema: {
-            type: 'object',
-            properties: {
-              events: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    name: { type: 'string', description: 'Event name/title' },
-                    venue: { type: 'string', description: 'Venue name' },
-                    address: { type: 'string', description: 'Full address including city' },
-                    date: { type: 'string', description: 'Event date and time as ISO string or readable format' },
-                    price: { type: 'string', description: 'Price or "Gratuit" if free' },
-                    url: { type: 'string', description: 'Event URL on Eventbrite' },
-                    description: { type: 'string', description: 'Short description or genre tags' },
-                  },
-                  required: ['name'],
-                },
-              },
-            },
-            required: ['events'],
+    for (const cat of categories) {
+      const url = `https://www.eventbrite.fr/d/france--${slug}/${cat.path}`;
+      console.log(`Scraping Eventbrite ${cat.label} for ${city}: ${url}`);
+
+      try {
+        const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${firecrawlKey}`,
+            'Content-Type': 'application/json',
           },
-          prompt: 'Extract all music events listed on this page. For each event, get the name, venue, address, date/time, price, URL, and any genre/description info.',
-        },
-        waitFor: 3000,
-        location: { country: 'FR', languages: ['fr'] },
-      }),
-    });
+          body: JSON.stringify({
+            url,
+            formats: ['extract'],
+            extract: {
+              schema: {
+                type: 'object',
+                properties: {
+                  events: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        name: { type: 'string', description: 'Event name/title' },
+                        venue: { type: 'string', description: 'Venue name' },
+                        address: { type: 'string', description: 'Full address including city' },
+                        date: { type: 'string', description: 'Event date and time as ISO string or readable format' },
+                        price: { type: 'string', description: 'Price or "Gratuit" if free' },
+                        url: { type: 'string', description: 'Event URL on Eventbrite' },
+                        description: { type: 'string', description: 'Short description or category/genre tags' },
+                        category: { type: 'string', description: 'Event category: music, sport, theatre, expo, festival, spectacle, or other' },
+                      },
+                      required: ['name'],
+                    },
+                  },
+                },
+                required: ['events'],
+              },
+              prompt: 'Extract all events listed on this page. For each event, get the name, venue, address, date/time, price, URL, description, and category (music, sport, theatre, expo, festival, spectacle, or other).',
+            },
+            waitFor: 3000,
+            location: { country: 'FR', languages: ['fr'] },
+          }),
+        });
 
-    if (!scrapeResponse.ok) {
-      const errText = await scrapeResponse.text();
-      console.error(`Firecrawl error (${scrapeResponse.status}):`, errText);
-      return new Response(
-        JSON.stringify({ success: true, events: [] }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+        if (scrapeResponse.ok) {
+          const scrapeData = await scrapeResponse.json();
+          const extractedData = scrapeData?.data?.extract || scrapeData?.extract || {};
+          const rawEvents = extractedData?.events || [];
+          for (const e of rawEvents) {
+            e._category = cat.label;
+          }
+          allRawEvents.push(...rawEvents);
+          console.log(`Got ${rawEvents.length} ${cat.label} events for ${city}`);
+        }
+      } catch (err) {
+        console.error(`Error scraping ${cat.label} for ${city}:`, err);
+      }
     }
 
-    const scrapeData = await scrapeResponse.json();
-    const extractedData = scrapeData?.data?.extract || scrapeData?.extract || {};
-    const rawEvents = extractedData?.events || [];
-
-    console.log(`Extracted ${rawEvents.length} Eventbrite events for ${city}`);
+    const rawEvents = allRawEvents;
+    console.log(`Total extracted ${rawEvents.length} Eventbrite events for ${city}`);
 
     // We need to geocode these events — use the city center as fallback
     const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
@@ -193,10 +207,11 @@ Deno.serve(async (req) => {
           lng,
           startTime,
           endTime: null,
-          description: e.description || '',
+          description: (e.category ? `[${e.category}] ` : '') + (e.description || ''),
           ticketUrl: e.url || '',
           price: e.price || null,
           genres: [] as string[],
+          category: e.category || e._category || 'other',
         };
       })
     );
