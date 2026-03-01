@@ -5,7 +5,7 @@ import { useDistanceUnit, convertDistance } from '@/hooks/useDistanceUnit';
 type DateFilter = 'today' | 'weekend' | 'week' | 'all';
 type PriceFilter = 'all' | 'free' | 'paid';
 type GenreFilter = 'electro' | 'techno' | 'house' | 'pop' | 'rock' | 'indie' | 'r&b' | 'jazz';
-type VibeFilter = 'chill' | 'rave' | 'afterwork' | 'cosy' | 'concert';
+type VibeFilter = 'chill' | 'rave' | 'afterwork' | 'cosy' | 'concert' | 'culture' | 'sport';
 
 export interface Filters {
   date: DateFilter;
@@ -28,6 +28,8 @@ const vibeOptions: { key: VibeFilter; label: string; emoji: string }[] = [
   { key: 'afterwork', label: 'Afterwork', emoji: '🥂' },
   { key: 'cosy', label: 'Cosy', emoji: '🕯️' },
   { key: 'concert', label: 'Concert', emoji: '🎸' },
+  { key: 'culture', label: 'Culture', emoji: '🎭' },
+  { key: 'sport', label: 'Sport', emoji: '⚽' },
 ];
 
 const dateChips: { key: DateFilter; label: string }[] = [
