@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { MapPin, Navigation, Search, ChevronDown, X } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
 
 export interface City {
   name: string;
@@ -72,6 +73,8 @@ interface LocationModeProps {
 }
 
 export function LocationMode({ mode, selectedCity, onModeChange, onCitySelect, locating }: LocationModeProps) {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const ref = useRef<HTMLDivElement>(null);
@@ -110,11 +113,11 @@ export function LocationMode({ mode, selectedCity, onModeChange, onCitySelect, l
         onClick={handleSwitchToNearby}
         className="flex items-center gap-1.5 h-9 px-3.5 rounded-full text-xs font-semibold transition-all shrink-0"
         style={{
-          background: mode === 'nearby' ? 'hsl(325 89% 50%)' : 'rgba(26, 13, 21, 0.8)',
+          background: mode === 'nearby' ? 'hsl(325 89% 50%)' : isLight ? 'rgba(255,255,255,0.9)' : 'rgba(26, 13, 21, 0.8)',
           backdropFilter: 'blur(12px)',
-          border: mode === 'nearby' ? 'none' : '1px solid hsl(325 89% 50% / 0.1)',
-          color: mode === 'nearby' ? 'white' : 'hsl(225 15% 70%)',
-          boxShadow: mode === 'nearby' ? '0 0 16px hsl(325 89% 50% / 0.3)' : '0 2px 8px rgba(0,0,0,0.3)',
+          border: mode === 'nearby' ? 'none' : isLight ? '1px solid hsl(230 15% 82%)' : '1px solid hsl(325 89% 50% / 0.1)',
+          color: mode === 'nearby' ? 'white' : isLight ? 'hsl(230 20% 30%)' : 'hsl(225 15% 70%)',
+          boxShadow: mode === 'nearby' ? '0 0 16px hsl(325 89% 50% / 0.3)' : isLight ? '0 2px 8px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.3)',
         }}
       >
         <Navigation size={11} className={locating && mode === 'nearby' ? 'animate-spin' : ''} />
@@ -127,11 +130,11 @@ export function LocationMode({ mode, selectedCity, onModeChange, onCitySelect, l
           onClick={() => setShowDropdown(!showDropdown)}
           className="flex items-center gap-1.5 h-9 px-3.5 rounded-full text-xs font-semibold transition-all shrink-0"
           style={{
-            background: mode === 'city' ? 'hsl(275 71% 58%)' : 'rgba(26, 13, 21, 0.8)',
+            background: mode === 'city' ? 'hsl(275 71% 58%)' : isLight ? 'rgba(255,255,255,0.9)' : 'rgba(26, 13, 21, 0.8)',
             backdropFilter: 'blur(12px)',
-            border: mode === 'city' ? 'none' : '1px solid hsl(325 89% 50% / 0.1)',
-            color: mode === 'city' ? 'white' : 'hsl(225 15% 70%)',
-            boxShadow: mode === 'city' ? '0 0 16px hsl(275 71% 58% / 0.3)' : '0 2px 8px rgba(0,0,0,0.3)',
+            border: mode === 'city' ? 'none' : isLight ? '1px solid hsl(230 15% 82%)' : '1px solid hsl(325 89% 50% / 0.1)',
+            color: mode === 'city' ? 'white' : isLight ? 'hsl(230 20% 30%)' : 'hsl(225 15% 70%)',
+            boxShadow: mode === 'city' ? '0 0 16px hsl(275 71% 58% / 0.3)' : isLight ? '0 2px 8px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.3)',
           }}
         >
           <MapPin size={11} />
@@ -145,9 +148,9 @@ export function LocationMode({ mode, selectedCity, onModeChange, onCitySelect, l
             className="absolute top-full left-0 mt-2 w-60 rounded-2xl overflow-hidden"
             style={{
               zIndex: 9999,
-              background: 'hsl(230 55% 8%)',
-              border: '1px solid hsl(325 89% 50% / 0.15)',
-              boxShadow: '0 12px 40px hsl(230 60% 4% / 0.9)',
+              background: isLight ? 'hsl(0 0% 99%)' : 'hsl(230 55% 8%)',
+              border: isLight ? '1px solid hsl(230 15% 85%)' : '1px solid hsl(325 89% 50% / 0.15)',
+              boxShadow: isLight ? '0 12px 40px rgba(0,0,0,0.12)' : '0 12px 40px hsl(230 60% 4% / 0.9)',
             }}
           >
             {/* Search */}
@@ -155,8 +158,8 @@ export function LocationMode({ mode, selectedCity, onModeChange, onCitySelect, l
               <div
                 className="flex items-center gap-2 h-9 px-3 rounded-xl"
                 style={{
-                  background: 'hsl(230 40% 12%)',
-                  border: '1px solid hsl(230 25% 20%)',
+                  background: isLight ? 'hsl(230 15% 94%)' : 'hsl(230 40% 12%)',
+                  border: isLight ? '1px solid hsl(230 15% 88%)' : '1px solid hsl(230 25% 20%)',
                 }}
               >
                 <Search size={12} style={{ color: 'hsl(225 15% 50%)' }} className="shrink-0" />
@@ -167,7 +170,7 @@ export function LocationMode({ mode, selectedCity, onModeChange, onCitySelect, l
                   onChange={e => setSearchQuery(e.target.value)}
                   autoFocus
                   className="flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground min-w-0"
-                  style={{ color: 'hsl(220 20% 90%)' }}
+                  style={{ color: isLight ? 'hsl(230 20% 25%)' : 'hsl(220 20% 90%)' }}
                 />
                 {searchQuery && (
                   <button onClick={() => setSearchQuery('')} className="shrink-0">
@@ -190,11 +193,11 @@ export function LocationMode({ mode, selectedCity, onModeChange, onCitySelect, l
                     onClick={() => handleCityClick(city)}
                     className="w-full text-left px-3 py-2.5 text-xs font-medium flex items-center gap-2.5 transition-colors"
                     style={{
-                      color: selectedCity === city.name ? 'hsl(275 71% 70%)' : 'hsl(225 15% 75%)',
+                      color: selectedCity === city.name ? 'hsl(275 71% 70%)' : isLight ? 'hsl(230 20% 30%)' : 'hsl(225 15% 75%)',
                       background: selectedCity === city.name ? 'hsl(275 71% 58% / 0.12)' : 'transparent',
                     }}
                     onMouseEnter={e => {
-                      if (selectedCity !== city.name) e.currentTarget.style.background = 'hsl(230 40% 14%)';
+                      if (selectedCity !== city.name) e.currentTarget.style.background = isLight ? 'hsl(230 15% 94%)' : 'hsl(230 40% 14%)';
                     }}
                     onMouseLeave={e => {
                       if (selectedCity !== city.name) e.currentTarget.style.background = 'transparent';

@@ -1,6 +1,7 @@
 import { X, MapPin, Clock, Ticket, ExternalLink, Check } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, formatTime, formatDate } from '@/data/mockEvents';
 import { useEffect, useState } from 'react';
+import { useTheme } from '@/hooks/useTheme';
 
 interface EventDetailSheetProps {
   event: NightEvent | null;
@@ -10,6 +11,8 @@ interface EventDetailSheetProps {
 export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
   const [checkedIn, setCheckedIn] = useState(false);
   const [visible, setVisible] = useState(false);
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
 
   useEffect(() => {
     if (event) {
@@ -59,9 +62,9 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
         <div
           className="mx-2 mb-2 rounded-2xl overflow-hidden border"
           style={{
-            background: 'hsl(230 50% 8%)',
-            borderColor: 'hsl(230 25% 16%)',
-            boxShadow: '0 -8px 40px hsl(230 60% 4% / 0.8)',
+            background: isLight ? 'hsl(0 0% 98%)' : 'hsl(230 50% 8%)',
+            borderColor: isLight ? 'hsl(230 15% 85%)' : 'hsl(230 25% 16%)',
+            boxShadow: isLight ? '0 -8px 40px rgba(0,0,0,0.08)' : '0 -8px 40px hsl(230 60% 4% / 0.8)',
           }}
         >
           {/* Color bar top */}
@@ -98,7 +101,7 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
               <button
                 onClick={onClose}
                 className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors shrink-0"
-                style={{ background: 'hsl(230 35% 14%)' }}
+                style={{ background: isLight ? 'hsl(230 15% 92%)' : 'hsl(230 35% 14%)' }}
               >
                 <X size={16} />
               </button>
@@ -129,9 +132,9 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
                   key={g}
                   className="text-xs px-2 py-0.5 rounded-full border"
                   style={{
-                    background: 'hsl(230 35% 14%)',
-                    borderColor: 'hsl(230 25% 20%)',
-                    color: 'hsl(225 15% 60%)',
+                    background: isLight ? 'hsl(230 15% 92%)' : 'hsl(230 35% 14%)',
+                    borderColor: isLight ? 'hsl(230 15% 85%)' : 'hsl(230 25% 20%)',
+                    color: isLight ? 'hsl(225 15% 40%)' : 'hsl(225 15% 60%)',
                   }}
                 >
                   #{g}
@@ -164,7 +167,7 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
                 <button
                   onClick={() => window.open(event.ticketUrl, '_blank')}
                   className="h-10 px-4 rounded-xl font-bold text-sm flex items-center gap-1.5 border text-muted-foreground hover:text-foreground transition-colors"
-                  style={{ borderColor: 'hsl(230 25% 20%)' }}
+                  style={{ borderColor: isLight ? 'hsl(230 15% 85%)' : 'hsl(230 25% 20%)' }}
                 >
                   <Ticket size={14} />
                   Billets
@@ -174,7 +177,7 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
               <button
                 onClick={() => window.open(`https://maps.google.com/?q=${event.address},${event.city}`, '_blank')}
                 className="h-10 px-4 rounded-xl font-bold text-sm flex items-center gap-1.5 border text-muted-foreground hover:text-foreground transition-colors"
-                style={{ borderColor: 'hsl(230 25% 20%)' }}
+                style={{ borderColor: isLight ? 'hsl(230 15% 85%)' : 'hsl(230 25% 20%)' }}
               >
                 <ExternalLink size={14} />
                 Maps
