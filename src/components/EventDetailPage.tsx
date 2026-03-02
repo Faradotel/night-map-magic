@@ -14,8 +14,8 @@ export function EventDetailPage({ event, onClose, userLocation, attendance }: Ev
   const vibe = vibeConfig[event.vibe];
   const type = typeConfig[event.type];
 
-  const source = event.id.startsWith('tm-') ? 'Ticketmaster' : event.id.startsWith('shotgun-') ? 'Shotgun' : 'NightMap';
-  const sourceColor = source === 'Ticketmaster' ? 'hsl(210 100% 56%)' : source === 'Shotgun' ? 'hsl(25 95% 55%)' : 'hsl(var(--primary))';
+  const source = event.id.startsWith('tm-') ? 'Ticketmaster' : event.id.startsWith('shotgun-') ? 'Shotgun' : event.id.startsWith('eb-') ? 'Eventbrite' : 'NightMap';
+  const sourceColor = source === 'Ticketmaster' ? 'hsl(210 100% 56%)' : source === 'Shotgun' ? 'hsl(25 95% 55%)' : source === 'Eventbrite' ? 'hsl(15 85% 55%)' : 'hsl(var(--primary))';
 
   const priceColor =
     event.priceRange === 'gratuit' ? 'hsl(130 60% 55%)' :
