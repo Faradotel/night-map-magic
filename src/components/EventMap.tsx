@@ -14,11 +14,13 @@ interface EventMapProps {
   radiusKm: number;
 }
 
-function createEventIcon(event: NightEvent, isSelected: boolean): L.DivIcon {
+function createEventIcon(event: NightEvent, isSelected: boolean, isDark: boolean): L.DivIcon {
   const vibe = vibeConfig[event.vibe];
   const typeEmoji = typeConfig[event.type]?.emoji ?? '📍';
   const color = vibe.color;
   const size = isSelected ? 52 : 42;
+  const bg = isDark ? 'rgba(26,13,21,0.85)' : 'rgba(255,255,255,0.92)';
+  const liveDotBorder = isDark ? 'rgba(26,13,21,0.9)' : 'rgba(255,255,255,0.9)';
 
   return L.divIcon({
     className: '',
@@ -26,8 +28,8 @@ function createEventIcon(event: NightEvent, isSelected: boolean): L.DivIcon {
       <div style="position:relative;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;">
         ${isSelected ? `<div style="position:absolute;inset:-4px;border-radius:50%;border:2px solid ${color};animation:ping-slow 1.5s ease-out infinite;opacity:0.3;pointer-events:none;"></div>` : ''}
         ${isSelected && event.isLive ? `<div style="position:absolute;inset:0;border-radius:50%;background:${color}22;animation:ping-slow 1.5s ease-out infinite;pointer-events:none;"></div>` : ''}
-        <div style="width:${size - 6}px;height:${size - 6}px;border-radius:50%;background:rgba(26,13,21,0.85);backdrop-filter:blur(8px);border:2px solid ${color};display:flex;align-items:center;justify-content:center;font-size:${isSelected ? 22 : 18}px;box-shadow:0 0 ${isSelected ? 24 : 14}px ${color}55,0 4px 12px rgba(0,0,0,.5);cursor:pointer;position:relative;z-index:1;">${typeEmoji}</div>
-        ${event.isLive ? `<div style="position:absolute;top:0;right:0;width:10px;height:10px;border-radius:50%;background:hsl(142,71%,45%);border:2px solid rgba(26,13,21,0.9);z-index:2;box-shadow:0 0 8px hsl(142,71%,45%,0.6);pointer-events:none;"></div>` : ''}
+        <div style="width:${size - 6}px;height:${size - 6}px;border-radius:50%;background:${bg};backdrop-filter:blur(8px);border:2px solid ${color};display:flex;align-items:center;justify-content:center;font-size:${isSelected ? 22 : 18}px;box-shadow:0 0 ${isSelected ? 24 : 14}px ${color}55,0 4px 12px rgba(0,0,0,${isDark ? '.5' : '.15'});cursor:pointer;position:relative;z-index:1;">${typeEmoji}</div>
+        ${event.isLive ? `<div style="position:absolute;top:0;right:0;width:10px;height:10px;border-radius:50%;background:hsl(142,71%,45%);border:2px solid ${liveDotBorder};z-index:2;box-shadow:0 0 8px hsl(142,71%,45%,0.6);pointer-events:none;"></div>` : ''}
       </div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
@@ -45,6 +47,7 @@ function createUserIcon(): L.DivIcon {
 
 export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, userLocation, radiusKm }: EventMapProps) {
   const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
@@ -125,12 +128,12 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
 
     events.forEach(event => {
       const marker = L.marker([event.lat, event.lng], {
-        icon: createEventIcon(event, false),
+        icon: createEventIcon(event, false, isDark),
       }).addTo(map);
       marker.on('click', () => onEventSelect(event));
       markersRef.current.set(event.id, marker);
     });
-  }, [events, onEventSelect]);
+  }, [events, onEventSelect, isDark]);
 
   // Selection highlight – only update the 2 affected markers
   useEffect(() => {
@@ -144,7 +147,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       const prevMarker = markersRef.current.get(prevId);
       const prevEvent = events.find(e => e.id === prevId);
       if (prevMarker && prevEvent) {
-        prevMarker.setIcon(createEventIcon(prevEvent, false));
+        prevMarker.setIcon(createEventIcon(prevEvent, false, isDark));
         prevMarker.setZIndexOffset(0);
       }
     }
@@ -153,7 +156,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     if (newId && selectedEvent) {
       const newMarker = markersRef.current.get(newId);
       if (newMarker) {
-        newMarker.setIcon(createEventIcon(selectedEvent, true));
+        newMarker.setIcon(createEventIcon(selectedEvent, true, isDark));
         newMarker.setZIndexOffset(500);
       }
     }
