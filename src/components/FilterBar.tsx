@@ -101,11 +101,11 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
           >
             {/* Header with close button */}
             <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
-              <span className="text-sm font-bold" style={{ color: 'hsl(225 15% 80%)' }}>Filtres</span>
+              <span className="text-sm font-bold" style={{ color: isLight ? 'hsl(230 25% 15%)' : 'hsl(225 15% 80%)' }}>Filtres</span>
               <button
                 onClick={() => setShowPanel(false)}
                 className="w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold"
-                style={{ background: 'hsl(0 0% 100% / 0.08)', color: 'hsl(225 15% 70%)' }}
+                style={{ background: isLight ? 'hsl(0 0% 0% / 0.06)' : 'hsl(0 0% 100% / 0.08)', color: isLight ? 'hsl(230 25% 25%)' : 'hsl(225 15% 70%)' }}
               >
                 ✕
               </button>
@@ -122,8 +122,8 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
                       onClick={() => onChange({ ...filters, date: filters.date === d.key ? 'all' : d.key })}
                       className="h-7 px-2.5 rounded-full text-[11px] font-semibold transition-all"
                       style={{
-                        background: filters.date === d.key ? 'hsl(325 89% 50%)' : 'hsl(0 0% 100% / 0.08)',
-                        color: filters.date === d.key ? 'white' : 'hsl(225 15% 70%)',
+                        background: filters.date === d.key ? 'hsl(325 89% 50%)' : isLight ? 'hsl(0 0% 0% / 0.06)' : 'hsl(0 0% 100% / 0.08)',
+                        color: filters.date === d.key ? 'white' : isLight ? 'hsl(230 25% 15%)' : 'hsl(225 15% 70%)',
                         boxShadow: filters.date === d.key ? '0 0 16px hsl(325 89% 50% / 0.3)' : 'none',
                       }}
                     >
@@ -172,9 +172,9 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
                       onClick={() => onChange({ ...filters, price: p })}
                       className="flex-1 h-7 rounded-full text-[11px] font-semibold transition-all"
                       style={{
-                        background: filters.price === p ? 'hsl(325 89% 50% / 0.2)' : 'hsl(0 0% 100% / 0.06)',
-                        color: filters.price === p ? 'hsl(325 89% 55%)' : 'hsl(225 15% 60%)',
-                        border: filters.price === p ? '1px solid hsl(325 89% 50% / 0.5)' : '1px solid transparent',
+                        background: filters.price === p ? 'hsl(325 89% 50% / 0.2)' : isLight ? 'hsl(0 0% 0% / 0.04)' : 'hsl(0 0% 100% / 0.06)',
+                        color: filters.price === p ? 'hsl(325 89% 55%)' : isLight ? 'hsl(230 25% 15%)' : 'hsl(225 15% 60%)',
+                        border: filters.price === p ? '1px solid hsl(325 89% 50% / 0.5)' : isLight ? '1px solid hsl(0 0% 0% / 0.08)' : '1px solid transparent',
                       }}
                     >
                       {p === 'all' ? 'Tous' : p === 'free' ? 'Gratuit' : 'Payant'}
@@ -193,8 +193,8 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
                       onClick={() => toggleGenre(g)}
                       className="h-7 px-2.5 rounded-full text-[11px] font-semibold transition-all"
                       style={{
-                        background: filters.genres.includes(g) ? 'hsl(325 89% 50%)' : 'hsl(0 0% 100% / 0.08)',
-                        color: filters.genres.includes(g) ? 'white' : 'hsl(225 15% 65%)',
+                        background: filters.genres.includes(g) ? 'hsl(325 89% 50%)' : isLight ? 'hsl(0 0% 0% / 0.06)' : 'hsl(0 0% 100% / 0.08)',
+                        color: filters.genres.includes(g) ? 'white' : isLight ? 'hsl(230 25% 15%)' : 'hsl(225 15% 65%)',
                         boxShadow: filters.genres.includes(g) ? '0 0 12px hsl(325 89% 50% / 0.3)' : 'none',
                       }}
                     >
@@ -214,8 +214,8 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
                       onClick={() => toggleVibe(v.key)}
                       className="h-7 px-2.5 rounded-full text-[11px] font-semibold transition-all"
                       style={{
-                        background: filters.vibes.includes(v.key) ? 'hsl(325 89% 50%)' : 'hsl(0 0% 100% / 0.08)',
-                        color: filters.vibes.includes(v.key) ? 'white' : 'hsl(225 15% 65%)',
+                        background: filters.vibes.includes(v.key) ? 'hsl(325 89% 50%)' : isLight ? 'hsl(0 0% 0% / 0.06)' : 'hsl(0 0% 100% / 0.08)',
+                        color: filters.vibes.includes(v.key) ? 'white' : isLight ? 'hsl(230 25% 15%)' : 'hsl(225 15% 65%)',
                         boxShadow: filters.vibes.includes(v.key) ? '0 0 12px hsl(325 89% 50% / 0.3)' : 'none',
                       }}
                     >
@@ -230,7 +230,7 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
                 <button
                   onClick={() => onChange({ date: 'all', price: 'all', genres: [], vibes: [], radiusKm: 10 })}
                   className="w-full h-7 rounded-full text-[11px] font-semibold transition-colors"
-                  style={{ background: 'hsl(0 0% 100% / 0.06)', color: 'hsl(225 15% 55%)' }}
+                  style={{ background: isLight ? 'hsl(0 0% 0% / 0.04)' : 'hsl(0 0% 100% / 0.06)', color: isLight ? 'hsl(230 25% 25%)' : 'hsl(225 15% 55%)' }}
                 >
                   Réinitialiser
                 </button>
