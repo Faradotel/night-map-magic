@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Sliders, Music, Zap } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
 import { useDistanceUnit, convertDistance } from '@/hooks/useDistanceUnit';
 
 type DateFilter = 'today' | 'weekend' | 'week' | 'all';
@@ -43,6 +44,8 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
   const [showPanel, setShowPanel] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const { unit, cycleUnit, unitLabel } = useDistanceUnit();
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
 
   useEffect(() => {
     function onOutside(e: MouseEvent) {
@@ -87,14 +90,14 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
         <div className="absolute inset-x-3 top-0 pointer-events-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
           <div
             className="rounded-2xl border overflow-hidden flex flex-col"
-            style={{
-              background: 'rgba(26, 13, 21, 0.95)',
-              borderColor: 'hsl(325 89% 50% / 0.15)',
-              backdropFilter: 'blur(20px)',
-              animation: 'fade-in 0.2s ease-out',
-              boxShadow: '0 12px 40px hsl(230 60% 4% / 0.8)',
-              maxHeight: 'calc(100vh - 200px)',
-            }}
+             style={{
+               background: isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(26, 13, 21, 0.95)',
+               borderColor: isLight ? 'hsl(325 89% 50% / 0.12)' : 'hsl(325 89% 50% / 0.15)',
+               backdropFilter: 'blur(20px)',
+               animation: 'fade-in 0.2s ease-out',
+               boxShadow: isLight ? '0 12px 40px rgba(0,0,0,0.1)' : '0 12px 40px hsl(230 60% 4% / 0.8)',
+               maxHeight: 'calc(100vh - 200px)',
+             }}
           >
             {/* Header with close button */}
             <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
