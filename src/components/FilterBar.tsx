@@ -208,6 +208,7 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
                       style={{
                         background: active ? gc.color : isLight ? 'hsl(0 0% 0% / 0.06)' : 'hsl(0 0% 100% / 0.08)',
                         color: active ? 'white' : isLight ? 'hsl(230 25% 15%)' : 'hsl(225 15% 65%)',
+                        border: `1.5px solid ${active ? gc.color : gc.color + '55'}`,
                         boxShadow: active ? `0 0 12px ${gc.color}55` : 'none',
                       }}
                     >
