@@ -357,10 +357,28 @@ export function FriendsScreen({ allEvents, attendance }: FriendsScreenProps) {
                           <div className="space-y-1 ml-12">
                             {events.slice(0, 3).map(ev => {
                               const fullEvent = allEvents.find(e => e.id === ev.event_id);
+                              const eventToShow = fullEvent || {
+                                id: ev.event_id,
+                                name: ev.event_name,
+                                city: ev.event_city,
+                                venue: '',
+                                address: '',
+                                lat: 0,
+                                lng: 0,
+                                startTime: ev.event_date || '',
+                                endTime: '',
+                                genres: [],
+                                vibe: 'chill' as const,
+                                type: 'soirée' as const,
+                                priceRange: '€10-20' as const,
+                                description: '',
+                                imageColor: '#1a0f2e',
+                                isLive: false,
+                              } as NightEvent;
                               return (
                                 <button
                                   key={ev.event_id}
-                                  onClick={() => fullEvent && setDetailEvent(fullEvent)}
+                                  onClick={() => setDetailEvent(eventToShow)}
                                   className="w-full text-left flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/5 transition-colors"
                                 >
                                   <div className="min-w-0">
