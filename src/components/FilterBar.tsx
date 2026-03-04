@@ -22,7 +22,17 @@ interface FilterBarProps {
   isNearbyMode?: boolean;
 }
 
-const genreOptions: GenreFilter[] = ['electro', 'techno', 'house', 'pop', 'rock', 'indie', 'r&b', 'jazz'];
+const genreConfig: Record<GenreFilter, { label: string; color: string }> = {
+  electro: { label: 'Electro', color: 'hsl(270 80% 60%)' },
+  techno: { label: 'Techno', color: 'hsl(315 100% 53%)' },
+  house: { label: 'House', color: 'hsl(30 90% 55%)' },
+  pop: { label: 'Pop', color: 'hsl(340 80% 60%)' },
+  rock: { label: 'Rock', color: 'hsl(0 75% 55%)' },
+  indie: { label: 'Indie', color: 'hsl(160 60% 45%)' },
+  'r&b': { label: 'R&B', color: 'hsl(45 90% 50%)' },
+  jazz: { label: 'Jazz', color: 'hsl(200 70% 50%)' },
+};
+const genreOptions = Object.keys(genreConfig) as GenreFilter[];
 const vibeOptions: { key: VibeFilter; label: string; emoji: string }[] = [
   { key: 'rave', label: 'Rave', emoji: '⚡' },
   { key: 'chill', label: 'Chill', emoji: '🌊' },
@@ -187,20 +197,24 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Genres</span>
                 <div className="flex flex-wrap gap-1">
-                  {genreOptions.map(g => (
+                  {genreOptions.map(g => {
+                    const gc = genreConfig[g];
+                    const active = filters.genres.includes(g);
+                    return (
                     <button
                       key={g}
                       onClick={() => toggleGenre(g)}
                       className="h-7 px-2.5 rounded-full text-[11px] font-semibold transition-all"
                       style={{
-                        background: filters.genres.includes(g) ? 'hsl(325 89% 50%)' : isLight ? 'hsl(0 0% 0% / 0.06)' : 'hsl(0 0% 100% / 0.08)',
-                        color: filters.genres.includes(g) ? 'white' : isLight ? 'hsl(230 25% 15%)' : 'hsl(225 15% 65%)',
-                        boxShadow: filters.genres.includes(g) ? '0 0 12px hsl(325 89% 50% / 0.3)' : 'none',
+                        background: active ? gc.color : isLight ? 'hsl(0 0% 0% / 0.06)' : 'hsl(0 0% 100% / 0.08)',
+                        color: active ? 'white' : isLight ? 'hsl(230 25% 15%)' : 'hsl(225 15% 65%)',
+                        boxShadow: active ? `0 0 12px ${gc.color}55` : 'none',
                       }}
                     >
-                      {g}
+                      {gc.label}
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
