@@ -52,7 +52,7 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
             value={query}
             onChange={e => setQuery(e.target.value)}
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
-            autoFocus
+            
           />
           {query && (
             <button onClick={() => setQuery('')}>
