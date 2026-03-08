@@ -134,8 +134,8 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     markersRef.current.clear();
 
     const clusterGroup = L.markerClusterGroup({
-      maxClusterRadius: 45,
-      spiderfyOnMaxZoom: true,
+      maxClusterRadius: 30,
+      disableClusteringAtZoom: 14,
       showCoverageOnHover: false,
       zoomToBoundsOnClick: true,
       iconCreateFunction: (cluster) => {
