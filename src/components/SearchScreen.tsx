@@ -85,7 +85,7 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
                   }}
                 >
                   <div className="flex">
-                    <div className="w-1 shrink-0" style={{ background: 'hsl(var(--accent))' }} />
+                    <div className="w-1 shrink-0" style={{ background: vibe.color }} />
                     <div className="flex-1 p-3">
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <div>
