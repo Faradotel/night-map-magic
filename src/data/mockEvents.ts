@@ -21,6 +21,7 @@ export interface NightEvent {
   imageColor: string; // gradient color for placeholder
   isLive?: boolean;
   distance?: number;
+  externalAttendees?: number | null;
 }
 
 export const mockEvents: NightEvent[] = [];

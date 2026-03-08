@@ -147,7 +147,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance }: Ev
             <Info size={12} />
             Source : {source}
           </div>
-          {attendanceCount != null && attendanceCount > 0 && (
+          {event.externalAttendees != null && event.externalAttendees > 0 && (
             <div
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold ml-2"
               style={{
@@ -157,7 +157,20 @@ export function EventDetailPage({ event, onClose, userLocation, attendance }: Ev
               }}
             >
               <Users size={12} />
-              {attendanceCount} participant{attendanceCount > 1 ? 's' : ''}
+              {event.externalAttendees} inscrit{event.externalAttendees > 1 ? 's' : ''}
+            </div>
+          )}
+          {attendanceCount != null && attendanceCount > 0 && (
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold ml-2"
+              style={{
+                borderColor: 'hsl(var(--primary) / 0.4)',
+                color: 'hsl(var(--primary))',
+                background: 'hsl(var(--primary) / 0.1)',
+              }}
+            >
+              <Users size={12} />
+              {attendanceCount} via PulseMap
             </div>
           )}
         </div>
