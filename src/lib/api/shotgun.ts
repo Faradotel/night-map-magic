@@ -354,7 +354,8 @@ function cachedToNightEvent(e: any): NightEvent {
     description: e.description,
     venue: e.venue,
     ticketUrl: e.ticket_url,
-    imageColor: '#1a0f2e',
+    imageColor: e.image_color || '#1a0f2e',
+    imageUrl: e.image_url || undefined,
     isLive: false,
     externalAttendees: e.external_attendees || null,
   };
