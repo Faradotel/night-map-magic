@@ -96,8 +96,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance }: Ev
             <Share2 size={16} className="text-foreground" />
           </button>
         </div>
-        <div className="relative pb-1" />
-        </div>
+        
 
         {/* Event icon + title */}
         <div className="relative px-5 pb-6">
