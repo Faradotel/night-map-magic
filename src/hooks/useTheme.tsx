@@ -12,7 +12,7 @@ const ThemeCtx = createContext<ThemeContext>({ theme: 'dark', toggleTheme: () =>
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem('nightmap-theme') as Theme) || 'dark';
+      return (localStorage.getItem('pulsemap-theme') as Theme) || 'dark';
     }
     return 'dark';
   });
