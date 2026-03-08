@@ -73,9 +73,18 @@ export function EventDetailPage({ event, onClose, userLocation, attendance }: Ev
         />
 
         {/* Swipe-down hint + share */}
-        <div className="relative flex flex-col items-center pt-6 pb-2">
-          <div className="w-10 h-1 rounded-full opacity-30 mb-1" style={{ background: 'hsl(0 0% 50%)' }} />
-          <ChevronDown size={16} className="opacity-30" style={{ color: 'hsl(0 0% 50%)' }} />
+        <div className="relative flex items-center justify-between pt-6 pb-2 px-4">
+          <div className="flex-1 flex flex-col items-center">
+            <div className="w-10 h-1 rounded-full opacity-30 mb-1" style={{ background: 'hsl(0 0% 50%)' }} />
+            <ChevronDown size={16} className="opacity-30" style={{ color: 'hsl(0 0% 50%)' }} />
+          </div>
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-6 w-9 h-9 rounded-full flex items-center justify-center border text-muted-foreground hover:text-foreground transition-colors"
+            style={{ background: 'hsl(var(--secondary))', borderColor: 'hsl(var(--border))' }}
+          >
+            <X size={16} />
+          </button>
         </div>
         <div className="relative flex justify-end px-4 pb-1">
           <button
@@ -133,7 +142,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance }: Ev
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto scrollbar-hidden pb-32">
+      <div className="flex-1 pb-32">
         {/* Source badge */}
         <div className="px-5 mb-4">
           <div
