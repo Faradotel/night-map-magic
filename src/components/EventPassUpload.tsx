@@ -81,14 +81,22 @@ export function EventPassUpload({ eventId, eventName }: EventPassUploadProps) {
       if (!file) return;
 
       setMode('saving');
+      
+      // Create a temporary off-screen container for scanning
+      const tempDiv = document.createElement('div');
+      tempDiv.id = 'qr-file-scanner-temp';
+      tempDiv.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;';
+      document.body.appendChild(tempDiv);
+      
       try {
-        const scanner = new Html5Qrcode('qr-file-scanner');
+        const scanner = new Html5Qrcode('qr-file-scanner-temp');
         const result = await scanner.scanFile(file, true);
         await scanner.clear();
+        tempDiv.remove();
         await handleScanSuccess(result, file);
       } catch {
         // QR not found in image — still save the image as proof
-        setMode('saving');
+        tempDiv.remove();
         const result = await savePass({ eventName, qrData: null, imageFile: file });
         setMode('idle');
         if (result) {
