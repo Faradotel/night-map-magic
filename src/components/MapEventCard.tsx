@@ -1,8 +1,9 @@
 import { useRef, useCallback } from 'react';
-import { X, ChevronUp } from 'lucide-react';
+import { X, ChevronUp, Users } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, getDistance } from '@/data/mockEvents';
 import { useDistanceUnit } from '@/hooks/useDistanceUnit';
 import { useTheme } from '@/hooks/useTheme';
+import { useEventAttendanceCount } from '@/hooks/useEventAttendanceCount';
 
 interface MapEventCardProps {
   event: NightEvent;
@@ -21,6 +22,7 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
     ? getDistance(userLocation[0], userLocation[1], event.lat, event.lng)
     : null;
 
+  const attendanceCount = useEventAttendanceCount(event.id);
   const source = event.id.startsWith('tm-') ? 'Ticketmaster' : event.id.startsWith('shotgun-') ? 'Shotgun' : event.id.startsWith('eb-') ? 'Eventbrite' : null;
 
   // Swipe tracking
@@ -93,9 +95,14 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
               )}
             </div>
             <h3 className="text-sm font-bold tracking-tight leading-tight truncate" style={{ color: isLight ? 'hsl(230 25% 15%)' : undefined }}>{event.name}</h3>
-            <p className="text-[11px]" style={{ color: isLight ? 'hsl(225 15% 40%)' : 'hsl(225 15% 50%)' }}>
+            <p className="text-[11px] flex items-center gap-1" style={{ color: isLight ? 'hsl(225 15% 40%)' : 'hsl(225 15% 50%)' }}>
               {event.genres[0] || type.label}
               {distanceKm != null && ` • ${formatDistance(distanceKm)}`}
+              {attendanceCount != null && attendanceCount > 0 && (
+                <span className="inline-flex items-center gap-0.5 ml-1">
+                  <Users size={10} /> {attendanceCount}
+                </span>
+              )}
             </p>
           </div>
 

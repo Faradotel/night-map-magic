@@ -278,6 +278,10 @@ export type Database = {
         Args: { _user_a: string; _user_b: string }
         Returns: boolean
       }
+      get_event_attendance_count: {
+        Args: { _event_id: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
