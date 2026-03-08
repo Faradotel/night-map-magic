@@ -1,4 +1,5 @@
 import { useRef, useCallback } from 'react';
+import { toast } from 'sonner';
 import { X, MapPin, Clock, Ticket, ExternalLink, Check, ChevronDown, Share2, Music, Users, Info } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, formatTime, formatDate } from '@/data/mockEvents';
 import { useEventAttendanceCount } from '@/hooks/useEventAttendanceCount';
@@ -50,9 +51,23 @@ export function EventDetailPage({ event, onClose, userLocation, attendance }: Ev
     event.priceRange === '€10-20' ? 'hsl(45 100% 55%)' : 'hsl(var(--accent))';
 
   const handleShare = async () => {
+    const shareUrl = event.ticketUrl || window.location.href;
     const shareText = `Hey, rejoins-moi ici ! 🎶\n${event.name} — ${event.venue}, ${event.city}`;
+    
     if (navigator.share) {
-      await navigator.share({ title: event.name, text: shareText, url: event.ticketUrl || window.location.href });
+      try {
+        await navigator.share({ title: event.name, text: shareText, url: shareUrl });
+      } catch {
+        // User cancelled share
+      }
+    } else {
+      // Desktop fallback: copy link to clipboard
+      try {
+        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+        toast.success('Lien copié !');
+      } catch {
+        window.prompt('Copie ce lien :', shareUrl);
+      }
     }
   };
 
