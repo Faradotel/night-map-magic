@@ -12,7 +12,7 @@ const ThemeCtx = createContext<ThemeContext>({ theme: 'dark', toggleTheme: () =>
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem('nightmap-theme') as Theme) || 'dark';
+      return (localStorage.getItem('pulsemap-theme') as Theme) || 'dark';
     }
     return 'dark';
   });
@@ -21,7 +21,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const root = document.documentElement;
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
-    localStorage.setItem('nightmap-theme', theme);
+    localStorage.setItem('pulsemap-theme', theme);
   }, [theme]);
 
   const toggleTheme = () => setTheme(t => (t === 'dark' ? 'light' : 'dark'));

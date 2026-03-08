@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 
-const STORAGE_KEY = 'nightmap_preferred_city';
+const STORAGE_KEY = 'pulsemap_preferred_city';
 const DEFAULT_CITY = 'Paris';
 
 export function usePreferredCity() {

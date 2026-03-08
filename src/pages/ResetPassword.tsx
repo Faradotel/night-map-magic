@@ -90,7 +90,7 @@ export default function ResetPassword() {
             className="w-full h-12 rounded-xl font-bold text-sm transition-all active:scale-95"
             style={{ background: 'hsl(var(--accent))', color: 'white', boxShadow: '0 0 20px hsl(var(--accent) / 0.4)' }}
           >
-            Retour à NightMap
+            Retour à PulseMap
           </button>
         </div>
       </div>

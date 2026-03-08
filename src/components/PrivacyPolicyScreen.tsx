@@ -31,12 +31,12 @@ export function PrivacyPolicyScreen({ onBack }: PrivacyPolicyScreenProps) {
               <Shield size={20} style={{ color: 'hsl(var(--accent))' }} />
             </div>
             <div>
-              <p className="text-sm font-bold text-foreground">NightMap – RGPD</p>
+              <p className="text-sm font-bold text-foreground">PulseMap – RGPD</p>
               <p className="text-[10px] text-muted-foreground">Dernière mise à jour : février 2026</p>
             </div>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            NightMap s'engage à protéger la vie privée de ses utilisateurs conformément au Règlement Général sur la Protection des Données (RGPD – UE 2016/679) et à la loi Informatique et Libertés.
+            PulseMap s'engage à protéger la vie privée de ses utilisateurs conformément au Règlement Général sur la Protection des Données (RGPD – UE 2016/679) et à la loi Informatique et Libertés.
           </p>
         </div>
 
@@ -65,7 +65,7 @@ export function PrivacyPolicyScreen({ onBack }: PrivacyPolicyScreenProps) {
           title="2. Géolocalisation"
         >
           <p className="text-xs text-muted-foreground leading-relaxed">
-            NightMap peut utiliser ta position géographique pour afficher les événements proches de toi. Cette donnée est traitée <strong className="text-foreground">localement dans ton navigateur</strong> et n'est jamais transmise ni stockée sur nos serveurs. Tu peux refuser la géolocalisation à tout moment via les paramètres de ton navigateur, et utiliser le mode « Ville » à la place.
+            PulseMap peut utiliser ta position géographique pour afficher les événements proches de toi. Cette donnée est traitée <strong className="text-foreground">localement dans ton navigateur</strong> et n'est jamais transmise ni stockée sur nos serveurs. Tu peux refuser la géolocalisation à tout moment via les paramètres de ton navigateur, et utiliser le mode « Ville » à la place.
           </p>
         </Section>
 

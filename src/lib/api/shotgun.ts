@@ -135,7 +135,7 @@ export async function reverseGeocodeCity(lat: number, lng: number): Promise<stri
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&addressdetails=1`,
-      { headers: { 'User-Agent': 'NightMap/1.0' } }
+      { headers: { 'User-Agent': 'PulseMap/1.0' } }
     );
     const data = await res.json();
     return data?.address?.city || data?.address?.town || data?.address?.village || null;
