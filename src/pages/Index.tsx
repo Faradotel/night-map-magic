@@ -17,6 +17,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { AddEventSheet } from '@/components/AddEventSheet';
 import { NightEvent as NightEventType } from '@/data/mockEvents';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useOfflineEvents } from '@/hooks/useOfflineEvents';
 
 import { loadEventsForCity, loadEventsNearby, deduplicateEvents } from '@/lib/api/shotgun';
 import { mapGenres, deduceVibe, deduceType, parsePriceRange } from '@/lib/api/shotgun';
