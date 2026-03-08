@@ -208,17 +208,14 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Check if address mentions a different city (e.g. "Lyon · ..." for a Grenoble search)
-      // Eventbrite format: "CityName · Venue"
-      const addrParts = (e.address || '').split('·');
-      if (addrParts.length >= 2) {
-        const addrCity = addrParts[0].trim().toLowerCase();
-        const targetCity = city.toLowerCase();
-        // If the address explicitly names a different city, reject it
-        if (addrCity && addrCity !== targetCity && !addrCity.includes(targetCity) && !targetCity.includes(addrCity)) {
-          console.log(`Rejected wrong city: "${e.name}" (${e.address}) — "${addrParts[0].trim()}" ≠ ${city}`);
-          continue;
-        }
+      // Check if address mentions a different city
+      const addrClean = (e.address || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const targetLower = city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const KNOWN_OTHER_CITIES = ['lyon','annecy','chambery','villeurbanne','valence','saint-etienne','geneve','geneva','lausanne','zurich','turin','milano','barcelona','bruxelles','crest','voiron'];
+      const mentionsOther = KNOWN_OTHER_CITIES.filter(c => c !== targetLower).find(c => addrClean === c || addrClean.startsWith(c + ' ') || addrClean.startsWith(c + ',') || addrClean.startsWith(c + ' ·'));
+      if (mentionsOther) {
+        console.log(`Rejected wrong city: "${e.name}" (${e.address})`);
+        continue;
       }
 
       // Fix date
