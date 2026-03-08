@@ -32,6 +32,7 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
         event={detailEvent}
         onClose={() => setDetailEvent(null)}
         attendance={attendance}
+        favorites={favorites}
       />
     );
   }

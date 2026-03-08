@@ -209,7 +209,7 @@ export function FriendsScreen({ allEvents, attendance }: FriendsScreenProps) {
   }
 
   if (detailEvent) {
-    return <EventDetailPage event={detailEvent} onClose={() => setDetailEvent(null)} attendance={attendance} />;
+    return <EventDetailPage event={detailEvent} onClose={() => setDetailEvent(null)} attendance={attendance} favorites={useFavorites()} />;
   }
 
   return (
