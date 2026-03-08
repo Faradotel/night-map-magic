@@ -160,8 +160,6 @@ export function EventPassUpload({ eventId, eventName }: EventPassUploadProps) {
         className="hidden"
         onChange={handleFileUpload}
       />
-      {/* Hidden div for file scanning — must not use display:none or html5-qrcode fails */}
-      <div id="qr-file-scanner" style={{ width: 0, height: 0, overflow: 'hidden', position: 'absolute' }} />
 
       {mode === 'camera' ? (
         <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'hsl(var(--border))' }}>
