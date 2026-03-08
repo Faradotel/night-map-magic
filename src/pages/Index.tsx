@@ -49,6 +49,7 @@ export default function Index() {
   const [locating, setLocating] = useState(false);
   const attendance = useAttendance();
   const favorites = useFavorites();
+  const { cacheEvents, getCachedEvents, isOffline } = useOfflineEvents();
   const [showNotifications, setShowNotifications] = useState(false);
   const [allShotgunEvents, setAllShotgunEvents] = useState<NightEvent[]>([]);
   const [shotgunLoading, setShotgunLoading] = useState(false);
