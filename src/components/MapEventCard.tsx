@@ -22,6 +22,7 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
     ? getDistance(userLocation[0], userLocation[1], event.lat, event.lng)
     : null;
 
+  const attendanceCount = useEventAttendanceCount(event.id);
   const source = event.id.startsWith('tm-') ? 'Ticketmaster' : event.id.startsWith('shotgun-') ? 'Shotgun' : event.id.startsWith('eb-') ? 'Eventbrite' : null;
 
   // Swipe tracking
