@@ -208,6 +208,14 @@ Deno.serve(async (req) => {
         continue;
       }
 
+      // Check if address mentions a different French city (e.g. "Lyon · ..." for a Grenoble search)
+      const otherCities = Object.keys(CITY_COORDS).filter(c => c.toLowerCase() !== city.toLowerCase());
+      const addrStart = addrLower.split('·')[0].trim();
+      if (otherCities.some(c => addrStart === c.toLowerCase() || addrLower.startsWith(c.toLowerCase() + ' ·'))) {
+        console.log(`Rejected wrong city: "${e.name}" (${e.address}) — not in ${city}`);
+        continue;
+      }
+
       // Fix date
       const startTime = fixEventDate(e.date || '');
       if (!startTime) {
