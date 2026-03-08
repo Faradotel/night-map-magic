@@ -47,6 +47,7 @@ export default function Index() {
   const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
   const [locating, setLocating] = useState(false);
   const attendance = useAttendance();
+  const favorites = useFavorites();
   const [showNotifications, setShowNotifications] = useState(false);
   const [allShotgunEvents, setAllShotgunEvents] = useState<NightEvent[]>([]);
   const [shotgunLoading, setShotgunLoading] = useState(false);
