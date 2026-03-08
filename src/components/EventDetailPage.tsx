@@ -70,20 +70,12 @@ export function EventDetailPage({ event, onClose, userLocation, attendance }: Ev
           style={{ background: 'linear-gradient(to top, hsl(var(--background)), transparent)' }}
         />
 
-        {/* Top bar */}
-        <div className="relative flex items-center justify-between px-4 pt-10 pb-2">
-          <button
-            onClick={onClose}
-            className="w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90"
-            style={{
-              background: 'var(--controls-bg)',
-              backdropFilter: 'blur(12px)',
-              borderColor: 'var(--controls-border)',
-            }}
-          >
-            <ArrowLeft size={18} className="text-foreground" />
-          </button>
-
+        {/* Swipe-down hint + share */}
+        <div className="relative flex flex-col items-center pt-6 pb-2">
+          <div className="w-10 h-1 rounded-full opacity-30 mb-1" style={{ background: 'hsl(0 0% 50%)' }} />
+          <ChevronDown size={16} className="opacity-30" style={{ color: 'hsl(0 0% 50%)' }} />
+        </div>
+        <div className="relative flex justify-end px-4 pb-1">
           <button
             onClick={handleShare}
             className="w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90"
