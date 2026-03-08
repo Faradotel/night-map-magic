@@ -13,11 +13,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { mockEvents, NightEvent, getDistance } from '@/data/mockEvents';
 import { useAttendance } from '@/hooks/useAttendance';
 import { usePreferredCity } from '@/hooks/usePreferredCity';
+import { useUserRole } from '@/hooks/useUserRole';
+import { AddEventSheet } from '@/components/AddEventSheet';
+import { NightEvent as NightEventType } from '@/data/mockEvents';
 
 import { loadEventsForCity, loadEventsNearby, deduplicateEvents } from '@/lib/api/shotgun';
 import { mapGenres, deduceVibe, deduceType, parsePriceRange } from '@/lib/api/shotgun';
 import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
-import { MapPin, Locate, Sliders, Bell } from 'lucide-react';
+import { MapPin, Locate, Sliders, Bell, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 type Tab = 'map' | 'search' | 'friends' | 'profile';
@@ -29,6 +32,7 @@ const CITY_RADIUS_DEFAULT = 40;
 
 export default function Index() {
   const { user, loading: authLoading } = useAuth();
+  const { isPro } = useUserRole();
   const { preferredCity, setPreferredCity } = usePreferredCity();
   const savedCity = CITIES.find(c => c.name === preferredCity);
   const defaultCity = savedCity || CITIES.find(c => c.name === 'Paris')!;
@@ -45,6 +49,8 @@ export default function Index() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [allShotgunEvents, setAllShotgunEvents] = useState<NightEvent[]>([]);
   const [shotgunLoading, setShotgunLoading] = useState(false);
+  const [showAddEvent, setShowAddEvent] = useState(false);
+  const [userEvents, setUserEvents] = useState<NightEventType[]>([]);
   const [locationMode, setLocationMode] = useState<LocationModeType>('nearby');
   const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
   const [filterCenter, setFilterCenter] = useState<[number, number] | null>(null);
@@ -113,7 +119,7 @@ export default function Index() {
   }, []);
 
   // Filter events using filterCenter (user location or city center)
-  const allEvents = useMemo(() => [...mockEvents, ...allShotgunEvents], [allShotgunEvents]);
+  const allEvents = useMemo(() => [...mockEvents, ...allShotgunEvents, ...userEvents], [allShotgunEvents, userEvents]);
 
   const filteredEvents = useMemo(() => allEvents.filter((event) => {
     if (filters.price === 'free' && event.priceRange !== 'gratuit') return false;
@@ -346,6 +352,32 @@ export default function Index() {
             handleEventSelect(ev);
             setShowNotifications(false);
           }
+        }}
+      />
+
+      {/* ── ADD EVENT FAB (pro only) ── */}
+      {isPro && activeTab === 'map' && (
+        <button
+          onClick={() => setShowAddEvent(true)}
+          className="absolute z-[450] w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90"
+          style={{
+            bottom: selectedEvent ? '232px' : '92px',
+            left: '16px',
+            background: 'hsl(var(--accent))',
+            boxShadow: '0 4px 20px hsl(var(--accent) / 0.5)',
+          }}
+        >
+          <Plus size={24} color="white" strokeWidth={2.5} />
+        </button>
+      )}
+
+      {/* ── ADD EVENT SHEET ── */}
+      <AddEventSheet
+        open={showAddEvent}
+        onClose={() => setShowAddEvent(false)}
+        onAdd={(event) => {
+          setUserEvents(prev => [...prev, event]);
+          toast.success('Événement ajouté !');
         }}
       />
 
