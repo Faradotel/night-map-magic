@@ -325,6 +325,7 @@ export default function Index() {
             onClose={() => setShowDetail(false)}
             userLocation={userLocation}
             attendance={attendance}
+            favorites={favorites}
           />
         )}
       </div>
