@@ -6,6 +6,9 @@ import { StepBasicInfo } from './add-event/StepBasicInfo';
 import { StepLocation } from './add-event/StepLocation';
 import { StepDetails } from './add-event/StepDetails';
 import { StepPreview } from './add-event/StepPreview';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 interface AddEventSheetProps {
   open: boolean;
@@ -31,28 +34,21 @@ function derivePriceRange(priceStr: string): PriceRange {
   return '€20+';
 }
 
+const EMPTY_FORM: EventFormData = {
+  name: '', date: '', time: '22:00', type: 'soirée', vibe: 'rave',
+  genres: [], address: '', venue: '', selectedAddress: null,
+  description: '', price: '', imageFile: null,
+};
+
 export function AddEventSheet({ open, onClose, onAdd }: AddEventSheetProps) {
+  const { user } = useAuth();
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [formData, setFormData] = useState<EventFormData>({
-    name: '',
-    date: '',
-    time: '22:00',
-    type: 'soirée',
-    vibe: 'rave',
-    genres: [],
-    address: '',
-    venue: '',
-    selectedAddress: null,
-    description: '',
-    price: '',
-  });
+  const [formData, setFormData] = useState<EventFormData>({ ...EMPTY_FORM });
 
   function updateData(patch: Partial<EventFormData>) {
     setFormData(prev => ({ ...prev, ...patch }));
-    // Clear relevant errors
     const keys = Object.keys(patch);
     setErrors(prev => {
       const next = { ...prev };
@@ -86,44 +82,91 @@ export function AddEventSheet({ open, onClose, onAdd }: AddEventSheetProps) {
     setStep(prev => Math.max(prev - 1, 0));
   }
 
-  function handleSubmit() {
-    if (!formData.selectedAddress) return;
+  async function handleSubmit() {
+    if (!formData.selectedAddress || !user) return;
     setIsSubmitting(true);
 
-    const startTime = new Date(`${formData.date}T${formData.time}:00`).toISOString();
-    const parts = formData.selectedAddress.display_name.split(', ');
-    const city = parts[parts.length - 3] || parts[0];
+    try {
+      const startTime = new Date(`${formData.date}T${formData.time}:00`).toISOString();
+      const parts = formData.selectedAddress.display_name.split(', ');
+      const city = parts[parts.length - 3] || parts[0];
+      const eventId = `user-${Date.now()}`;
+      const color = imageColors[Math.floor(Math.random() * imageColors.length)];
 
-    const newEvent: NightEvent = {
-      id: `user-${Date.now()}`,
-      name: formData.name.trim().toUpperCase(),
-      type: formData.type,
-      vibe: formData.vibe,
-      genres: formData.genres,
-      lat: parseFloat(formData.selectedAddress.lat),
-      lng: parseFloat(formData.selectedAddress.lon),
-      address: parts.slice(0, 2).join(', '),
-      city,
-      startTime,
-      priceRange: derivePriceRange(formData.price),
-      description: formData.description.trim(),
-      venue: formData.venue.trim() || parts[0],
-      imageColor: imageColors[Math.floor(Math.random() * imageColors.length)],
-      isLive: false,
-    };
+      // Upload image if provided
+      let imageUrl: string | undefined;
+      if (formData.imageFile) {
+        const ext = formData.imageFile.name.split('.').pop() || 'jpg';
+        const path = `${eventId}.${ext}`;
+        const { error: uploadErr } = await supabase.storage
+          .from('event-images')
+          .upload(path, formData.imageFile, { upsert: true });
+        if (!uploadErr) {
+          const { data: urlData } = supabase.storage.from('event-images').getPublicUrl(path);
+          imageUrl = urlData.publicUrl;
+        }
+      }
 
-    onAdd(newEvent);
+      // Insert into database
+      const { error: dbError } = await supabase
+        .from('cached_events')
+        .insert({
+          id: eventId,
+          name: formData.name.trim().toUpperCase(),
+          type: formData.type,
+          vibe: formData.vibe,
+          genres: formData.genres,
+          lat: parseFloat(formData.selectedAddress.lat),
+          lng: parseFloat(formData.selectedAddress.lon),
+          address: parts.slice(0, 2).join(', '),
+          city,
+          start_time: startTime,
+          price_range: derivePriceRange(formData.price),
+          description: formData.description.trim(),
+          venue: formData.venue.trim() || parts[0],
+          image_color: color,
+          image_url: imageUrl || null,
+          source: 'pulsemap',
+        } as any);
+
+      if (dbError) {
+        console.error('DB insert error:', dbError);
+        toast.error("Erreur lors de l'enregistrement");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const newEvent: NightEvent = {
+        id: eventId,
+        name: formData.name.trim().toUpperCase(),
+        type: formData.type,
+        vibe: formData.vibe,
+        genres: formData.genres,
+        lat: parseFloat(formData.selectedAddress.lat),
+        lng: parseFloat(formData.selectedAddress.lon),
+        address: parts.slice(0, 2).join(', '),
+        city,
+        startTime,
+        priceRange: derivePriceRange(formData.price),
+        description: formData.description.trim(),
+        venue: formData.venue.trim() || parts[0],
+        imageColor: color,
+        imageUrl,
+        isLive: false,
+      };
+
+      onAdd(newEvent);
+    } catch (err) {
+      console.error('Submit error:', err);
+      toast.error("Erreur inattendue");
+    }
     setIsSubmitting(false);
     handleClose();
   }
 
   function handleClose() {
     setStep(0);
-    setFormData({
-      name: '', date: '', time: '22:00', type: 'soirée', vibe: 'rave',
-      genres: [], address: '', venue: '', selectedAddress: null,
-      description: '', price: '',
-    });
+    setFormData({ ...EMPTY_FORM });
     setErrors({});
     onClose();
   }

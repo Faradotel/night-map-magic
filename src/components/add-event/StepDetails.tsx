@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+import { ImagePlus, X } from 'lucide-react';
 import { EventFormData } from './types';
 
 interface Props {
@@ -7,8 +9,49 @@ interface Props {
 }
 
 export function StepDetails({ data, onChange, errors }: Props) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const previewUrl = data.imageFile ? URL.createObjectURL(data.imageFile) : null;
+
   return (
     <div className="space-y-5">
+      {/* Image upload */}
+      <div>
+        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">
+          🖼️ Affiche / Flyer (optionnel)
+        </label>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={e => {
+            const file = e.target.files?.[0];
+            if (file) onChange({ imageFile: file });
+          }}
+        />
+        {previewUrl ? (
+          <div className="relative rounded-xl overflow-hidden border" style={{ borderColor: 'hsl(258 40% 22%)' }}>
+            <img src={previewUrl} alt="Preview" className="w-full h-40 object-cover" />
+            <button
+              onClick={() => { onChange({ imageFile: null }); if (fileRef.current) fileRef.current.value = ''; }}
+              className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"
+              style={{ background: 'hsl(0 0% 0% / 0.6)' }}
+            >
+              <X size={14} className="text-white" />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => fileRef.current?.click()}
+            className="w-full h-28 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-all active:scale-[0.98]"
+            style={{ borderColor: 'hsl(258 40% 22%)', color: 'hsl(258 20% 50%)' }}
+          >
+            <ImagePlus size={24} />
+            <span className="text-xs font-bold">Ajouter une image</span>
+          </button>
+        )}
+      </div>
+
       {/* Description */}
       <div>
         <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">
@@ -35,7 +78,7 @@ export function StepDetails({ data, onChange, errors }: Props) {
         </div>
       </div>
 
-      {/* Price - free text input */}
+      {/* Price */}
       <div>
         <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">
           💶 Prix d'entrée *
