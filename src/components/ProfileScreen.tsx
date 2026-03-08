@@ -236,9 +236,16 @@ export function ProfileScreen() {
                   {favorites.slice(0, 5).map(fav => (
                     <div
                       key={fav.event_id}
-                      className="rounded-xl border p-3 flex items-center gap-3"
+                      className="rounded-xl border p-3 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform"
                       style={{ borderColor: 'hsl(var(--border))', background: 'var(--profile-card-bg)' }}
+                      onClick={() => setViewingPass({ eventId: fav.event_id, eventName: fav.event_name })}
                     >
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                        style={{ background: 'hsl(var(--primary) / 0.1)' }}
+                      >
+                        <QrCode size={14} style={{ color: 'hsl(var(--primary))' }} />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-foreground truncate">{fav.event_name}</p>
                         <p className="text-[11px] text-muted-foreground flex items-center gap-1">
@@ -251,12 +258,13 @@ export function ProfileScreen() {
                         </p>
                       </div>
                       <button
-                        onClick={() => toggleFavorite({ id: fav.event_id, name: fav.event_name, city: fav.event_city, startTime: fav.event_date || '' })}
+                        onClick={(e) => { e.stopPropagation(); toggleFavorite({ id: fav.event_id, name: fav.event_name, city: fav.event_city, startTime: fav.event_date || '' }); }}
                         className="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90"
                         style={{ background: 'hsl(0 80% 55% / 0.12)' }}
                       >
                         <Heart size={14} fill="hsl(0, 80%, 55%)" style={{ color: 'hsl(0, 80%, 55%)' }} />
                       </button>
+                      <ChevronRight size={14} className="text-muted-foreground" />
                     </div>
                   ))}
                 </div>
