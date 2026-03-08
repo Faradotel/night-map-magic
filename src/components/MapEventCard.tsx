@@ -30,9 +30,9 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
         style={{
           background: isLight ? 'rgba(255, 255, 255, 0.92)' : 'rgba(26, 13, 21, 0.85)',
           backdropFilter: 'blur(16px)',
-          border: isLight ? '1px solid hsl(325 89% 50% / 0.2)' : '1px solid hsl(325 89% 50% / 0.3)',
+          border: isLight ? `1px solid ${vibe.color}33` : `1px solid ${vibe.color}55`,
           borderLeftWidth: '4px',
-          borderLeftColor: 'hsl(325 89% 50%)',
+          borderLeftColor: vibe.color,
           boxShadow: isLight ? '0 8px 32px rgba(0,0,0,0.12)' : '0 8px 32px hsl(230 60% 4% / 0.8)',
         }}
       >
