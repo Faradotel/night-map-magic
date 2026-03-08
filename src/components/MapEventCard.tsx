@@ -51,7 +51,7 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
           {/* Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: 'hsl(325 89% 50%)' }}>
+              <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: vibe.color }}>
                 {vibe.emoji} {vibe.label}
               </span>
               {event.isLive && (
