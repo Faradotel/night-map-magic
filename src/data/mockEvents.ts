@@ -19,6 +19,7 @@ export interface NightEvent {
   venue: string;
   ticketUrl?: string;
   imageColor: string; // gradient color for placeholder
+  imageUrl?: string; // poster/flyer image URL
   isLive?: boolean;
   distance?: number;
   externalAttendees?: number | null;
