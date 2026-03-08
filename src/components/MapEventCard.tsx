@@ -54,7 +54,8 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
   return (
     <div className="absolute bottom-20 left-3 right-3 z-[450] pointer-events-auto">
       <div
-        className="rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing select-none"
+        className="rounded-2xl overflow-hidden cursor-pointer select-none"
+        onClick={onDetails}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         style={{
