@@ -179,43 +179,32 @@ export function EventPassUpload({ eventId, eventName }: EventPassUploadProps) {
           <span className="text-sm text-muted-foreground">Enregistrement…</span>
         </div>
       ) : (
-        <div
-          className="rounded-xl p-3 border"
-          style={{ background: 'var(--profile-card-bg)', borderColor: 'hsl(var(--border))' }}
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <QrCode size={14} className="text-muted-foreground" />
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Ajouter mon pass
-            </span>
-          </div>
-          <div className="flex gap-2">
+        <div className="flex gap-2">
             <button
               onClick={startCamera}
-              className="flex-1 h-10 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 border transition-all active:scale-95"
+              className="flex-1 h-11 rounded-xl text-xs font-bold flex items-center justify-center gap-2 border transition-all active:scale-95"
               style={{
                 background: 'hsl(var(--primary) / 0.1)',
                 borderColor: 'hsl(var(--primary) / 0.3)',
                 color: 'hsl(var(--primary))',
               }}
             >
-              <Camera size={14} />
-              Scanner
+              <Camera size={15} />
+              Scanner QR
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="flex-1 h-10 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 border transition-all active:scale-95"
+              className="flex-1 h-11 rounded-xl text-xs font-bold flex items-center justify-center gap-2 border transition-all active:scale-95"
               style={{
                 background: 'hsl(var(--secondary))',
                 borderColor: 'hsl(var(--border))',
                 color: 'hsl(var(--foreground))',
               }}
             >
-              <Upload size={14} />
-              Importer
+              <Upload size={15} />
+              Importer image
             </button>
           </div>
-        </div>
       )}
     </div>
   );
