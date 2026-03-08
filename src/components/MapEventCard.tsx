@@ -1,8 +1,9 @@
 import { useRef, useCallback } from 'react';
-import { X, ChevronUp } from 'lucide-react';
+import { X, ChevronUp, Users } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, getDistance } from '@/data/mockEvents';
 import { useDistanceUnit } from '@/hooks/useDistanceUnit';
 import { useTheme } from '@/hooks/useTheme';
+import { useEventAttendanceCount } from '@/hooks/useEventAttendanceCount';
 
 interface MapEventCardProps {
   event: NightEvent;
