@@ -41,7 +41,7 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
           <div
             className="w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0"
             style={{
-              background: `linear-gradient(135deg, hsl(325 89% 50% / 0.2), hsl(275 71% 58% / 0.3))`,
+              background: `linear-gradient(135deg, ${vibe.color}33, ${vibe.color}55)`,
               border: '1px solid hsl(0 0% 100% / 0.1)',
             }}
           >
