@@ -399,7 +399,8 @@ export async function loadCachedEventsNearby(lat: number, lng: number, radiusKm:
       description: e.description,
       venue: e.venue,
       ticketUrl: e.ticket_url,
-      imageColor: '#1a0f2e',
+      imageColor: e.image_color || '#1a0f2e',
+      imageUrl: e.image_url || undefined,
       isLive: false,
     };
   });
