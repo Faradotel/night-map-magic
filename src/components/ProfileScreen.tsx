@@ -12,6 +12,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useDistanceUnit, DistanceUnit } from '@/hooks/useDistanceUnit';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { useFavorites } from '@/hooks/useFavorites';
+import { formatDate } from '@/data/mockEvents';
 
 export function ProfileScreen() {
   const { theme, toggleTheme } = useTheme();
