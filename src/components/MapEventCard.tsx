@@ -74,8 +74,8 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
               onClick={onDetails}
               className="px-3 py-1.5 rounded-full text-[11px] font-bold text-white active:scale-95"
               style={{
-                background: 'hsl(325 89% 50%)',
-                boxShadow: '0 0 12px hsl(325 89% 50% / 0.3)',
+                background: vibe.color,
+                boxShadow: `0 0 12px ${vibe.color}55`,
               }}
             >
               Détails
