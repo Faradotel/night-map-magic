@@ -1,24 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-// This page runs in the web app (pulse-map.live) inside Chrome Custom Tab.
-// It fires the deep link without navigating away, so no error page is shown.
+// This page runs inside Chrome Custom Tab after Google OAuth.
+// It uses the Android Intent URL scheme — Chrome recognises it natively
+// and opens the native app WITHOUT showing an error page.
 export default function AuthCallback() {
   const [searchParams] = useSearchParams();
-  const [done, setDone] = useState(false);
 
   useEffect(() => {
     const code = searchParams.get('code');
     if (!code) return;
 
-    // Use a link click instead of window.location.href so Chrome stays on this page
-    // Android intercepts the custom scheme and opens the native app
-    const link = document.createElement('a');
-    link.href = `com.nightmap.app://auth?code=${code}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    setDone(true);
+    // intent:// is handled natively by Chrome — no ERR_UNKNOWN_URL_SCHEME
+    const fallback = encodeURIComponent('https://pulse-map.live');
+    const intentUrl =
+      `intent://auth?code=${code}` +
+      `#Intent;scheme=com.nightmap.app;package=com.nightmap.app;` +
+      `S.browser_fallback_url=${fallback};end`;
+
+    window.location.href = intentUrl;
   }, [searchParams]);
 
   return (
@@ -33,14 +33,8 @@ export default function AuthCallback() {
       fontFamily: 'sans-serif',
       gap: '12px',
     }}>
-      {done ? (
-        <>
-          <p style={{ fontSize: '2rem' }}>✅</p>
-          <p>Connecté ! Retourne dans l'application.</p>
-        </>
-      ) : (
-        <p>Connexion en cours...</p>
-      )}
+      <p>Connexion en cours...</p>
+      <p style={{ fontSize: '0.8rem', opacity: 0.5 }}>Retourne dans l'application PulseMap</p>
     </div>
   );
 }
