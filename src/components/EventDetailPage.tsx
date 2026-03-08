@@ -11,9 +11,10 @@ interface EventDetailPageProps {
   onClose: () => void;
   userLocation?: [number, number] | null;
   attendance: ReturnType<typeof useAttendance>;
+  favorites: ReturnType<typeof useFavorites>;
 }
 
-export function EventDetailPage({ event, onClose, userLocation, attendance }: EventDetailPageProps) {
+export function EventDetailPage({ event, onClose, userLocation, attendance, favorites }: EventDetailPageProps) {
   const checkedIn = attendance.isAttended(event.id);
   const attendanceCount = useEventAttendanceCount(event.id);
 
