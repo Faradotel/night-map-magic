@@ -13,6 +13,7 @@ interface EventDetailPageProps {
 
 export function EventDetailPage({ event, onClose, userLocation, attendance }: EventDetailPageProps) {
   const checkedIn = attendance.isAttended(event.id);
+  const attendanceCount = useEventAttendanceCount(event.id);
 
   // Swipe down to close
   const touchStartY = useRef<number | null>(null);
