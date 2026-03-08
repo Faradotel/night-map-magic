@@ -16,6 +16,7 @@ import { usePreferredCity } from '@/hooks/usePreferredCity';
 import { useUserRole } from '@/hooks/useUserRole';
 import { AddEventSheet } from '@/components/AddEventSheet';
 import { NightEvent as NightEventType } from '@/data/mockEvents';
+import { useFavorites } from '@/hooks/useFavorites';
 
 import { loadEventsForCity, loadEventsNearby, deduplicateEvents } from '@/lib/api/shotgun';
 import { mapGenres, deduceVibe, deduceType, parsePriceRange } from '@/lib/api/shotgun';
@@ -46,6 +47,7 @@ export default function Index() {
   const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
   const [locating, setLocating] = useState(false);
   const attendance = useAttendance();
+  const favorites = useFavorites();
   const [showNotifications, setShowNotifications] = useState(false);
   const [allShotgunEvents, setAllShotgunEvents] = useState<NightEvent[]>([]);
   const [shotgunLoading, setShotgunLoading] = useState(false);
@@ -323,6 +325,7 @@ export default function Index() {
             onClose={() => setShowDetail(false)}
             userLocation={userLocation}
             attendance={attendance}
+            favorites={favorites}
           />
         )}
       </div>

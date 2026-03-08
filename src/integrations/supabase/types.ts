@@ -113,6 +113,36 @@ export type Database = {
         }
         Relationships: []
       }
+      event_favorites: {
+        Row: {
+          created_at: string
+          event_city: string
+          event_date: string | null
+          event_id: string
+          event_name: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_city: string
+          event_date?: string | null
+          event_id: string
+          event_name: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_city?: string
+          event_date?: string | null
+          event_id?: string
+          event_name?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       friend_requests: {
         Row: {
           created_at: string

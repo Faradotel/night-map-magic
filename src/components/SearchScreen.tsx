@@ -3,6 +3,7 @@ import { Search, MapPin, Clock, X } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, formatTime, formatDate } from '@/data/mockEvents';
 import { EventDetailPage } from '@/components/EventDetailPage';
 import { useAttendance } from '@/hooks/useAttendance';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface SearchScreenProps {
   onEventSelect: (event: NightEvent) => void;
@@ -13,6 +14,7 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
   const [query, setQuery] = useState('');
   const [detailEvent, setDetailEvent] = useState<NightEvent | null>(null);
   const attendance = useAttendance();
+  const favorites = useFavorites();
 
   const results = query.trim().length > 1
     ? events.filter(e =>
@@ -30,6 +32,7 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
         event={detailEvent}
         onClose={() => setDetailEvent(null)}
         attendance={attendance}
+        favorites={favorites}
       />
     );
   }

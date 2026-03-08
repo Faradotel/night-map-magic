@@ -3,7 +3,7 @@ import { AllBadgesScreen } from '@/components/AllBadgesScreen';
 import { useUnlockedBadges } from '@/hooks/useUnlockedBadges';
 import { AuthScreen } from '@/components/AuthScreen';
 import { PrivacyPolicyScreen } from '@/components/PrivacyPolicyScreen';
-import { Settings, ChevronRight, MapPin, Calendar, Star, Sun, Moon, LogOut, Bell, Pencil, Check, X } from 'lucide-react';
+import { Settings, ChevronRight, MapPin, Calendar, Star, Sun, Moon, LogOut, Bell, Pencil, Check, X, Heart, Clock } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useAttendance } from '@/hooks/useAttendance';
 import { usePreferredCity } from '@/hooks/usePreferredCity';
@@ -12,12 +12,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { useDistanceUnit, DistanceUnit } from '@/hooks/useDistanceUnit';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { useFavorites } from '@/hooks/useFavorites';
+import { formatDate } from '@/data/mockEvents';
 
 export function ProfileScreen() {
   const { theme, toggleTheme } = useTheme();
   const { unit, cycleUnit } = useDistanceUnit();
   const { stats, attended } = useAttendance();
   const { preferredCity } = usePreferredCity();
+  const { favorites, toggleFavorite } = useFavorites();
   const { user, signOut } = useAuth();
   const [username, setUsername] = useState(() => {
     const funnyNames = ['Fantôme Dansant 👻', 'Hibou Anonyme 🦉', 'Ninja du Dancefloor 🥷', 'Licorne Nocturne 🦄', 'Loup Solitaire 🐺'];
@@ -215,6 +218,53 @@ export function ProfileScreen() {
 
         {user ? (
           <>
+            {/* Favorites */}
+            <div className="px-4 mb-5">
+              <h3 className="text-sm font-black mb-3 flex items-center gap-2">
+                <Heart size={14} style={{ color: 'hsl(0 80% 55%)' }} /> Favoris
+                <span
+                  className="text-xs font-bold px-2 py-0.5 rounded-full"
+                  style={{ background: 'hsl(0 80% 55% / 0.15)', color: 'hsl(0 80% 55%)' }}
+                >
+                  {favorites.length}
+                </span>
+              </h3>
+              {favorites.length > 0 ? (
+                <div className="space-y-2">
+                  {favorites.slice(0, 5).map(fav => (
+                    <div
+                      key={fav.event_id}
+                      className="rounded-xl border p-3 flex items-center gap-3"
+                      style={{ borderColor: 'hsl(var(--border))', background: 'var(--profile-card-bg)' }}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-foreground truncate">{fav.event_name}</p>
+                        <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                          <MapPin size={10} /> {fav.event_city}
+                          {fav.event_date && (
+                            <span className="ml-1 flex items-center gap-0.5">
+                              <Clock size={10} /> {formatDate(fav.event_date)}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => toggleFavorite({ id: fav.event_id, name: fav.event_name, city: fav.event_city, startTime: fav.event_date || '' })}
+                        className="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90"
+                        style={{ background: 'hsl(0 80% 55% / 0.12)' }}
+                      >
+                        <Heart size={14} fill="hsl(0, 80%, 55%)" style={{ color: 'hsl(0, 80%, 55%)' }} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground text-center py-4">
+                  Aucun favori. Appuie sur ❤️ dans les détails d'un événement !
+                </p>
+              )}
+            </div>
+
             {/* Unlocked badges */}
             <div className="px-4 mb-2">
               <h3 className="text-sm font-black mb-3 flex items-center gap-2">

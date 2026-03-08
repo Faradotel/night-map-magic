@@ -6,6 +6,7 @@ import { EventDetailPage } from '@/components/EventDetailPage';
 import { AuthScreen } from '@/components/AuthScreen';
 import { NightEvent } from '@/data/mockEvents';
 import { toast } from 'sonner';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface Friend {
   user_id: string;
@@ -38,6 +39,7 @@ interface FriendsScreenProps {
 
 export function FriendsScreen({ allEvents, attendance }: FriendsScreenProps) {
   const { user } = useAuth();
+  const favoritesFriends = useFavorites();
   const [friends, setFriends] = useState<Friend[]>([]);
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [friendAttendance, setFriendAttendance] = useState<FriendAttendance[]>([]);
@@ -208,7 +210,7 @@ export function FriendsScreen({ allEvents, attendance }: FriendsScreenProps) {
   }
 
   if (detailEvent) {
-    return <EventDetailPage event={detailEvent} onClose={() => setDetailEvent(null)} attendance={attendance} />;
+    return <EventDetailPage event={detailEvent} onClose={() => setDetailEvent(null)} attendance={attendance} favorites={favoritesFriends} />;
   }
 
   return (

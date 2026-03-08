@@ -1,19 +1,22 @@
 import { useRef, useCallback } from 'react';
 import { toast } from 'sonner';
-import { X, MapPin, Clock, Ticket, ExternalLink, Check, ChevronDown, Share2, Music, Users, Info } from 'lucide-react';
+import { X, MapPin, Clock, Ticket, ExternalLink, Check, ChevronDown, Share2, Music, Users, Info, Heart } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, formatTime, formatDate } from '@/data/mockEvents';
 import { useEventAttendanceCount } from '@/hooks/useEventAttendanceCount';
 import type { useAttendance } from '@/hooks/useAttendance';
+import type { useFavorites } from '@/hooks/useFavorites';
 
 interface EventDetailPageProps {
   event: NightEvent;
   onClose: () => void;
   userLocation?: [number, number] | null;
   attendance: ReturnType<typeof useAttendance>;
+  favorites: ReturnType<typeof useFavorites>;
 }
 
-export function EventDetailPage({ event, onClose, userLocation, attendance }: EventDetailPageProps) {
+export function EventDetailPage({ event, onClose, userLocation, attendance, favorites }: EventDetailPageProps) {
   const checkedIn = attendance.isAttended(event.id);
+  const isFav = favorites.isFavorite(event.id);
   const attendanceCount = useEventAttendanceCount(event.id);
 
   // Swipe down to close
@@ -110,6 +113,19 @@ export function EventDetailPage({ event, onClose, userLocation, attendance }: Ev
               }}
             >
               <Share2 size={16} />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                favorites.toggleFavorite({ id: event.id, name: event.name, city: event.city, startTime: event.startTime });
+              }}
+              className="w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90"
+              style={{
+                background: isFav ? 'hsl(0 80% 55% / 0.15)' : 'hsl(var(--secondary))',
+                borderColor: isFav ? 'hsl(0 80% 55% / 0.5)' : 'hsl(var(--border))',
+              }}
+            >
+              <Heart size={16} fill={isFav ? 'hsl(0, 80%, 55%)' : 'none'} style={{ color: isFav ? 'hsl(0, 80%, 55%)' : 'hsl(var(--foreground))' }} />
             </button>
           </div>
         </div>
