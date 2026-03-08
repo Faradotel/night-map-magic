@@ -80,6 +80,17 @@ export default function Index() {
 
     let cancelled = false;
     async function load() {
+      // Try offline cache first if no connection
+      if (!navigator.onLine) {
+        const cached = getCachedEvents();
+        if (cached && cached.length > 0) {
+          setAllShotgunEvents(cached);
+          setLoadedKey(currentLoadKey);
+          toast.info('Mode hors-ligne — événements en cache');
+          return;
+        }
+      }
+
       setShotgunLoading(true);
       try {
         let events: NightEvent[];
@@ -94,6 +105,16 @@ export default function Index() {
           const deduped = deduplicateEvents(events);
           setAllShotgunEvents(deduped);
           setLoadedKey(currentLoadKey);
+          // Cache for offline use
+          cacheEvents(deduped);
+        }
+      } catch {
+        // Network error — try offline cache
+        const cached = getCachedEvents();
+        if (cached && cached.length > 0 && !cancelled) {
+          setAllShotgunEvents(cached);
+          setLoadedKey(currentLoadKey);
+          toast.info('Connexion perdue — événements en cache');
         }
       } finally {
         if (!cancelled) setShotgunLoading(false);
@@ -101,7 +122,7 @@ export default function Index() {
     }
     load();
     return () => { cancelled = true; };
-  }, [currentLoadKey, locationMode, selectedCityName, userLocation, filters.radiusKm, loadedKey]);
+  }, [currentLoadKey, locationMode, selectedCityName, userLocation, filters.radiusKm, loadedKey, cacheEvents, getCachedEvents]);
 
   // Request geolocation on load
   useEffect(() => {
