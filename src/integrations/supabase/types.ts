@@ -21,6 +21,7 @@ export type Database = {
           created_at: string
           description: string
           end_time: string | null
+          external_attendees: number | null
           genres: string[]
           id: string
           image_color: string
@@ -42,6 +43,7 @@ export type Database = {
           created_at?: string
           description?: string
           end_time?: string | null
+          external_attendees?: number | null
           genres?: string[]
           id: string
           image_color?: string
@@ -63,6 +65,7 @@ export type Database = {
           created_at?: string
           description?: string
           end_time?: string | null
+          external_attendees?: number | null
           genres?: string[]
           id?: string
           image_color?: string

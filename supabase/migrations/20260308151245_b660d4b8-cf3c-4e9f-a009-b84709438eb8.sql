@@ -1,0 +1,1 @@
+ALTER TABLE public.cached_events ADD COLUMN IF NOT EXISTS external_attendees integer DEFAULT NULL;
