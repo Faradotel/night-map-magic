@@ -281,7 +281,7 @@ Deno.serve(async (req) => {
     try {
       const cityGeo = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city + ', France')}&limit=1`,
-        { headers: { 'User-Agent': 'NightMap/1.0' } }
+        { headers: { 'User-Agent': 'PulseMap/1.0' } }
       );
       const cityData = await cityGeo.json();
       if (cityData.length > 0) {
