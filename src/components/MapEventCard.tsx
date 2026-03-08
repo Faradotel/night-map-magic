@@ -64,12 +64,13 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
           boxShadow: isLight ? '0 8px 32px rgba(0,0,0,0.12)' : '0 8px 32px hsl(230 60% 4% / 0.8)',
         }}
       >
-        {/* Swipe hint bar */}
-        <div className="flex justify-center pt-2 pb-0">
+        {/* Swipe hint bar + icon */}
+        <div className="flex flex-col items-center pt-2 pb-0 gap-0.5">
           <div className="w-8 h-1 rounded-full opacity-30" style={{ background: isLight ? 'hsl(230 25% 30%)' : 'hsl(0 0% 60%)' }} />
+          <ChevronUp size={14} className="opacity-30" style={{ color: isLight ? 'hsl(230 25% 30%)' : 'hsl(0 0% 60%)' }} />
         </div>
 
-        <div className="px-3 py-2 flex items-center gap-3">
+        <div className="px-3 py-1.5 flex items-center gap-3">
           {/* Emoji icon */}
           <div
             className="w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0"
