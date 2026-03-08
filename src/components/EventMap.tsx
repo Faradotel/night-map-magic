@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
 import { NightEvent, vibeConfig, typeConfig } from '@/data/mockEvents';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -52,6 +54,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
   const mapRef = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
+  const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
   const prevSelectedRef = useRef<string | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
   const radiusCircleRef = useRef<L.Circle | null>(null);
@@ -118,21 +121,47 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     }
   }, [userLocation, radiusKm]);
 
-  // Event markers – full rebuild only when events list changes
+  // Event markers – clustered
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    markersRef.current.forEach(m => map.removeLayer(m));
+    // Remove previous cluster group
+    if (clusterGroupRef.current) {
+      map.removeLayer(clusterGroupRef.current);
+      clusterGroupRef.current = null;
+    }
     markersRef.current.clear();
+
+    const clusterGroup = L.markerClusterGroup({
+      maxClusterRadius: 45,
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true,
+      iconCreateFunction: (cluster) => {
+        const count = cluster.getChildCount();
+        const size = count > 20 ? 52 : count > 5 ? 44 : 36;
+        const accent = 'hsl(320,100%,50%)';
+        return L.divIcon({
+          className: '',
+          html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${accent};display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:${count > 20 ? 16 : 14}px;box-shadow:0 0 16px ${accent}66,0 4px 12px rgba(0,0,0,0.3);border:2px solid ${accent}99;">${count}</div>`,
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size / 2],
+        });
+      },
+    });
 
     events.forEach(event => {
       const marker = L.marker([event.lat, event.lng], {
         icon: createEventIcon(event, false, isDark),
-      }).addTo(map);
+      });
       marker.on('click', () => onEventSelect(event));
       markersRef.current.set(event.id, marker);
+      clusterGroup.addLayer(marker);
     });
+
+    map.addLayer(clusterGroup);
+    clusterGroupRef.current = clusterGroup;
   }, [events, onEventSelect, isDark]);
 
   // Selection highlight – only update the 2 affected markers
