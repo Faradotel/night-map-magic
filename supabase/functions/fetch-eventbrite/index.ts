@@ -57,28 +57,19 @@ function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): num
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Geocode an address using Nominatim, scoped to France
+// Geocode an address using Nominatim, scoped to France — single attempt
 async function geocode(address: string, city: string): Promise<{ lat: number; lng: number } | null> {
-  // Try multiple query strategies
-  const queries = [
-    `${address}, ${city}, France`,
-    `${address}, France`,
-    `${city}, France`,
-  ];
-
-  for (const q of queries) {
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&addressdetails=1&limit=1`,
-        { headers: { 'User-Agent': 'PulseMap/1.0' } }
-      );
-      const data = await res.json();
-      if (data?.[0]) {
-        return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-      }
-      await new Promise(r => setTimeout(r, 250));
-    } catch { /* next query */ }
-  }
+  try {
+    const q = `${address}, ${city}, France`;
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&limit=1`,
+      { headers: { 'User-Agent': 'PulseMap/1.0' } }
+    );
+    const data = await res.json();
+    if (data?.[0]) {
+      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    }
+  } catch { /* fallback */ }
   return null;
 }
 
