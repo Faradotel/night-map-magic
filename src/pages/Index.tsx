@@ -103,9 +103,8 @@ export default function Index() {
           setUserLocation(loc);
           setFilterCenter(loc);
           setLocating(false);
-          if (pos.coords.latitude > 41 && pos.coords.latitude < 52 && pos.coords.longitude > -5 && pos.coords.longitude < 10) {
-            setMapCenter(loc);
-          }
+          setMapCenter(loc);
+          setMapZoom(13);
         },
         () => { setLocating(false); },
         { enableHighAccuracy: true, timeout: 8000 }
