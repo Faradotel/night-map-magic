@@ -39,6 +39,7 @@ interface FriendsScreenProps {
 
 export function FriendsScreen({ allEvents, attendance }: FriendsScreenProps) {
   const { user } = useAuth();
+  const favoritesFriends = useFavorites();
   const [friends, setFriends] = useState<Friend[]>([]);
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [friendAttendance, setFriendAttendance] = useState<FriendAttendance[]>([]);
