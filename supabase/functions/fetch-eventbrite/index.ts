@@ -65,11 +65,9 @@ Deno.serve(async (req) => {
 
     const slug = CITY_SLUGS[city] || city.toLowerCase().replace(/\s+/g, '-').replace(/[éèê]/g, 'e').replace(/[àâ]/g, 'a');
     
-    // Scrape multiple Eventbrite categories
+    // Scrape only one broad category to stay within timeout
     const categories = [
       { path: 'events--this-week/', label: 'all' },
-      { path: 'sports-and-fitness--events--this-week/', label: 'sport' },
-      { path: 'performing-visual-arts--events--this-week/', label: 'arts' },
     ];
 
     const allRawEvents: any[] = [];
