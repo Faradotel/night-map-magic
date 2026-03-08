@@ -294,6 +294,14 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
           </div>
         </div>
 
+        {/* Pass / QR Code */}
+        <div className="px-5 mb-4">
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <Ticket size={12} /> Mon pass
+          </h3>
+          <EventPassUpload eventId={event.id} eventName={event.name} />
+        </div>
+
         {/* Description */}
         <div className="px-5 mb-4">
           <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
