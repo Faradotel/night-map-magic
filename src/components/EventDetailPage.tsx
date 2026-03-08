@@ -1,6 +1,7 @@
 import { useRef, useCallback } from 'react';
 import { X, MapPin, Clock, Ticket, ExternalLink, Check, ChevronDown, Share2, Music, Users, Info } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, formatTime, formatDate } from '@/data/mockEvents';
+import { useEventAttendanceCount } from '@/hooks/useEventAttendanceCount';
 import type { useAttendance } from '@/hooks/useAttendance';
 
 interface EventDetailPageProps {
