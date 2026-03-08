@@ -14,6 +14,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useFavorites } from '@/hooks/useFavorites';
 import { formatDate } from '@/data/mockEvents';
+import { PassViewerScreen } from '@/components/PassViewerScreen';
 
 export function ProfileScreen() {
   const { theme, toggleTheme } = useTheme();
