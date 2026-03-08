@@ -17,39 +17,108 @@ function getCorsHeaders(req: Request) {
 }
 
 const CITY_SLUGS: Record<string, string> = {
-  'Paris': 'paris',
-  'Marseille': 'marseille',
-  'Lyon': 'lyon',
-  'Toulouse': 'toulouse',
-  'Nice': 'nice',
-  'Nantes': 'nantes',
-  'Montpellier': 'montpellier',
-  'Strasbourg': 'strasbourg',
-  'Bordeaux': 'bordeaux',
-  'Lille': 'lille',
-  'Rennes': 'rennes',
-  'Reims': 'reims',
-  'Grenoble': 'grenoble',
-  'Dijon': 'dijon',
-  'Tours': 'tours',
-  'Rouen': 'rouen',
-  'Metz': 'metz',
-  'Nancy': 'nancy',
-  'Avignon': 'avignon',
-  'Poitiers': 'poitiers',
-  'Besançon': 'besancon',
-  'Caen': 'caen',
-  'Orléans': 'orleans',
-  'Angers': 'angers',
-  'Brest': 'brest',
-  'Limoges': 'limoges',
-  'Amiens': 'amiens',
-  'Perpignan': 'perpignan',
-  'La Rochelle': 'la-rochelle',
-  'Pau': 'pau',
-  'Clermont-Ferrand': 'clermont-ferrand',
-  'Monaco': 'monaco',
+  'Paris': 'paris', 'Marseille': 'marseille', 'Lyon': 'lyon', 'Toulouse': 'toulouse',
+  'Nice': 'nice', 'Nantes': 'nantes', 'Montpellier': 'montpellier', 'Strasbourg': 'strasbourg',
+  'Bordeaux': 'bordeaux', 'Lille': 'lille', 'Rennes': 'rennes', 'Reims': 'reims',
+  'Grenoble': 'grenoble', 'Dijon': 'dijon', 'Tours': 'tours', 'Rouen': 'rouen',
+  'Metz': 'metz', 'Nancy': 'nancy', 'Avignon': 'avignon', 'Poitiers': 'poitiers',
+  'Besançon': 'besancon', 'Caen': 'caen', 'Orléans': 'orleans', 'Angers': 'angers',
+  'Brest': 'brest', 'Limoges': 'limoges', 'Amiens': 'amiens', 'Perpignan': 'perpignan',
+  'La Rochelle': 'la-rochelle', 'Pau': 'pau', 'Clermont-Ferrand': 'clermont-ferrand',
+  'Monaco': 'monaco', 'Aix-en-Provence': 'aix-en-provence',
 };
+
+const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
+  'Paris': { lat: 48.8566, lng: 2.3522 }, 'Marseille': { lat: 43.2965, lng: 5.3698 },
+  'Lyon': { lat: 45.7640, lng: 4.8357 }, 'Toulouse': { lat: 43.6047, lng: 1.4442 },
+  'Nice': { lat: 43.7102, lng: 7.2620 }, 'Nantes': { lat: 47.2184, lng: -1.5536 },
+  'Montpellier': { lat: 43.6108, lng: 3.8767 }, 'Strasbourg': { lat: 48.5734, lng: 7.7521 },
+  'Bordeaux': { lat: 44.8378, lng: -0.5792 }, 'Lille': { lat: 50.6292, lng: 3.0573 },
+  'Rennes': { lat: 48.1173, lng: -1.6778 }, 'Grenoble': { lat: 45.1885, lng: 5.7245 },
+  'Dijon': { lat: 47.3220, lng: 5.0415 }, 'Monaco': { lat: 43.7384, lng: 7.4246 },
+  'Reims': { lat: 49.2583, lng: 4.0317 }, 'Tours': { lat: 47.3941, lng: 0.6848 },
+  'Rouen': { lat: 49.4432, lng: 1.0999 }, 'Metz': { lat: 49.1193, lng: 6.1757 },
+  'Nancy': { lat: 48.6921, lng: 6.1844 }, 'Avignon': { lat: 43.9493, lng: 4.8055 },
+  'Poitiers': { lat: 46.5802, lng: 0.3404 }, 'Besançon': { lat: 47.2378, lng: 6.0241 },
+  'Caen': { lat: 49.1829, lng: -0.3707 }, 'Orléans': { lat: 47.9029, lng: 1.9093 },
+  'Angers': { lat: 47.4784, lng: -0.5632 }, 'Brest': { lat: 48.3904, lng: -4.4861 },
+  'Limoges': { lat: 45.8336, lng: 1.2611 }, 'Amiens': { lat: 49.8941, lng: 2.2958 },
+  'Perpignan': { lat: 42.6887, lng: 2.8948 }, 'La Rochelle': { lat: 46.1603, lng: -1.1511 },
+  'Pau': { lat: 43.2951, lng: -0.3708 }, 'Clermont-Ferrand': { lat: 45.7772, lng: 3.0870 },
+  'Aix-en-Provence': { lat: 43.5297, lng: 5.4474 },
+};
+
+// Haversine distance in km
+function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Geocode an address using Nominatim, scoped to France
+async function geocode(address: string, city: string): Promise<{ lat: number; lng: number } | null> {
+  // Try multiple query strategies
+  const queries = [
+    `${address}, ${city}, France`,
+    `${address}, France`,
+    `${city}, France`,
+  ];
+
+  for (const q of queries) {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&addressdetails=1&limit=1`,
+        { headers: { 'User-Agent': 'PulseMap/1.0' } }
+      );
+      const data = await res.json();
+      if (data?.[0]) {
+        return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+      }
+      await new Promise(r => setTimeout(r, 250));
+    } catch { /* next query */ }
+  }
+  return null;
+}
+
+// Try to fix the year in extracted dates: Eventbrite scraper often returns wrong years
+function fixEventDate(dateStr: string): string {
+  if (!dateStr) return new Date().toISOString();
+
+  try {
+    let parsed = new Date(dateStr);
+
+    // If the date is in the past (before today minus 1 day), it's likely a wrong year
+    if (!isNaN(parsed.getTime())) {
+      const now = new Date();
+      // If the year is clearly wrong (before current year), try replacing with current year
+      if (parsed.getFullYear() < now.getFullYear()) {
+        const fixed = new Date(parsed);
+        fixed.setFullYear(now.getFullYear());
+        // If still in the past, try next year
+        if (fixed.getTime() < now.getTime() - 86400000) {
+          fixed.setFullYear(now.getFullYear() + 1);
+        }
+        return fixed.toISOString();
+      }
+      // If date is more than 1 day in the past, skip it
+      if (parsed.getTime() < now.getTime() - 86400000) {
+        return ''; // Will be filtered out
+      }
+      return parsed.toISOString();
+    }
+  } catch { /* fallback below */ }
+
+  return '';
+}
+
+// Reject foreign addresses
+const FOREIGN_KEYWORDS = [
+  'genève', 'geneva', 'zürich', 'zurich', 'bern', 'lausanne', 'basel', 'lancy',
+  'cumiana', 'torino', 'milano', 'barcelona', 'london', 'bruxelles', 'brussels',
+  'deutschland', 'germany', 'schweiz', 'switzerland', 'italia', 'italy', 'españa',
+];
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -75,181 +144,137 @@ Deno.serve(async (req) => {
     }
 
     const slug = CITY_SLUGS[city] || city.toLowerCase().replace(/\s+/g, '-').replace(/[éèê]/g, 'e').replace(/[àâ]/g, 'a');
-    
-    // Scrape only one broad category to stay within timeout
-    const categories = [
-      { path: 'events--this-week/', label: 'all' },
-    ];
+    const cityCoords = CITY_COORDS[city] || { lat: 48.8566, lng: 2.3522 };
+    const MAX_DISTANCE_KM = 80;
 
-    const allRawEvents: any[] = [];
+    const url = `https://www.eventbrite.fr/d/france--${slug}/events--this-week/`;
+    console.log(`Scraping Eventbrite for ${city}: ${url}`);
 
-    for (const cat of categories) {
-      const url = `https://www.eventbrite.fr/d/france--${slug}/${cat.path}`;
-      console.log(`Scraping Eventbrite ${cat.label} for ${city}: ${url}`);
-
-      try {
-        const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${firecrawlKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            url,
-            formats: ['extract'],
-            extract: {
-              schema: {
-                type: 'object',
-                properties: {
-                  events: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: {
-                        name: { type: 'string', description: 'Event name/title' },
-                        venue: { type: 'string', description: 'Venue name' },
-                        address: { type: 'string', description: 'Full address including city' },
-                        date: { type: 'string', description: 'Event date and time as ISO string or readable format' },
-                        price: { type: 'string', description: 'Price or "Gratuit" if free' },
-                        url: { type: 'string', description: 'Event URL on Eventbrite' },
-                        description: { type: 'string', description: 'Short description or category/genre tags' },
-                        category: { type: 'string', description: 'Event category: music, sport, theatre, expo, festival, spectacle, or other' },
-                        attendees: { type: 'number', description: 'Number of people going/interested if shown on the page, or null' },
-                      },
-                      required: ['name'],
+    let rawEvents: any[] = [];
+    try {
+      const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${firecrawlKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url,
+          formats: ['extract'],
+          extract: {
+            schema: {
+              type: 'object',
+              properties: {
+                events: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      name: { type: 'string', description: 'Event name/title' },
+                      venue: { type: 'string', description: 'Venue name' },
+                      address: { type: 'string', description: 'Full address including city' },
+                      date: { type: 'string', description: 'Event date and time in ISO 8601 format (YYYY-MM-DDTHH:mm:ss). Use the CURRENT YEAR (2026) unless explicitly stated otherwise.' },
+                      price: { type: 'string', description: 'Price or "Gratuit" if free' },
+                      url: { type: 'string', description: 'Event URL on Eventbrite' },
+                      description: { type: 'string', description: 'Short description or category/genre tags' },
+                      category: { type: 'string', description: 'Event category: music, sport, theatre, expo, festival, spectacle, or other' },
+                      attendees: { type: 'number', description: 'Number of people going/interested if shown on the page, or null' },
                     },
+                    required: ['name'],
                   },
                 },
-                required: ['events'],
               },
-              prompt: 'Extract all events listed on this page. For each event, get the name, venue, address, date/time, price, URL, description, category (music, sport, theatre, expo, festival, spectacle, or other), and the number of attendees/interested people if displayed.',
+              required: ['events'],
             },
-            waitFor: 3000,
-            location: { country: 'FR', languages: ['fr'] },
-          }),
-        });
+            prompt: `Extract all events listed on this page. The current date is ${new Date().toISOString().slice(0, 10)}. For dates, use ISO 8601 format with the correct year (2026 for upcoming events). Get name, venue, address, date/time, price, URL, description, category (music/sport/theatre/expo/festival/spectacle/other), and attendees count if displayed.`,
+          },
+          waitFor: 3000,
+          location: { country: 'FR', languages: ['fr'] },
+        }),
+      });
 
-        if (scrapeResponse.ok) {
-          const scrapeData = await scrapeResponse.json();
-          const extractedData = scrapeData?.data?.extract || scrapeData?.extract || {};
-          const rawEvents = extractedData?.events || [];
-          for (const e of rawEvents) {
-            e._category = cat.label;
-          }
-          allRawEvents.push(...rawEvents);
-          console.log(`Got ${rawEvents.length} ${cat.label} events for ${city}`);
-        }
-      } catch (err) {
-        console.error(`Error scraping ${cat.label} for ${city}:`, err);
+      if (scrapeResponse.ok) {
+        const scrapeData = await scrapeResponse.json();
+        const extractedData = scrapeData?.data?.extract || scrapeData?.extract || {};
+        rawEvents = extractedData?.events || [];
+        console.log(`Extracted ${rawEvents.length} raw events for ${city}`);
       }
+    } catch (err) {
+      console.error(`Error scraping for ${city}:`, err);
     }
 
-    const rawEvents = allRawEvents;
-    console.log(`Total extracted ${rawEvents.length} Eventbrite events for ${city}`);
+    // Process events: geocode, validate dates, filter foreign
+    const events: any[] = [];
+    for (let i = 0; i < rawEvents.length; i++) {
+      const e = rawEvents[i];
+      if (!e.name || e.name.length <= 2) continue;
 
-    // We need to geocode these events — use the city center as fallback
-    const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
-      'Paris': { lat: 48.8566, lng: 2.3522 },
-      'Marseille': { lat: 43.2965, lng: 5.3698 },
-      'Lyon': { lat: 45.7640, lng: 4.8357 },
-      'Toulouse': { lat: 43.6047, lng: 1.4442 },
-      'Nice': { lat: 43.7102, lng: 7.2620 },
-      'Nantes': { lat: 47.2184, lng: -1.5536 },
-      'Montpellier': { lat: 43.6108, lng: 3.8767 },
-      'Strasbourg': { lat: 48.5734, lng: 7.7521 },
-      'Bordeaux': { lat: 44.8378, lng: -0.5792 },
-      'Lille': { lat: 50.6292, lng: 3.0573 },
-      'Rennes': { lat: 48.1173, lng: -1.6778 },
-      'Grenoble': { lat: 45.1885, lng: 5.7245 },
-      'Dijon': { lat: 47.3220, lng: 5.0415 },
-      'Monaco': { lat: 43.7384, lng: 7.4246 },
-    };
-
-    const cityCoords = CITY_COORDS[city] || { lat: 48.8566, lng: 2.3522 };
-
-    // Try geocoding each event address, fallback to city center with small random offset
-    const events = await Promise.all(
-      rawEvents.map(async (e: any, i: number) => {
-        let lat = cityCoords.lat;
-        let lng = cityCoords.lng;
-
-        // Try geocoding with Nominatim (rate-limited, so only first 20)
-        if (e.address && i < 20) {
-          try {
-            const geoRes = await fetch(
-              `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(e.address + ', ' + city + ', France')}&limit=1`,
-              { headers: { 'User-Agent': 'PulseMap/1.0' } }
-            );
-            const geoData = await geoRes.json();
-            if (geoData?.[0]) {
-              lat = parseFloat(geoData[0].lat);
-              lng = parseFloat(geoData[0].lon);
-            }
-            // Small delay to respect Nominatim rate limits
-            await new Promise(r => setTimeout(r, 200));
-          } catch { /* use fallback coords */ }
-        }
-
-        // Add small random offset if still at exact city center
-        if (lat === cityCoords.lat && lng === cityCoords.lng) {
-          lat += (Math.random() - 0.5) * 0.02;
-          lng += (Math.random() - 0.5) * 0.02;
-        }
-
-        // Parse date
-        let startTime = new Date().toISOString();
-        if (e.date) {
-          try {
-            const parsed = new Date(e.date);
-            if (!isNaN(parsed.getTime())) startTime = parsed.toISOString();
-          } catch { /* keep default */ }
-        }
-
-        const id = `eb-${slug}-${i}-${Date.now()}`;
-
-        return {
-          id,
-          name: e.name || '',
-          venue: e.venue || '',
-          address: e.address || '',
-          city,
-          lat,
-          lng,
-          startTime,
-          endTime: null,
-          description: (e.category ? `[${e.category}] ` : '') + (e.description || ''),
-          ticketUrl: e.url || '',
-          price: e.price || null,
-          genres: [] as string[],
-          category: e.category || e._category || 'other',
-          externalAttendees: typeof e.attendees === 'number' && e.attendees > 0 ? e.attendees : null,
-        };
-      })
-    );
-
-    // Filter out events that are clearly from wrong cities (e.g. Geneva events showing up for Grenoble)
-    const REJECT_ADDRESSES = ['genève', 'geneva', 'zürich', 'zurich', 'bern', 'lausanne', 'basel', 'lancy', 'cumiana', 'torino', 'milano', 'barcelona', 'london', 'bruxelles', 'brussels'];
-    const validEvents = events.filter((e: any) => {
-      if (!e.name || e.name.length <= 2) return false;
+      // Check for foreign addresses
       const addrLower = (e.address || '').toLowerCase();
       const venueLower = (e.venue || '').toLowerCase();
-      // Reject if address contains a known foreign city
-      if (REJECT_ADDRESSES.some(r => addrLower.includes(r) || venueLower.includes(r))) {
-        console.log(`Rejected foreign event: "${e.name}" (${e.address})`);
-        return false;
+      if (FOREIGN_KEYWORDS.some(kw => addrLower.includes(kw) || venueLower.includes(kw))) {
+        console.log(`Rejected foreign: "${e.name}" (${e.address})`);
+        continue;
       }
-      // Reject events with past dates (more than 1 day ago)
-      const eventDate = new Date(e.startTime);
-      if (eventDate.getTime() < Date.now() - 86400000) {
-        console.log(`Rejected past event: "${e.name}" (${e.startTime})`);
-        return false;
+
+      // Fix date
+      const startTime = fixEventDate(e.date || '');
+      if (!startTime) {
+        console.log(`Rejected bad date: "${e.name}" (${e.date})`);
+        continue;
       }
-      return true;
-    });
-    console.log(`Returning ${validEvents.length} valid Eventbrite events for ${city}`);
+
+      // Geocode (limit to first 15 to stay within timeout)
+      let lat = cityCoords.lat;
+      let lng = cityCoords.lng;
+      let geocoded = false;
+
+      if (e.address && i < 15) {
+        const coords = await geocode(e.address, city);
+        if (coords) {
+          const dist = distanceKm(coords.lat, coords.lng, cityCoords.lat, cityCoords.lng);
+          if (dist <= MAX_DISTANCE_KM) {
+            lat = coords.lat;
+            lng = coords.lng;
+            geocoded = true;
+          } else {
+            console.log(`Rejected too far (${dist.toFixed(0)}km): "${e.name}" (${e.address})`);
+            continue;
+          }
+        }
+      }
+
+      // Add small random offset if at exact city center (not geocoded)
+      if (!geocoded) {
+        lat += (Math.random() - 0.5) * 0.015;
+        lng += (Math.random() - 0.5) * 0.015;
+      }
+
+      const id = `eb-${slug}-${i}-${Date.now()}`;
+
+      events.push({
+        id,
+        name: e.name,
+        venue: e.venue || '',
+        address: e.address || '',
+        city,
+        lat,
+        lng,
+        startTime,
+        endTime: null,
+        description: (e.category ? `[${e.category}] ` : '') + (e.description || ''),
+        ticketUrl: e.url || '',
+        price: e.price || null,
+        genres: [] as string[],
+        category: e.category || 'other',
+        externalAttendees: typeof e.attendees === 'number' && e.attendees > 0 ? e.attendees : null,
+      });
+    }
+
+    console.log(`Returning ${events.length} valid Eventbrite events for ${city}`);
 
     return new Response(
-      JSON.stringify({ success: true, events: validEvents }),
+      JSON.stringify({ success: true, events }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
