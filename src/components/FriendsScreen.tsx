@@ -6,6 +6,7 @@ import { EventDetailPage } from '@/components/EventDetailPage';
 import { AuthScreen } from '@/components/AuthScreen';
 import { NightEvent } from '@/data/mockEvents';
 import { toast } from 'sonner';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface Friend {
   user_id: string;
