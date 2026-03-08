@@ -58,7 +58,7 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // NightMap custom tokens
+        // PulseMap custom tokens
         neon: {
           cyan: "hsl(var(--neon-cyan))",
           pink: "hsl(var(--neon-pink))",

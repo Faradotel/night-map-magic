@@ -118,7 +118,7 @@ export function ProfileScreen() {
           <div>
             <p className="text-xs text-muted-foreground font-medium mb-0.5">Profil</p>
             <h1 className="text-2xl font-black tracking-tight">
-              Mon <span className="text-neon-cyan">NightMap</span>
+              Mon <span className="text-neon-cyan">PulseMap</span>
             </h1>
           </div>
           {user && (

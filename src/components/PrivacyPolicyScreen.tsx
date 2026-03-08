@@ -36,7 +36,7 @@ export function PrivacyPolicyScreen({ onBack }: PrivacyPolicyScreenProps) {
             </div>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            NightMap s'engage à protéger la vie privée de ses utilisateurs conformément au Règlement Général sur la Protection des Données (RGPD – UE 2016/679) et à la loi Informatique et Libertés.
+            PulseMap s'engage à protéger la vie privée de ses utilisateurs conformément au Règlement Général sur la Protection des Données (RGPD – UE 2016/679) et à la loi Informatique et Libertés.
           </p>
         </div>
 

@@ -9,7 +9,7 @@ export interface AttendedEvent {
   date: string;
 }
 
-const STORAGE_KEY = 'nightmap_attended';
+const STORAGE_KEY = 'pulsemap_attended';
 
 function loadLocal(): AttendedEvent[] {
   try {

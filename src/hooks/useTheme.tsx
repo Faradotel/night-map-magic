@@ -21,7 +21,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const root = document.documentElement;
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
-    localStorage.setItem('nightmap-theme', theme);
+    localStorage.setItem('pulsemap-theme', theme);
   }, [theme]);
 
   const toggleTheme = () => setTheme(t => (t === 'dark' ? 'light' : 'dark'));

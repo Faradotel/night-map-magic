@@ -82,7 +82,7 @@
   }
 
   .light {
-    /* NightMap Light — White & warm beige */
+    /* PulseMap Light — White & warm beige */
     --background: 40 30% 96%;
     --foreground: 240 10% 10%;
 

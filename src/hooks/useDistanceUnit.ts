@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 
 export type DistanceUnit = 'km' | 'miles' | 'meters';
 
-const STORAGE_KEY = 'nightmap-distance-unit';
+const STORAGE_KEY = 'pulsemap-distance-unit';
 
 const unitLabels: Record<DistanceUnit, string> = {
   km: 'km',
