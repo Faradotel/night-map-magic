@@ -126,6 +126,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
               }}
             >
               <Heart size={16} fill={isFav ? 'hsl(0, 80%, 55%)' : 'none'} style={{ color: isFav ? 'hsl(0, 80%, 55%)' : 'hsl(var(--foreground))' }} />
+            </button>
           </div>
         </div>
 
