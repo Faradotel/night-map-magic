@@ -16,6 +16,7 @@ interface EventDetailPageProps {
 
 export function EventDetailPage({ event, onClose, userLocation, attendance, favorites }: EventDetailPageProps) {
   const checkedIn = attendance.isAttended(event.id);
+  const isFav = favorites.isFavorite(event.id);
   const attendanceCount = useEventAttendanceCount(event.id);
 
   // Swipe down to close
