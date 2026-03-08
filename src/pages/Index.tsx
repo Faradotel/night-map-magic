@@ -45,9 +45,9 @@ export default function Index() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [allShotgunEvents, setAllShotgunEvents] = useState<NightEvent[]>([]);
   const [shotgunLoading, setShotgunLoading] = useState(false);
-  const [locationMode, setLocationMode] = useState<LocationModeType>('city');
-  const [selectedCityName, setSelectedCityName] = useState<string | null>(defaultCity.name);
-  const [filterCenter, setFilterCenter] = useState<[number, number] | null>(initCenter);
+  const [locationMode, setLocationMode] = useState<LocationModeType>('nearby');
+  const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
+  const [filterCenter, setFilterCenter] = useState<[number, number] | null>(null);
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>({
     date: 'all',
@@ -103,9 +103,8 @@ export default function Index() {
           setUserLocation(loc);
           setFilterCenter(loc);
           setLocating(false);
-          if (pos.coords.latitude > 41 && pos.coords.latitude < 52 && pos.coords.longitude > -5 && pos.coords.longitude < 10) {
-            setMapCenter(loc);
-          }
+          setMapCenter(loc);
+          setMapZoom(13);
         },
         () => { setLocating(false); },
         { enableHighAccuracy: true, timeout: 8000 }
