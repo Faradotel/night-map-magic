@@ -55,7 +55,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance }: Ev
   };
 
   return (
-    <div className="absolute inset-0 z-[600] flex flex-col" style={{ background: 'hsl(var(--background))' }}>
+    <div ref={scrollRef} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} className="absolute inset-0 z-[600] flex flex-col overflow-y-auto" style={{ background: 'hsl(var(--background))' }}>
       {/* Hero header */}
       <div className="relative shrink-0">
         {/* Gradient bg */}
