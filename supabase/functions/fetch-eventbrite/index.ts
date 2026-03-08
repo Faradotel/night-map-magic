@@ -208,12 +208,17 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Check if address mentions a different French city (e.g. "Lyon · ..." for a Grenoble search)
-      const otherCities = Object.keys(CITY_COORDS).filter(c => c.toLowerCase() !== city.toLowerCase());
-      const addrStart = addrLower.split('·')[0].trim();
-      if (otherCities.some(c => addrStart === c.toLowerCase() || addrLower.startsWith(c.toLowerCase() + ' ·'))) {
-        console.log(`Rejected wrong city: "${e.name}" (${e.address}) — not in ${city}`);
-        continue;
+      // Check if address mentions a different city (e.g. "Lyon · ..." for a Grenoble search)
+      // Eventbrite format: "CityName · Venue"
+      const addrParts = (e.address || '').split('·');
+      if (addrParts.length >= 2) {
+        const addrCity = addrParts[0].trim().toLowerCase();
+        const targetCity = city.toLowerCase();
+        // If the address explicitly names a different city, reject it
+        if (addrCity && addrCity !== targetCity && !addrCity.includes(targetCity) && !targetCity.includes(addrCity)) {
+          console.log(`Rejected wrong city: "${e.name}" (${e.address}) — "${addrParts[0].trim()}" ≠ ${city}`);
+          continue;
+        }
       }
 
       // Fix date
