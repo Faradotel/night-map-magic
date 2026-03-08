@@ -114,6 +114,18 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
             >
               <Share2 size={16} />
             </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                favorites.toggleFavorite({ id: event.id, name: event.name, city: event.city, startTime: event.startTime });
+              }}
+              className="w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90"
+              style={{
+                background: isFav ? 'hsl(0 80% 55% / 0.15)' : 'hsl(var(--secondary))',
+                borderColor: isFav ? 'hsl(0 80% 55% / 0.5)' : 'hsl(var(--border))',
+              }}
+            >
+              <Heart size={16} fill={isFav ? 'hsl(0, 80%, 55%)' : 'none'} style={{ color: isFav ? 'hsl(0, 80%, 55%)' : 'hsl(var(--foreground))' }} />
           </div>
         </div>
 
