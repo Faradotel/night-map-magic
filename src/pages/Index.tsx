@@ -114,14 +114,13 @@ export default function Index() {
   }, []);
 
   // Filter events using filterCenter (user location or city center)
-  const allEvents = [...mockEvents, ...allShotgunEvents];
+  const allEvents = useMemo(() => [...mockEvents, ...allShotgunEvents], [allShotgunEvents]);
 
-  const filteredEvents = allEvents.filter((event) => {
+  const filteredEvents = useMemo(() => allEvents.filter((event) => {
     if (filters.price === 'free' && event.priceRange !== 'gratuit') return false;
     if (filters.price === 'paid' && event.priceRange === 'gratuit') return false;
 
     if (filters.date !== 'all') {
-      // Use Paris timezone for all date comparisons
       const parisNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
       const eventDate = new Date(new Date(event.startTime).toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
 
@@ -148,14 +147,13 @@ export default function Index() {
     if (filters.genres.length > 0 && !event.genres.some((g) => filters.genres.includes(g as any))) return false;
     if (filters.vibes.length > 0 && !filters.vibes.includes(event.vibe as any)) return false;
 
-    // Distance filter using filterCenter (works in both modes)
     if (filterCenter) {
       const dist = getDistance(filterCenter[0], filterCenter[1], event.lat, event.lng);
       if (dist > filters.radiusKm) return false;
     }
 
     return true;
-  });
+  }), [allEvents, filters, filterCenter]);
 
   // Switch to "nearby" mode
   const handleModeChange = useCallback((mode: LocationModeType) => {
