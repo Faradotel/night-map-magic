@@ -173,7 +173,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 pb-44">
+      <div className="flex-1">
         {/* Source badge */}
         <div className="px-5 mb-4">
           <div
@@ -362,12 +362,11 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
         </div>
       </div>
 
-      {/* Fixed bottom action bar */}
+      {/* Bottom action bar */}
       <div
-        className="absolute bottom-0 left-0 right-0 px-4 py-3 border-t"
+        className="shrink-0 px-4 py-3 border-t"
         style={{
           background: 'var(--nav-bg)',
-          backdropFilter: 'blur(20px)',
           borderColor: 'var(--nav-border)',
         }}
       >
