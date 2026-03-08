@@ -20,7 +20,7 @@ import { NightEvent as NightEventType } from '@/data/mockEvents';
 import { loadEventsForCity, loadEventsNearby, deduplicateEvents } from '@/lib/api/shotgun';
 import { mapGenres, deduceVibe, deduceType, parsePriceRange } from '@/lib/api/shotgun';
 import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
-import { MapPin, Locate, Sliders, Bell } from 'lucide-react';
+import { MapPin, Locate, Sliders, Bell, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 type Tab = 'map' | 'search' | 'friends' | 'profile';
