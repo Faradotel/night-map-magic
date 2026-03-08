@@ -213,6 +213,7 @@ Deno.serve(async (req) => {
           price: e.price || null,
           genres: [] as string[],
           category: e.category || e._category || 'other',
+          externalAttendees: typeof e.attendees === 'number' && e.attendees > 0 ? e.attendees : null,
         };
       })
     );
