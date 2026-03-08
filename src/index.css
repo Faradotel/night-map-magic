@@ -263,7 +263,7 @@
   color: hsl(182 100% 50%) !important;
 }
 
-/* Custom event marker */
+/* Custom event marker - kept as nightmap-marker for Leaflet compatibility */
 .nightmap-marker {
   display: flex;
   align-items: center;

@@ -65,7 +65,7 @@ export function PrivacyPolicyScreen({ onBack }: PrivacyPolicyScreenProps) {
           title="2. Géolocalisation"
         >
           <p className="text-xs text-muted-foreground leading-relaxed">
-            NightMap peut utiliser ta position géographique pour afficher les événements proches de toi. Cette donnée est traitée <strong className="text-foreground">localement dans ton navigateur</strong> et n'est jamais transmise ni stockée sur nos serveurs. Tu peux refuser la géolocalisation à tout moment via les paramètres de ton navigateur, et utiliser le mode « Ville » à la place.
+            PulseMap peut utiliser ta position géographique pour afficher les événements proches de toi. Cette donnée est traitée <strong className="text-foreground">localement dans ton navigateur</strong> et n'est jamais transmise ni stockée sur nos serveurs. Tu peux refuser la géolocalisation à tout moment via les paramètres de ton navigateur, et utiliser le mode « Ville » à la place.
           </p>
         </Section>
 
