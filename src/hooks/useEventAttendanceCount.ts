@@ -8,7 +8,7 @@ export function useEventAttendanceCount(eventId: string | null) {
     if (!eventId) { setCount(null); return; }
 
     (async () => {
-      const { data, error } = await supabase.rpc('get_event_attendance_count', { _event_id: eventId });
+      const { data, error } = await supabase.rpc('get_event_attendance_count' as any, { _event_id: eventId });
       if (!error && data != null) setCount(Number(data));
     })();
   }, [eventId]);
