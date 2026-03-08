@@ -30,9 +30,9 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
         style={{
           background: isLight ? 'rgba(255, 255, 255, 0.92)' : 'rgba(26, 13, 21, 0.85)',
           backdropFilter: 'blur(16px)',
-          border: isLight ? '1px solid hsl(325 89% 50% / 0.2)' : '1px solid hsl(325 89% 50% / 0.3)',
+          border: isLight ? `1px solid ${vibe.color}33` : `1px solid ${vibe.color}55`,
           borderLeftWidth: '4px',
-          borderLeftColor: 'hsl(325 89% 50%)',
+          borderLeftColor: vibe.color,
           boxShadow: isLight ? '0 8px 32px rgba(0,0,0,0.12)' : '0 8px 32px hsl(230 60% 4% / 0.8)',
         }}
       >
@@ -41,7 +41,7 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
           <div
             className="w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0"
             style={{
-              background: `linear-gradient(135deg, hsl(325 89% 50% / 0.2), hsl(275 71% 58% / 0.3))`,
+              background: `linear-gradient(135deg, ${vibe.color}33, ${vibe.color}55)`,
               border: '1px solid hsl(0 0% 100% / 0.1)',
             }}
           >
@@ -51,7 +51,7 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
           {/* Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: 'hsl(325 89% 50%)' }}>
+              <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: vibe.color }}>
                 {vibe.emoji} {vibe.label}
               </span>
               {event.isLive && (
@@ -74,8 +74,8 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
               onClick={onDetails}
               className="px-3 py-1.5 rounded-full text-[11px] font-bold text-white active:scale-95"
               style={{
-                background: 'hsl(325 89% 50%)',
-                boxShadow: '0 0 12px hsl(325 89% 50% / 0.3)',
+                background: vibe.color,
+                boxShadow: `0 0 12px ${vibe.color}55`,
               }}
             >
               Détails
