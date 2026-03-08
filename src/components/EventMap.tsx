@@ -141,9 +141,10 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       iconCreateFunction: (cluster) => {
         const count = cluster.getChildCount();
         const size = count > 20 ? 52 : count > 5 ? 44 : 36;
+        const accent = 'hsl(320,100%,50%)';
         return L.divIcon({
           className: '',
-          html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:hsl(var(--accent));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:${count > 20 ? 16 : 14}px;box-shadow:0 0 16px hsl(var(--accent)/0.4),0 4px 12px rgba(0,0,0,0.3);border:2px solid hsl(var(--accent)/0.6);">${count}</div>`,
+          html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${accent};display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:${count > 20 ? 16 : 14}px;box-shadow:0 0 16px ${accent}66,0 4px 12px rgba(0,0,0,0.3);border:2px solid ${accent}99;">${count}</div>`,
           iconSize: [size, size],
           iconAnchor: [size / 2, size / 2],
         });
