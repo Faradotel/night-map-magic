@@ -121,21 +121,46 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     }
   }, [userLocation, radiusKm]);
 
-  // Event markers – full rebuild only when events list changes
+  // Event markers – clustered
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    markersRef.current.forEach(m => map.removeLayer(m));
+    // Remove previous cluster group
+    if (clusterGroupRef.current) {
+      map.removeLayer(clusterGroupRef.current);
+      clusterGroupRef.current = null;
+    }
     markersRef.current.clear();
+
+    const clusterGroup = L.markerClusterGroup({
+      maxClusterRadius: 45,
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true,
+      iconCreateFunction: (cluster) => {
+        const count = cluster.getChildCount();
+        const size = count > 20 ? 52 : count > 5 ? 44 : 36;
+        return L.divIcon({
+          className: '',
+          html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:hsl(var(--accent));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:${count > 20 ? 16 : 14}px;box-shadow:0 0 16px hsl(var(--accent)/0.4),0 4px 12px rgba(0,0,0,0.3);border:2px solid hsl(var(--accent)/0.6);">${count}</div>`,
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size / 2],
+        });
+      },
+    });
 
     events.forEach(event => {
       const marker = L.marker([event.lat, event.lng], {
         icon: createEventIcon(event, false, isDark),
-      }).addTo(map);
+      });
       marker.on('click', () => onEventSelect(event));
       markersRef.current.set(event.id, marker);
+      clusterGroup.addLayer(marker);
     });
+
+    map.addLayer(clusterGroup);
+    clusterGroupRef.current = clusterGroup;
   }, [events, onEventSelect, isDark]);
 
   // Selection highlight – only update the 2 affected markers
