@@ -32,6 +32,7 @@ const CITY_RADIUS_DEFAULT = 40;
 
 export default function Index() {
   const { user, loading: authLoading } = useAuth();
+  const { isPro } = useUserRole();
   const { preferredCity, setPreferredCity } = usePreferredCity();
   const savedCity = CITIES.find(c => c.name === preferredCity);
   const defaultCity = savedCity || CITIES.find(c => c.name === 'Paris')!;
