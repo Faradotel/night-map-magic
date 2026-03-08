@@ -147,6 +147,19 @@ export function EventDetailPage({ event, onClose, userLocation, attendance }: Ev
             <Info size={12} />
             Source : {source}
           </div>
+          {attendanceCount != null && attendanceCount > 0 && (
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold ml-2"
+              style={{
+                borderColor: 'hsl(var(--accent) / 0.4)',
+                color: 'hsl(var(--accent))',
+                background: 'hsl(var(--accent) / 0.1)',
+              }}
+            >
+              <Users size={12} />
+              {attendanceCount} participant{attendanceCount > 1 ? 's' : ''}
+            </div>
+          )}
         </div>
 
         {/* Info cards */}
