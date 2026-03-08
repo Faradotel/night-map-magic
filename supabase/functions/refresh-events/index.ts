@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Refresh error:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Unknown' }),
+      JSON.stringify({ success: false, error: 'Failed to refresh events. Please try again later.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

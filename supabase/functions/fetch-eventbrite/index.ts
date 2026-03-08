@@ -238,7 +238,7 @@ Deno.serve(async (req) => {
     console.error('Eventbrite scrape error:', error);
     return new Response(
       JSON.stringify({ success: true, events: [] }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });
