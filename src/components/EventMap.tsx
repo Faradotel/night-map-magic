@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
 import { NightEvent, vibeConfig, typeConfig } from '@/data/mockEvents';
 import { useTheme } from '@/hooks/useTheme';
 
