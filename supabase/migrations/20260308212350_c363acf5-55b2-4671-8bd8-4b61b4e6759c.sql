@@ -1,0 +1,1 @@
+DELETE FROM cached_events WHERE source = 'eventbrite' AND city = 'Grenoble' AND (address ILIKE '%genève%' OR address ILIKE '%geneva%' OR address ILIKE '%lancy%' OR address ILIKE '%cumiana%' OR address ILIKE '%lyon%' OR address ILIKE '%seynod%' OR start_time < '2025-01-01');

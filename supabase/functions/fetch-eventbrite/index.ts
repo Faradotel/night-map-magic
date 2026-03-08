@@ -227,7 +227,25 @@ Deno.serve(async (req) => {
       })
     );
 
-    const validEvents = events.filter((e: any) => e.name && e.name.length > 2);
+    // Filter out events that are clearly from wrong cities (e.g. Geneva events showing up for Grenoble)
+    const REJECT_ADDRESSES = ['genève', 'geneva', 'zürich', 'zurich', 'bern', 'lausanne', 'basel', 'lancy', 'cumiana', 'torino', 'milano', 'barcelona', 'london', 'bruxelles', 'brussels'];
+    const validEvents = events.filter((e: any) => {
+      if (!e.name || e.name.length <= 2) return false;
+      const addrLower = (e.address || '').toLowerCase();
+      const venueLower = (e.venue || '').toLowerCase();
+      // Reject if address contains a known foreign city
+      if (REJECT_ADDRESSES.some(r => addrLower.includes(r) || venueLower.includes(r))) {
+        console.log(`Rejected foreign event: "${e.name}" (${e.address})`);
+        return false;
+      }
+      // Reject events with past dates (more than 1 day ago)
+      const eventDate = new Date(e.startTime);
+      if (eventDate.getTime() < Date.now() - 86400000) {
+        console.log(`Rejected past event: "${e.name}" (${e.startTime})`);
+        return false;
+      }
+      return true;
+    });
     console.log(`Returning ${validEvents.length} valid Eventbrite events for ${city}`);
 
     return new Response(
