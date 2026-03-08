@@ -14,6 +14,7 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
   const [query, setQuery] = useState('');
   const [detailEvent, setDetailEvent] = useState<NightEvent | null>(null);
   const attendance = useAttendance();
+  const favorites = useFavorites();
 
   const results = query.trim().length > 1
     ? events.filter(e =>
