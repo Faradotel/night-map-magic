@@ -57,28 +57,19 @@ function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): num
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Geocode an address using Nominatim, scoped to France
+// Geocode an address using Nominatim, scoped to France — single attempt
 async function geocode(address: string, city: string): Promise<{ lat: number; lng: number } | null> {
-  // Try multiple query strategies
-  const queries = [
-    `${address}, ${city}, France`,
-    `${address}, France`,
-    `${city}, France`,
-  ];
-
-  for (const q of queries) {
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&addressdetails=1&limit=1`,
-        { headers: { 'User-Agent': 'PulseMap/1.0' } }
-      );
-      const data = await res.json();
-      if (data?.[0]) {
-        return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-      }
-      await new Promise(r => setTimeout(r, 250));
-    } catch { /* next query */ }
-  }
+  try {
+    const q = `${address}, ${city}, France`;
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&limit=1`,
+      { headers: { 'User-Agent': 'PulseMap/1.0' } }
+    );
+    const data = await res.json();
+    if (data?.[0]) {
+      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    }
+  } catch { /* fallback */ }
   return null;
 }
 
@@ -217,6 +208,16 @@ Deno.serve(async (req) => {
         continue;
       }
 
+      // Check if address mentions a different city
+      const addrClean = (e.address || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const targetLower = city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const KNOWN_OTHER_CITIES = ['lyon','annecy','chambery','villeurbanne','valence','saint-etienne','geneve','geneva','lausanne','zurich','turin','milano','barcelona','bruxelles','crest','voiron'];
+      const mentionsOther = KNOWN_OTHER_CITIES.filter(c => c !== targetLower).find(c => addrClean === c || addrClean.startsWith(c + ' ') || addrClean.startsWith(c + ',') || addrClean.startsWith(c + ' ·'));
+      if (mentionsOther) {
+        console.log(`Rejected wrong city: "${e.name}" (${e.address})`);
+        continue;
+      }
+
       // Fix date
       const startTime = fixEventDate(e.date || '');
       if (!startTime) {
@@ -229,7 +230,7 @@ Deno.serve(async (req) => {
       let lng = cityCoords.lng;
       let geocoded = false;
 
-      if (e.address && i < 15) {
+      if (e.address && i < 8) {
         const coords = await geocode(e.address, city);
         if (coords) {
           const dist = distanceKm(coords.lat, coords.lng, cityCoords.lat, cityCoords.lng);
