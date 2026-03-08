@@ -12,6 +12,30 @@ interface EventDetailPageProps {
 
 export function EventDetailPage({ event, onClose, userLocation, attendance }: EventDetailPageProps) {
   const checkedIn = attendance.isAttended(event.id);
+
+  // Swipe down to close
+  const touchStartY = useRef<number | null>(null);
+  const touchStartX = useRef<number | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (touchStartY.current === null || touchStartX.current === null) return;
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+    const deltaX = Math.abs(e.changedTouches[0].clientX - touchStartX.current);
+    const scrollTop = scrollRef.current?.scrollTop ?? 0;
+    touchStartY.current = null;
+    touchStartX.current = null;
+
+    // Swipe down when scrolled to top
+    if (deltaY > 60 && deltaY > deltaX && scrollTop <= 5) {
+      onClose();
+    }
+  }, [onClose]);
   const vibe = vibeConfig[event.vibe];
   const type = typeConfig[event.type];
 
