@@ -143,6 +143,36 @@ export type Database = {
         }
         Relationships: []
       }
+      event_passes: {
+        Row: {
+          created_at: string
+          event_id: string
+          event_name: string
+          id: string
+          image_path: string | null
+          qr_data: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          event_name: string
+          id?: string
+          image_path?: string | null
+          qr_data?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          event_name?: string
+          id?: string
+          image_path?: string | null
+          qr_data?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       friend_requests: {
         Row: {
           created_at: string
