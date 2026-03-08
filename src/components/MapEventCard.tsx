@@ -95,12 +95,17 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
               )}
             </div>
             <h3 className="text-sm font-bold tracking-tight leading-tight truncate" style={{ color: isLight ? 'hsl(230 25% 15%)' : undefined }}>{event.name}</h3>
-            <p className="text-[11px] flex items-center gap-1" style={{ color: isLight ? 'hsl(225 15% 40%)' : 'hsl(225 15% 50%)' }}>
+            <p className="text-[11px] flex items-center gap-1 flex-wrap" style={{ color: isLight ? 'hsl(225 15% 40%)' : 'hsl(225 15% 50%)' }}>
               {event.genres[0] || type.label}
               {distanceKm != null && ` • ${formatDistance(distanceKm)}`}
+              {event.externalAttendees != null && event.externalAttendees > 0 && (
+                <span className="inline-flex items-center gap-0.5 ml-1" title="Inscrits sur la plateforme">
+                  <Users size={10} /> {event.externalAttendees}
+                </span>
+              )}
               {attendanceCount != null && attendanceCount > 0 && (
-                <span className="inline-flex items-center gap-0.5 ml-1">
-                  <Users size={10} /> {attendanceCount}
+                <span className="inline-flex items-center gap-0.5 ml-1 opacity-60" title="Via PulseMap">
+                  (+{attendanceCount} PulseMap)
                 </span>
               )}
             </p>
