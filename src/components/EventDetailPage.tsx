@@ -85,19 +85,18 @@ export function EventDetailPage({ event, onClose, userLocation, attendance }: Ev
           >
             <X size={16} />
           </button>
-        </div>
-        <div className="relative flex justify-end px-4 pb-1">
           <button
             onClick={handleShare}
-            className="w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90"
+            className="absolute right-4 top-[68px] w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90"
             style={{
-              background: 'var(--controls-bg)',
-              backdropFilter: 'blur(12px)',
-              borderColor: 'var(--controls-border)',
+              background: 'hsl(var(--secondary))',
+              borderColor: 'hsl(var(--border))',
             }}
           >
             <Share2 size={16} className="text-foreground" />
           </button>
+        </div>
+        <div className="relative pb-1" />
         </div>
 
         {/* Event icon + title */}
