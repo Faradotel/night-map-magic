@@ -41,9 +41,9 @@ function createEventIcon(event: NightEvent, isSelected: boolean, isDark: boolean
 function createUserIcon(): L.DivIcon {
   return L.divIcon({
     className: '',
-    html: `<div style="position:relative;width:32px;height:32px;display:flex;align-items:center;justify-content:center;"><div style="position:absolute;inset:0;border-radius:50%;background:hsl(325,89%,50%,0.2);animation:ping-slow 2s ease-out infinite;"></div><div style="width:24px;height:24px;border-radius:50%;background:hsl(325,89%,50%);border:3px solid white;box-shadow:0 0 16px hsl(325,89%,50%,0.8);"></div></div>`,
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
+    html: `<div style="position:relative;width:24px;height:24px;display:flex;align-items:center;justify-content:center;"><div style="position:absolute;inset:-4px;border-radius:50%;background:hsl(325,89%,50%,0.15);animation:ping-slow 2.5s ease-out infinite;"></div><div style="position:absolute;inset:-1px;border-radius:50%;background:hsl(325,89%,50%,0.08);"></div><div style="width:14px;height:14px;border-radius:50%;background:hsl(325,89%,50%);border:2px solid white;box-shadow:0 0 10px hsl(325,89%,50%,0.6);"></div></div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
   });
 }
 
