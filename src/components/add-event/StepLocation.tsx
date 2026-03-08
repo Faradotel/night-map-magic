@@ -82,7 +82,7 @@ export function StepLocation({ data, onChange, errors }: Props) {
               </div>
             )}
           </div>
-          {suggestions.length > 0 && (
+          {suggestions.length > 0 && !data.selectedAddress && (
             <div
               className="absolute top-full left-0 right-0 mt-1 rounded-xl border overflow-hidden z-10"
               style={{
