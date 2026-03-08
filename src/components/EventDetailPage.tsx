@@ -50,9 +50,29 @@ export function EventDetailPage({ event, onClose, userLocation, attendance }: Ev
     event.priceRange === '€10-20' ? 'hsl(45 100% 55%)' : 'hsl(var(--accent))';
 
   const handleShare = async () => {
+    const shareUrl = event.ticketUrl || window.location.href;
     const shareText = `Hey, rejoins-moi ici ! 🎶\n${event.name} — ${event.venue}, ${event.city}`;
+    
     if (navigator.share) {
-      await navigator.share({ title: event.name, text: shareText, url: event.ticketUrl || window.location.href });
+      try {
+        await navigator.share({ title: event.name, text: shareText, url: shareUrl });
+      } catch {
+        // User cancelled share
+      }
+    } else {
+      // Desktop fallback: copy link to clipboard
+      try {
+        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+        // Use a simple visual feedback
+        const btn = document.querySelector('[data-share-btn]') as HTMLElement;
+        if (btn) {
+          btn.setAttribute('data-copied', 'true');
+          setTimeout(() => btn.removeAttribute('data-copied'), 2000);
+        }
+      } catch {
+        // Fallback for older browsers
+        window.prompt('Copie ce lien :', shareUrl);
+      }
     }
   };
 
