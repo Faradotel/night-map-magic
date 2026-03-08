@@ -20,6 +20,7 @@ export function ProfileScreen() {
   const { unit, cycleUnit } = useDistanceUnit();
   const { stats, attended } = useAttendance();
   const { preferredCity } = usePreferredCity();
+  const { favorites, toggleFavorite } = useFavorites();
   const { user, signOut } = useAuth();
   const [username, setUsername] = useState(() => {
     const funnyNames = ['Fantôme Dansant 👻', 'Hibou Anonyme 🦉', 'Ninja du Dancefloor 🥷', 'Licorne Nocturne 🦄', 'Loup Solitaire 🐺'];
