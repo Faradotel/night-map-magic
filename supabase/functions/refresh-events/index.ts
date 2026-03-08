@@ -106,6 +106,7 @@ Deno.serve(async (req) => {
           ticket_url: e.ticketUrl || null,
           source: e.id?.startsWith('eb-') ? 'eventbrite' : e.id?.startsWith('tm-') ? 'ticketmaster' : 'shotgun',
           updated_at: new Date().toISOString(),
+          external_attendees: e.externalAttendees || null,
         }));
 
         const { error } = await supabase.from('cached_events').upsert(batch, { onConflict: 'id' });
