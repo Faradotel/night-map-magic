@@ -87,31 +87,32 @@ export function EventDetailPage({ event, onClose, userLocation, attendance }: Ev
           style={{ background: 'linear-gradient(to top, hsl(var(--background)), transparent)' }}
         />
 
-        {/* Swipe-down hint + share */}
-        <div className="relative flex items-center justify-between pt-6 pb-2 px-4">
+        {/* Swipe-down hint + actions */}
+        <div className="relative flex pt-6 pb-2 px-4">
           <div className="flex-1 flex flex-col items-center">
             <div className="w-10 h-1 rounded-full opacity-30 mb-1" style={{ background: 'hsl(0 0% 50%)' }} />
             <ChevronDown size={16} className="opacity-30" style={{ color: 'hsl(0 0% 50%)' }} />
           </div>
-          <button
-            onClick={onClose}
-            className="absolute right-4 top-6 w-9 h-9 rounded-full flex items-center justify-center border text-muted-foreground hover:text-foreground transition-colors"
-            style={{ background: 'hsl(var(--secondary))', borderColor: 'hsl(var(--border))' }}
-          >
-            <X size={16} />
-          </button>
-          <button
-            onClick={handleShare}
-            className="absolute right-4 top-[68px] w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90"
-            style={{
-              background: 'hsl(var(--secondary))',
-              borderColor: 'hsl(var(--border))',
-            }}
-          >
-            <Share2 size={16} className="text-foreground" />
-          </button>
+          <div className="flex flex-col gap-2 shrink-0">
+            <button
+              onClick={(e) => { e.stopPropagation(); onClose(); }}
+              className="w-9 h-9 rounded-full flex items-center justify-center border text-muted-foreground hover:text-foreground transition-colors"
+              style={{ background: 'hsl(var(--secondary))', borderColor: 'hsl(var(--border))' }}
+            >
+              <X size={16} />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleShare(); }}
+              className="w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90 text-foreground"
+              style={{
+                background: 'hsl(var(--secondary))',
+                borderColor: 'hsl(var(--border))',
+              }}
+            >
+              <Share2 size={16} />
+            </button>
+          </div>
         </div>
-        
 
         {/* Event icon + title */}
         <div className="relative px-5 pb-6">
