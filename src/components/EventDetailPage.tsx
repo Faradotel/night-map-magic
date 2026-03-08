@@ -64,14 +64,8 @@ export function EventDetailPage({ event, onClose, userLocation, attendance }: Ev
       // Desktop fallback: copy link to clipboard
       try {
         await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
-        // Use a simple visual feedback
-        const btn = document.querySelector('[data-share-btn]') as HTMLElement;
-        if (btn) {
-          btn.setAttribute('data-copied', 'true');
-          setTimeout(() => btn.removeAttribute('data-copied'), 2000);
-        }
+        toast.success('Lien copié !');
       } catch {
-        // Fallback for older browsers
         window.prompt('Copie ce lien :', shareUrl);
       }
     }
