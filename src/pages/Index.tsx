@@ -119,7 +119,7 @@ export default function Index() {
   }, []);
 
   // Filter events using filterCenter (user location or city center)
-  const allEvents = useMemo(() => [...mockEvents, ...allShotgunEvents], [allShotgunEvents]);
+  const allEvents = useMemo(() => [...mockEvents, ...allShotgunEvents, ...userEvents], [allShotgunEvents, userEvents]);
 
   const filteredEvents = useMemo(() => allEvents.filter((event) => {
     if (filters.price === 'free' && event.priceRange !== 'gratuit') return false;
