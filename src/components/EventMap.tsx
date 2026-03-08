@@ -41,9 +41,9 @@ function createEventIcon(event: NightEvent, isSelected: boolean, isDark: boolean
 function createUserIcon(): L.DivIcon {
   return L.divIcon({
     className: '',
-    html: `<div style="position:relative;width:32px;height:32px;display:flex;align-items:center;justify-content:center;"><div style="position:absolute;inset:0;border-radius:50%;background:hsl(325,89%,50%,0.2);animation:ping-slow 2s ease-out infinite;"></div><div style="width:24px;height:24px;border-radius:50%;background:hsl(325,89%,50%);border:3px solid white;box-shadow:0 0 16px hsl(325,89%,50%,0.8);"></div></div>`,
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
+    html: `<div style="position:relative;width:24px;height:24px;display:flex;align-items:center;justify-content:center;"><div style="position:absolute;inset:-4px;border-radius:50%;background:hsl(325,89%,50%,0.15);animation:ping-slow 2.5s ease-out infinite;"></div><div style="position:absolute;inset:-1px;border-radius:50%;background:hsl(325,89%,50%,0.08);"></div><div style="width:14px;height:14px;border-radius:50%;background:hsl(325,89%,50%);border:2px solid white;box-shadow:0 0 10px hsl(325,89%,50%,0.6);"></div></div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
   });
 }
 
@@ -140,11 +140,11 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       zoomToBoundsOnClick: true,
       iconCreateFunction: (cluster) => {
         const count = cluster.getChildCount();
-        const size = count > 20 ? 52 : count > 5 ? 44 : 36;
+        const size = count > 20 ? 48 : count > 5 ? 40 : 34;
         const accent = 'hsl(320,100%,50%)';
         return L.divIcon({
           className: '',
-          html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${accent};display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:${count > 20 ? 16 : 14}px;box-shadow:0 0 16px ${accent}66,0 4px 12px rgba(0,0,0,0.3);border:2px solid ${accent}99;">${count}</div>`,
+          html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${accent}e6;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:${count > 20 ? 15 : 13}px;box-shadow:0 0 20px ${accent}55,0 0 40px ${accent}22;border:1.5px solid ${accent}88;">${count}</div>`,
           iconSize: [size, size],
           iconAnchor: [size / 2, size / 2],
         });
