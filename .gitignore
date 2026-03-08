@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Secrets
+.env
+client_secret_*.json
+
+# Capacitor / Android (generated - do not commit)
+android/
+.claude/

@@ -6,6 +6,7 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  base: './',
   server: {
     host: "::",
     port: 8080,
@@ -23,8 +24,8 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
       },
       manifest: {
-        name: "NightMap – Soirées & Événements",
-        short_name: "NightMap",
+        name: "PulseMap – Soirées & Événements",
+        short_name: "PulseMap",
         description: "Découvre les soirées, concerts et bars animés autour de toi",
         theme_color: "#0f0a1a",
         background_color: "#0f0a1a",
