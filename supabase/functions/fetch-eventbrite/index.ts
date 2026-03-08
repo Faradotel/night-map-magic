@@ -220,7 +220,7 @@ Deno.serve(async (req) => {
       let lng = cityCoords.lng;
       let geocoded = false;
 
-      if (e.address && i < 15) {
+      if (e.address && i < 8) {
         const coords = await geocode(e.address, city);
         if (coords) {
           const dist = distanceKm(coords.lat, coords.lng, cityCoords.lat, cityCoords.lng);
