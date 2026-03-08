@@ -173,7 +173,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 pb-44">
+      <div className="flex-1">
         {/* Source badge */}
         <div className="px-5 mb-4">
           <div
