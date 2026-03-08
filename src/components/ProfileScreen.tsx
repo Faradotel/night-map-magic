@@ -340,6 +340,7 @@ export function ProfileScreen() {
                 onBack={() => setViewingPass(null)}
               />
             )}
+          </>
         ) : (
           <div className="mx-4 mt-2 mb-4">
             <div
