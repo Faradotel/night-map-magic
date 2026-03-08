@@ -17,6 +17,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { AddEventSheet } from '@/components/AddEventSheet';
 import { NightEvent as NightEventType } from '@/data/mockEvents';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useOfflineEvents } from '@/hooks/useOfflineEvents';
 
 import { loadEventsForCity, loadEventsNearby, deduplicateEvents } from '@/lib/api/shotgun';
 import { mapGenres, deduceVibe, deduceType, parsePriceRange } from '@/lib/api/shotgun';
@@ -48,6 +49,7 @@ export default function Index() {
   const [locating, setLocating] = useState(false);
   const attendance = useAttendance();
   const favorites = useFavorites();
+  const { cacheEvents, getCachedEvents, isOffline } = useOfflineEvents();
   const [showNotifications, setShowNotifications] = useState(false);
   const [allShotgunEvents, setAllShotgunEvents] = useState<NightEvent[]>([]);
   const [shotgunLoading, setShotgunLoading] = useState(false);
@@ -78,6 +80,17 @@ export default function Index() {
 
     let cancelled = false;
     async function load() {
+      // Try offline cache first if no connection
+      if (!navigator.onLine) {
+        const cached = getCachedEvents();
+        if (cached && cached.length > 0) {
+          setAllShotgunEvents(cached);
+          setLoadedKey(currentLoadKey);
+          toast.info('Mode hors-ligne — événements en cache');
+          return;
+        }
+      }
+
       setShotgunLoading(true);
       try {
         let events: NightEvent[];
@@ -92,6 +105,16 @@ export default function Index() {
           const deduped = deduplicateEvents(events);
           setAllShotgunEvents(deduped);
           setLoadedKey(currentLoadKey);
+          // Cache for offline use
+          cacheEvents(deduped);
+        }
+      } catch {
+        // Network error — try offline cache
+        const cached = getCachedEvents();
+        if (cached && cached.length > 0 && !cancelled) {
+          setAllShotgunEvents(cached);
+          setLoadedKey(currentLoadKey);
+          toast.info('Connexion perdue — événements en cache');
         }
       } finally {
         if (!cancelled) setShotgunLoading(false);
@@ -99,7 +122,7 @@ export default function Index() {
     }
     load();
     return () => { cancelled = true; };
-  }, [currentLoadKey, locationMode, selectedCityName, userLocation, filters.radiusKm, loadedKey]);
+  }, [currentLoadKey, locationMode, selectedCityName, userLocation, filters.radiusKm, loadedKey, cacheEvents, getCachedEvents]);
 
   // Request geolocation on load
   useEffect(() => {

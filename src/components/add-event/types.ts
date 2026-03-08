@@ -12,6 +12,7 @@ export interface EventFormData {
   selectedAddress: GeocodeResult | null;
   description: string;
   price: string; // exact price input, not range
+  imageFile: File | null; // poster image
 }
 
 export interface GeocodeResult {

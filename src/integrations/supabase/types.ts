@@ -25,6 +25,7 @@ export type Database = {
           genres: string[]
           id: string
           image_color: string
+          image_url: string | null
           lat: number
           lng: number
           name: string
@@ -47,6 +48,7 @@ export type Database = {
           genres?: string[]
           id: string
           image_color?: string
+          image_url?: string | null
           lat: number
           lng: number
           name: string
@@ -69,6 +71,7 @@ export type Database = {
           genres?: string[]
           id?: string
           image_color?: string
+          image_url?: string | null
           lat?: number
           lng?: number
           name?: string
