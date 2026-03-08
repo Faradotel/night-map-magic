@@ -355,6 +355,32 @@ export default function Index() {
         }}
       />
 
+      {/* ── ADD EVENT FAB (pro only) ── */}
+      {isPro && activeTab === 'map' && (
+        <button
+          onClick={() => setShowAddEvent(true)}
+          className="absolute z-[450] w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90"
+          style={{
+            bottom: selectedEvent ? '232px' : '92px',
+            left: '16px',
+            background: 'hsl(var(--accent))',
+            boxShadow: '0 4px 20px hsl(var(--accent) / 0.5)',
+          }}
+        >
+          <Plus size={24} color="white" strokeWidth={2.5} />
+        </button>
+      )}
+
+      {/* ── ADD EVENT SHEET ── */}
+      <AddEventSheet
+        open={showAddEvent}
+        onClose={() => setShowAddEvent(false)}
+        onAdd={(event) => {
+          setUserEvents(prev => [...prev, event]);
+          toast.success('Événement ajouté !');
+        }}
+      />
+
       {/* ── BOTTOM NAV ── */}
       <BottomNav activeTab={activeTab} onTabChange={(tab) => {setActiveTab(tab);setSelectedEvent(null);}} />
     </div>);
