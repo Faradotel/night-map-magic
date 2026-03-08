@@ -31,7 +31,7 @@ export function PrivacyPolicyScreen({ onBack }: PrivacyPolicyScreenProps) {
               <Shield size={20} style={{ color: 'hsl(var(--accent))' }} />
             </div>
             <div>
-              <p className="text-sm font-bold text-foreground">NightMap – RGPD</p>
+              <p className="text-sm font-bold text-foreground">PulseMap – RGPD</p>
               <p className="text-[10px] text-muted-foreground">Dernière mise à jour : février 2026</p>
             </div>
           </div>
