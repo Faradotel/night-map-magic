@@ -333,7 +333,13 @@ export function ProfileScreen() {
             </div>
 
             {showAllBadges && <AllBadgesScreen onBack={() => setShowAllBadges(false)} attended={attended} />}
-          </>
+            {viewingPass && (
+              <PassViewerScreen
+                eventId={viewingPass.eventId}
+                eventName={viewingPass.eventName}
+                onBack={() => setViewingPass(null)}
+              />
+            )}
         ) : (
           <div className="mx-4 mt-2 mb-4">
             <div
