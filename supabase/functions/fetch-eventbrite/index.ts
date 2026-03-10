@@ -136,7 +136,7 @@ Deno.serve(async (req) => {
 
     const slug = CITY_SLUGS[city] || city.toLowerCase().replace(/\s+/g, '-').replace(/[éèê]/g, 'e').replace(/[àâ]/g, 'a');
     const cityCoords = CITY_COORDS[city] || { lat: 48.8566, lng: 2.3522 };
-    const MAX_DISTANCE_KM = 80;
+    const MAX_DISTANCE_KM = 30;
 
     const url = `https://www.eventbrite.fr/d/france--${slug}/events--this-week/`;
     console.log(`Scraping Eventbrite for ${city}: ${url}`);
@@ -211,8 +211,12 @@ Deno.serve(async (req) => {
       // Check if address mentions a different city
       const addrClean = (e.address || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
       const targetLower = city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      const KNOWN_OTHER_CITIES = ['lyon','annecy','chambery','villeurbanne','valence','saint-etienne','geneve','geneva','lausanne','zurich','turin','milano','barcelona','bruxelles','crest','voiron'];
-      const mentionsOther = KNOWN_OTHER_CITIES.filter(c => c !== targetLower).find(c => addrClean === c || addrClean.startsWith(c + ' ') || addrClean.startsWith(c + ',') || addrClean.startsWith(c + ' ·'));
+      const KNOWN_OTHER_CITIES = ['lyon','annecy','chambery','villeurbanne','valence','saint-etienne','geneve','geneva','lausanne','zurich','turin','milano','barcelona','bruxelles','crest','voiron','vienne','bourgoin','albertville','gap','romans'];
+      const mentionsOther = KNOWN_OTHER_CITIES.filter(c => c !== targetLower).find(c => {
+        // Match city name as a word anywhere in the address
+        const re = new RegExp(`\\b${c}\\b`);
+        return re.test(addrClean);
+      });
       if (mentionsOther) {
         console.log(`Rejected wrong city: "${e.name}" (${e.address})`);
         continue;
