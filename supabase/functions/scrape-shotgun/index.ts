@@ -1,4 +1,6 @@
 const ALLOWED_ORIGINS = [
+  'https://pulse-map.live',
+  'https://www.pulse-map.live',
   'https://pulsemap-official.lovable.app',
   'https://id-preview--558c7333-dd3f-4317-a4d6-54b2b3b30b02.lovable.app',
   'http://localhost:5173',
@@ -381,7 +383,7 @@ Deno.serve(async (req) => {
         startTime: parseFrenchDate(raw.date) || new Date().toISOString(),
         description,
         ticketUrl: ticketUrl || `https://shotgun.live/fr/cities/${slug}`,
-        price: raw.price || undefined,
+        price: raw.price || null,
         genres: raw.genres,
       });
     }
