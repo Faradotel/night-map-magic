@@ -60,14 +60,22 @@ export function AddEventSheet({ open, onClose, onAdd }: AddEventSheetProps) {
   function validateStep(s: number): boolean {
     const errs: Record<string, string> = {};
     if (s === 0) {
-      if (!formData.name.trim()) errs.name = 'Le nom est requis';
-      if (!formData.date) errs.date = 'La date est requise';
+      const name = formData.name.trim();
+      if (!name) errs.name = 'Le nom est requis';
+      else if (name.length < 3) errs.name = 'Le nom doit faire au moins 3 caractères';
+      if (!formData.date) {
+        errs.date = 'La date est requise';
+      } else if (new Date(formData.date) < new Date(new Date().toDateString())) {
+        errs.date = 'La date ne peut pas être dans le passé';
+      }
       if (formData.genres.length === 0) errs.genres = 'Choisissez au moins un genre';
     } else if (s === 1) {
       if (!formData.selectedAddress) errs.address = 'Sélectionnez une adresse dans la liste';
     } else if (s === 2) {
-      if (!formData.description.trim()) errs.description = 'La description est requise';
-      if (!formData.price.trim()) errs.price = 'Indiquez le prix';
+      const desc = formData.description.trim();
+      if (!desc) errs.description = 'La description est requise';
+      else if (desc.length < 10) errs.description = 'La description doit faire au moins 10 caractères';
+      if (!formData.price.trim()) errs.price = 'Indiquez le prix (ou "Gratuit")';
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;

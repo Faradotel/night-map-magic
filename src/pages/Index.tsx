@@ -59,6 +59,7 @@ export default function Index() {
   const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
   const [filterCenter, setFilterCenter] = useState<[number, number] | null>(null);
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
+  const loadIdRef = useRef(0);
   const [filters, setFilters] = useState<Filters>({
     date: 'all',
     price: 'all',
@@ -78,20 +79,22 @@ export default function Index() {
   useEffect(() => {
     if (!currentLoadKey || currentLoadKey === loadedKey) return;
 
-    let cancelled = false;
+    const myLoadId = ++loadIdRef.current;
+    setShotgunLoading(true);
+
     async function load() {
       // Try offline cache first if no connection
       if (!navigator.onLine) {
         const cached = getCachedEvents();
-        if (cached && cached.length > 0) {
+        if (cached && cached.length > 0 && myLoadId === loadIdRef.current) {
           setAllShotgunEvents(cached);
           setLoadedKey(currentLoadKey);
           toast.info('Mode hors-ligne — événements en cache');
+          setShotgunLoading(false);
           return;
         }
       }
 
-      setShotgunLoading(true);
       try {
         let events: NightEvent[];
         if (locationMode === 'city' && selectedCityName) {
@@ -99,29 +102,39 @@ export default function Index() {
         } else if (userLocation) {
           events = await loadEventsNearby(userLocation[0], userLocation[1], filters.radiusKm);
         } else {
+          if (myLoadId === loadIdRef.current) setShotgunLoading(false);
           return;
         }
-        if (!cancelled) {
-          const deduped = deduplicateEvents(events);
-          setAllShotgunEvents(deduped);
-          setLoadedKey(currentLoadKey);
-          // Cache for offline use
-          cacheEvents(deduped);
+
+        if (myLoadId !== loadIdRef.current) return;
+
+        const deduped = deduplicateEvents(events);
+        setAllShotgunEvents(deduped);
+        setLoadedKey(currentLoadKey);
+        cacheEvents(deduped);
+
+        if (deduped.length === 0) {
+          const label = locationMode === 'city' && selectedCityName ? selectedCityName : 'votre zone';
+          toast.warning(`Aucun événement trouvé pour ${label} — données en cours de mise à jour`);
+        } else {
+          toast.success(`${deduped.length} événement${deduped.length > 1 ? 's' : ''} chargé${deduped.length > 1 ? 's' : ''}`);
         }
       } catch {
+        if (myLoadId !== loadIdRef.current) return;
         // Network error — try offline cache
         const cached = getCachedEvents();
-        if (cached && cached.length > 0 && !cancelled) {
+        if (cached && cached.length > 0) {
           setAllShotgunEvents(cached);
           setLoadedKey(currentLoadKey);
           toast.info('Connexion perdue — événements en cache');
+        } else {
+          toast.error('Impossible de charger les événements — vérifiez votre connexion');
         }
       } finally {
-        if (!cancelled) setShotgunLoading(false);
+        if (myLoadId === loadIdRef.current) setShotgunLoading(false);
       }
     }
     load();
-    return () => { cancelled = true; };
   }, [currentLoadKey, locationMode, selectedCityName, userLocation, filters.radiusKm, loadedKey, cacheEvents, getCachedEvents]);
 
   // Request geolocation on load
