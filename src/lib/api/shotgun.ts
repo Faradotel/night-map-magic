@@ -298,10 +298,12 @@ export function deduplicateEvents(events: NightEvent[]): NightEvent[] {
  * Load events for a city: try cache first, fallback to live scraping
  */
 export async function loadEventsForCity(city: string): Promise<NightEvent[]> {
+  const now = new Date().toISOString();
   const { data, error } = await supabase
     .from('cached_events')
     .select('*')
-    .eq('city', city);
+    .eq('city', city)
+    .gte('start_time', now);
 
   if (error) {
     console.error('Error loading cached events:', error);
@@ -318,13 +320,15 @@ export async function loadEventsNearby(lat: number, lng: number, radiusKm: numbe
   const latDelta = radiusKm / 111;
   const lngDelta = radiusKm / (111 * Math.cos(lat * Math.PI / 180));
 
+  const now = new Date().toISOString();
   const { data, error } = await supabase
     .from('cached_events')
     .select('*')
     .gte('lat', lat - latDelta)
     .lte('lat', lat + latDelta)
     .gte('lng', lng - lngDelta)
-    .lte('lng', lng + lngDelta);
+    .lte('lng', lng + lngDelta)
+    .gte('start_time', now);
 
   if (error) {
     console.error('Error loading nearby cached events:', error);
@@ -369,13 +373,15 @@ export async function loadCachedEventsNearby(lat: number, lng: number, radiusKm:
   const latDelta = radiusKm / 111;
   const lngDelta = radiusKm / (111 * Math.cos(lat * Math.PI / 180));
 
+  const now = new Date().toISOString();
   const { data, error } = await supabase
     .from('cached_events')
     .select('*')
     .gte('lat', lat - latDelta)
     .lte('lat', lat + latDelta)
     .gte('lng', lng - lngDelta)
-    .lte('lng', lng + lngDelta);
+    .lte('lng', lng + lngDelta)
+    .gte('start_time', now);
 
   if (error || !data) return [];
 
