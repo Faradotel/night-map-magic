@@ -298,10 +298,12 @@ export function deduplicateEvents(events: NightEvent[]): NightEvent[] {
  * Load events for a city: try cache first, fallback to live scraping
  */
 export async function loadEventsForCity(city: string): Promise<NightEvent[]> {
+  const now = new Date().toISOString();
   const { data, error } = await supabase
     .from('cached_events')
     .select('*')
-    .eq('city', city);
+    .eq('city', city)
+    .gte('start_time', now);
 
   if (error) {
     console.error('Error loading cached events:', error);
