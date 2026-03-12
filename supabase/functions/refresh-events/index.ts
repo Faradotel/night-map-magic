@@ -52,6 +52,17 @@ Deno.serve(async (req) => {
 
     console.log(`Refreshing ${citiesToRefresh.length} cities...`);
 
+    // Clean up past events before refreshing
+    const { error: cleanupError } = await supabase
+      .from('cached_events')
+      .delete()
+      .lt('start_time', new Date().toISOString());
+    if (cleanupError) {
+      console.error('Error cleaning up past events:', cleanupError.message);
+    } else {
+      console.log('Cleaned up past events');
+    }
+
     let totalInserted = 0;
 
     // Process cities ONE AT A TIME to avoid timeout

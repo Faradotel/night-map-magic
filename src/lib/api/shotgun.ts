@@ -373,13 +373,15 @@ export async function loadCachedEventsNearby(lat: number, lng: number, radiusKm:
   const latDelta = radiusKm / 111;
   const lngDelta = radiusKm / (111 * Math.cos(lat * Math.PI / 180));
 
+  const now = new Date().toISOString();
   const { data, error } = await supabase
     .from('cached_events')
     .select('*')
     .gte('lat', lat - latDelta)
     .lte('lat', lat + latDelta)
     .gte('lng', lng - lngDelta)
-    .lte('lng', lng + lngDelta);
+    .lte('lng', lng + lngDelta)
+    .gte('start_time', now);
 
   if (error || !data) return [];
 
