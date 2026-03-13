@@ -175,7 +175,7 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
               )}
 
               <button
-                onClick={() => window.open(`https://maps.google.com/?q=${event.address},${event.city}`, '_blank')}
+                onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.address + ', ' + event.city)}`, '_blank')}
                 className="h-10 px-4 rounded-xl font-bold text-sm flex items-center gap-1.5 border text-muted-foreground hover:text-foreground transition-colors"
                 style={{ borderColor: isLight ? 'hsl(230 15% 85%)' : 'hsl(230 25% 20%)' }}
               >

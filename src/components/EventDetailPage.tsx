@@ -247,7 +247,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
               <p className="text-xs text-muted-foreground truncate">{event.address}, {event.city}</p>
             </div>
             <button
-              onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(event.address + ', ' + event.city)}`, '_blank')}
+              onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.address + ', ' + event.city)}`, '_blank')}
               className="w-8 h-8 rounded-lg flex items-center justify-center border"
               style={{ borderColor: 'hsl(var(--border))' }}
             >
