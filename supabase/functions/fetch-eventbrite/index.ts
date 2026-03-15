@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
 
     const slug = CITY_SLUGS[city] || city.toLowerCase().replace(/\s+/g, '-').replace(/[éèê]/g, 'e').replace(/[àâ]/g, 'a');
     const cityCoords = CITY_COORDS[city] || { lat: 48.8566, lng: 2.3522 };
-    const MAX_DISTANCE_KM = 30;
+    const MAX_DISTANCE_KM = 80;
 
     const url = `https://www.eventbrite.fr/d/france--${slug}/events/`;
     console.log(`Scraping Eventbrite for ${city}: ${url}`);
@@ -236,7 +236,7 @@ Deno.serve(async (req) => {
       let lng = cityCoords.lng;
       let geocoded = false;
 
-      if (e.address && i < 8) {
+      if (e.address && i < 20) {
         const coords = await geocode(e.address, city);
         if (coords) {
           const dist = distanceKm(coords.lat, coords.lng, cityCoords.lat, cityCoords.lng);
