@@ -164,8 +164,8 @@ Deno.serve(async (req) => {
                     type: 'object',
                     properties: {
                       name: { type: 'string', description: 'Event name/title' },
-                      venue: { type: 'string', description: 'Venue name' },
-                      address: { type: 'string', description: 'Full address including city' },
+                      venue: { type: 'string', description: 'Venue name (e.g. "Salle Olivier Messiaen", "La Belle Electrique")' },
+                      address: { type: 'string', description: 'Full street address with street number, street name, postal code and city (e.g. "12 Rue de la République, 38000 Grenoble"). Do NOT just put the city name.' },
                       date: { type: 'string', description: 'Event date and time in ISO 8601 format (YYYY-MM-DDTHH:mm:ss). Use the CURRENT YEAR (2026) unless explicitly stated otherwise.' },
                       price: { type: 'string', description: 'Price or "Gratuit" if free' },
                       url: { type: 'string', description: 'Event URL on Eventbrite' },
