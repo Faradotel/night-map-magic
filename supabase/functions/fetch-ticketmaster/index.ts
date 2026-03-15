@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { city, lat, lng, radius = 50 } = await req.json();
+    const { city, lat, lng, radius = 80 } = await req.json();
 
     const apiKey = Deno.env.get('TICKETMASTER_API_KEY');
     if (!apiKey) {
