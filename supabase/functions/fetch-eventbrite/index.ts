@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
     const cityCoords = CITY_COORDS[city] || { lat: 48.8566, lng: 2.3522 };
     const MAX_DISTANCE_KM = 30;
 
-    const url = `https://www.eventbrite.fr/d/france--${slug}/events--this-week/`;
+    const url = `https://www.eventbrite.fr/d/france--${slug}/events/`;
     console.log(`Scraping Eventbrite for ${city}: ${url}`);
 
     let rawEvents: any[] = [];
