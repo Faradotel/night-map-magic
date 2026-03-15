@@ -179,7 +179,7 @@ Deno.serve(async (req) => {
               },
               required: ['events'],
             },
-            prompt: `Extract all events listed on this page. The current date is ${new Date().toISOString().slice(0, 10)}. For dates, use ISO 8601 format with the correct year (2026 for upcoming events). Get name, venue, address, date/time, price, URL, description, category (music/sport/theatre/expo/festival/spectacle/other), and attendees count if displayed.`,
+            prompt: `Extract all events listed on this page. The current date is ${new Date().toISOString().slice(0, 10)}. For dates, use ISO 8601 format with the correct year (2026 for upcoming events). IMPORTANT: For the address field, extract the FULL STREET ADDRESS (street number, street name, postal code, city) — do NOT just write the city name. If you can see a venue name, put it in the venue field separately. Get name, venue, address, date/time, price, URL, description, category (music/sport/theatre/expo/festival/spectacle/other), and attendees count if displayed.`,
           },
           waitFor: 3000,
           location: { country: 'FR', languages: ['fr'] },
