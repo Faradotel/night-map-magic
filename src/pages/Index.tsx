@@ -351,6 +351,11 @@ export default function Index() {
             onClose={() => setSelectedEvent(null)}
             onDetails={() => setShowDetail(true)}
             userLocation={userLocation}
+            coLocatedEvents={filteredEvents.filter(e => {
+              const THRESHOLD = 0.0005; // ~50m
+              return Math.abs(e.lat - selectedEvent.lat) < THRESHOLD && Math.abs(e.lng - selectedEvent.lng) < THRESHOLD;
+            })}
+            onEventChange={(ev) => setSelectedEvent(ev)}
           />
         )}
 

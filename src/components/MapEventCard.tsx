@@ -1,18 +1,22 @@
-import { useRef, useCallback } from 'react';
-import { X, ChevronUp, Users } from 'lucide-react';
+import { useRef, useCallback, useMemo } from 'react';
+import { X, ChevronUp, ChevronLeft, ChevronRight, Users } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, getDistance } from '@/data/mockEvents';
 import { useDistanceUnit } from '@/hooks/useDistanceUnit';
 import { useTheme } from '@/hooks/useTheme';
 import { useEventAttendanceCount } from '@/hooks/useEventAttendanceCount';
+import { formatDate, formatTime } from '@/data/mockEvents';
 
 interface MapEventCardProps {
   event: NightEvent;
   onClose: () => void;
   onDetails: () => void;
   userLocation?: [number, number] | null;
+  /** All co-located events (same address/coords). If provided, enables swiping. */
+  coLocatedEvents?: NightEvent[];
+  onEventChange?: (event: NightEvent) => void;
 }
 
-export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEventCardProps) {
+export function MapEventCard({ event, onClose, onDetails, userLocation, coLocatedEvents, onEventChange }: MapEventCardProps) {
   const vibe = vibeConfig[event.vibe];
   const type = typeConfig[event.type];
   const { theme } = useTheme();
@@ -24,6 +28,25 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
 
   const attendanceCount = useEventAttendanceCount(event.id);
   const source = event.id.startsWith('tm-') ? 'Ticketmaster' : event.id.startsWith('shotgun-') ? 'Shotgun' : event.id.startsWith('eb-') ? 'Eventbrite' : event.id.startsWith('mu-') ? 'Meetup' : null;
+
+  // Co-located navigation
+  const group = useMemo(() => coLocatedEvents && coLocatedEvents.length > 1 ? coLocatedEvents : null, [coLocatedEvents]);
+  const currentIndex = group ? group.findIndex(e => e.id === event.id) : 0;
+  const hasMultiple = group !== null;
+
+  const goNext = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    if (!group || !onEventChange) return;
+    const next = (currentIndex + 1) % group.length;
+    onEventChange(group[next]);
+  }, [group, currentIndex, onEventChange]);
+
+  const goPrev = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    if (!group || !onEventChange) return;
+    const prev = (currentIndex - 1 + group.length) % group.length;
+    onEventChange(group[prev]);
+  }, [group, currentIndex, onEventChange]);
 
   // Swipe tracking
   const touchStartY = useRef<number | null>(null);
@@ -37,19 +60,34 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     if (touchStartY.current === null || touchStartX.current === null) return;
     const deltaY = touchStartY.current - e.changedTouches[0].clientY;
-    const deltaX = Math.abs(touchStartX.current - e.changedTouches[0].clientX);
+    const deltaX = touchStartX.current - e.changedTouches[0].clientX;
+    const absDeltaX = Math.abs(deltaX);
+    const absDeltaY = Math.abs(deltaY);
     touchStartY.current = null;
     touchStartX.current = null;
 
-    // Swipe up (vertical > horizontal, min 40px)
-    if (deltaY > 40 && deltaY > deltaX) {
+    // Horizontal swipe takes priority when there are multiple events
+    if (hasMultiple && absDeltaX > 40 && absDeltaX > absDeltaY) {
+      if (deltaX > 0 && group && onEventChange) {
+        // Swipe left → next
+        const next = (currentIndex + 1) % group.length;
+        onEventChange(group[next]);
+      } else if (deltaX < 0 && group && onEventChange) {
+        // Swipe right → prev
+        const prev = (currentIndex - 1 + group.length) % group.length;
+        onEventChange(group[prev]);
+      }
+      return;
+    }
+
+    // Vertical swipe
+    if (deltaY > 40 && absDeltaY > absDeltaX) {
       onDetails();
     }
-    // Swipe down
-    if (deltaY < -40 && Math.abs(deltaY) > deltaX) {
+    if (deltaY < -40 && absDeltaY > absDeltaX) {
       onClose();
     }
-  }, [onDetails, onClose]);
+  }, [onDetails, onClose, hasMultiple, group, currentIndex, onEventChange]);
 
   return (
     <div className="absolute bottom-20 left-3 right-3 z-[450] pointer-events-auto">
@@ -74,6 +112,20 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
         </div>
 
         <div className="px-3 py-1.5 flex items-center gap-3">
+          {/* Left arrow for co-located nav */}
+          {hasMultiple && (
+            <button
+              onClick={goPrev}
+              className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 active:scale-90 transition-transform"
+              style={{
+                background: isLight ? 'hsl(0 0% 0% / 0.06)' : 'hsl(0 0% 100% / 0.08)',
+                color: isLight ? 'hsl(230 25% 30%)' : 'hsl(0 0% 70%)',
+              }}
+            >
+              <ChevronLeft size={14} />
+            </button>
+          )}
+
           {/* Emoji icon */}
           <div
             className="w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0"
@@ -94,10 +146,15 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
               {event.isLive && (
                 <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'hsl(142 71% 55%)' }} />
               )}
+              {hasMultiple && (
+                <span className="text-[9px] font-medium opacity-40">
+                  {currentIndex + 1}/{group!.length}
+                </span>
+              )}
             </div>
             <h3 className="text-sm font-bold tracking-tight leading-tight truncate" style={{ color: isLight ? 'hsl(230 25% 15%)' : undefined }}>{event.name}</h3>
             <p className="text-[11px] flex items-center gap-1 flex-wrap" style={{ color: isLight ? 'hsl(225 15% 40%)' : 'hsl(225 15% 50%)' }}>
-              {event.genres[0] || type.label}
+              {formatDate(event.startTime)} • {formatTime(event.startTime)}
               {distanceKm != null && ` • ${formatDistance(distanceKm)}`}
               {event.externalAttendees != null && event.externalAttendees > 0 && (
                 <span className="inline-flex items-center gap-0.5 ml-1" title="Inscrits sur la plateforme">
@@ -111,6 +168,20 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
               )}
             </p>
           </div>
+
+          {/* Right arrow for co-located nav */}
+          {hasMultiple && (
+            <button
+              onClick={goNext}
+              className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 active:scale-90 transition-transform"
+              style={{
+                background: isLight ? 'hsl(0 0% 0% / 0.06)' : 'hsl(0 0% 100% / 0.08)',
+                color: isLight ? 'hsl(230 25% 30%)' : 'hsl(0 0% 70%)',
+              }}
+            >
+              <ChevronRight size={14} />
+            </button>
+          )}
 
           {/* Source + close */}
           <div className="flex items-center gap-2 shrink-0">
