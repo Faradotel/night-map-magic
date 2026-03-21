@@ -114,6 +114,9 @@ Deno.serve(async (req) => {
         if (ebRes.status === 'fulfilled' && ebRes.value?.events) {
           events.push(...ebRes.value.events);
         }
+        if (muRes.status === 'fulfilled' && muRes.value?.events) {
+          events.push(...muRes.value.events);
+        }
 
         if (events.length === 0) continue;
 
