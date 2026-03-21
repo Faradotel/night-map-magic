@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
     for (const city of citiesToRefresh) {
       try {
         // Fetch from both sources for this city
-        const [shotgunRes, tmRes, ebRes] = await Promise.allSettled([
+        const [shotgunRes, tmRes, ebRes, muRes] = await Promise.allSettled([
           fetch(`${supabaseUrl}/functions/v1/scrape-shotgun`, {
             method: 'POST',
             headers: {
@@ -87,6 +87,14 @@ Deno.serve(async (req) => {
             body: JSON.stringify({ city }),
           }).then(r => r.json()),
           fetch(`${supabaseUrl}/functions/v1/fetch-eventbrite`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${anonKey}`,
+            },
+            body: JSON.stringify({ city }),
+          }).then(r => r.json()),
+          fetch(`${supabaseUrl}/functions/v1/fetch-meetup`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
