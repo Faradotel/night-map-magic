@@ -23,7 +23,7 @@ export function MapEventCard({ event, onClose, onDetails, userLocation }: MapEve
     : null;
 
   const attendanceCount = useEventAttendanceCount(event.id);
-  const source = event.id.startsWith('tm-') ? 'Ticketmaster' : event.id.startsWith('shotgun-') ? 'Shotgun' : event.id.startsWith('eb-') ? 'Eventbrite' : null;
+  const source = event.id.startsWith('tm-') ? 'Ticketmaster' : event.id.startsWith('shotgun-') ? 'Shotgun' : event.id.startsWith('eb-') ? 'Eventbrite' : event.id.startsWith('mu-') ? 'Meetup' : null;
 
   // Swipe tracking
   const touchStartY = useRef<number | null>(null);
