@@ -27,7 +27,7 @@ export function MapEventCard({ event, onClose, onDetails, userLocation, coLocate
     : null;
 
   const attendanceCount = useEventAttendanceCount(event.id);
-  const source = event.id.startsWith('tm-') ? 'Ticketmaster' : event.id.startsWith('shotgun-') ? 'Shotgun' : event.id.startsWith('eb-') ? 'Eventbrite' : event.id.startsWith('mu-') ? 'Meetup' : null;
+  const source = event.id.startsWith('tm-') ? 'Ticketmaster' : event.id.startsWith('shotgun-') ? 'Shotgun' : event.id.startsWith('eb-') ? 'Eventbrite' : event.id.startsWith('mu-') ? 'Meetup' : event.id.startsWith('ic-') ? 'InfoConcert' : null;
 
   // Co-located navigation
   const group = useMemo(() => coLocatedEvents && coLocatedEvents.length > 1 ? coLocatedEvents : null, [coLocatedEvents]);
