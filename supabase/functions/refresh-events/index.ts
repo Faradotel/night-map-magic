@@ -125,6 +125,9 @@ Deno.serve(async (req) => {
         if (muRes.status === 'fulfilled' && muRes.value?.events) {
           events.push(...muRes.value.events);
         }
+        if (icRes.status === 'fulfilled' && icRes.value?.events) {
+          events.push(...icRes.value.events);
+        }
 
         if (events.length === 0) continue;
 
