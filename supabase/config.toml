@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.fetch-meetup]
 verify_jwt = false
+
+[functions.fetch-infoconcert]
+verify_jwt = false
