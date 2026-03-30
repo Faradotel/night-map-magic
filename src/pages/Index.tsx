@@ -19,7 +19,7 @@ import { NightEvent as NightEventType } from '@/data/mockEvents';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useOfflineEvents } from '@/hooks/useOfflineEvents';
 
-import { loadEventsForCity, loadEventsNearby, deduplicateEvents } from '@/lib/api/shotgun';
+import { loadEventsForCity, loadEventsNearby, loadAllEvents, deduplicateEvents } from '@/lib/api/shotgun';
 import { mapGenres, deduceVibe, deduceType, parsePriceRange } from '@/lib/api/shotgun';
 import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
 import { MapPin, Locate, Sliders, Bell, Plus } from 'lucide-react';
@@ -69,11 +69,13 @@ export default function Index() {
   });
 
   // Compute a loading key based on mode + city/location
-  const currentLoadKey = locationMode === 'city' && selectedCityName
-    ? `city:${selectedCityName}`
-    : userLocation
-      ? `nearby:${userLocation[0].toFixed(2)},${userLocation[1].toFixed(2)}`
-      : null;
+  const currentLoadKey = locationMode === 'france'
+    ? 'france'
+    : locationMode === 'city' && selectedCityName
+      ? `city:${selectedCityName}`
+      : userLocation
+        ? `nearby:${userLocation[0].toFixed(2)},${userLocation[1].toFixed(2)}`
+        : null;
 
   // Load events from cache when city or location changes
   useEffect(() => {
@@ -97,7 +99,9 @@ export default function Index() {
 
       try {
         let events: NightEvent[];
-        if (locationMode === 'city' && selectedCityName) {
+        if (locationMode === 'france') {
+          events = await loadAllEvents();
+        } else if (locationMode === 'city' && selectedCityName) {
           events = await loadEventsForCity(selectedCityName);
         } else if (userLocation) {
           events = await loadEventsNearby(userLocation[0], userLocation[1], filters.radiusKm);
@@ -114,7 +118,7 @@ export default function Index() {
         cacheEvents(deduped);
 
         if (deduped.length === 0) {
-          const label = locationMode === 'city' && selectedCityName ? selectedCityName : 'votre zone';
+          const label = locationMode === 'france' ? 'France' : locationMode === 'city' && selectedCityName ? selectedCityName : 'votre zone';
           toast.warning(`Aucun événement trouvé pour ${label} — données en cours de mise à jour`);
         } else {
           toast.success(`${deduped.length} événement${deduped.length > 1 ? 's' : ''} chargé${deduped.length > 1 ? 's' : ''}`);
@@ -212,6 +216,16 @@ export default function Index() {
     }
   }, [userLocation]);
 
+  // Handle France-wide mode
+  const handleFranceMode = useCallback(() => {
+    setLocationMode('france');
+    setSelectedCityName(null);
+    setFilterCenter(null);
+    setMapCenter([46.2276, 2.2137]);
+    setMapZoom(6);
+    setFilters(prev => ({ ...prev, radiusKm: 9999 }));
+  }, []);
+
   // Handle manual city selection
   const handleCitySelect = useCallback((city: City) => {
     setSelectedCityName(city.name);
@@ -289,7 +303,8 @@ export default function Index() {
                   selectedCity={selectedCityName}
                   onModeChange={handleModeChange}
                   onCitySelect={handleCitySelect}
-                  locating={locating} />
+                  locating={locating}
+                  onFranceMode={handleFranceMode} />
               </div>
               <button
                 onClick={() => setShowNotifications(true)}

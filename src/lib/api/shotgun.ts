@@ -366,6 +366,26 @@ function cachedToNightEvent(e: any): NightEvent {
 }
 
 /**
+ * Load all upcoming events from every city (France mode)
+ */
+export async function loadAllEvents(): Promise<NightEvent[]> {
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from('cached_events')
+    .select('*')
+    .gte('start_time', now)
+    .order('start_time', { ascending: true })
+    .limit(2000);
+
+  if (error) {
+    console.error('Error loading all events:', error);
+    return [];
+  }
+
+  return (data || []).map(cachedToNightEvent);
+}
+
+/**
  * Load cached events near coordinates (for "nearby" mode)
  */
 export async function loadCachedEventsNearby(lat: number, lng: number, radiusKm: number): Promise<NightEvent[]> {

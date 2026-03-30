@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MapPin, Navigation, Search, ChevronDown, X } from 'lucide-react';
+import { MapPin, Navigation, Search, ChevronDown, X, Globe } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 
 export interface City {
@@ -62,7 +62,7 @@ export const CITIES: City[] = [
   { name: 'Monaco', lat: 43.7384, lng: 7.4246 },
 ];
 
-export type LocationModeType = 'nearby' | 'city';
+export type LocationModeType = 'nearby' | 'city' | 'france';
 
 interface LocationModeProps {
   mode: LocationModeType;
@@ -70,9 +70,10 @@ interface LocationModeProps {
   onModeChange: (mode: LocationModeType) => void;
   onCitySelect: (city: City) => void;
   locating?: boolean;
+  onFranceMode?: () => void;
 }
 
-export function LocationMode({ mode, selectedCity, onModeChange, onCitySelect, locating }: LocationModeProps) {
+export function LocationMode({ mode, selectedCity, onModeChange, onCitySelect, locating, onFranceMode }: LocationModeProps) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
   const [showDropdown, setShowDropdown] = useState(false);
@@ -122,6 +123,22 @@ export function LocationMode({ mode, selectedCity, onModeChange, onCitySelect, l
       >
         <Navigation size={11} className={locating && mode === 'nearby' ? 'animate-spin' : ''} />
         <span>Près de moi</span>
+      </button>
+
+      {/* France pill */}
+      <button
+        onClick={onFranceMode}
+        className="flex items-center gap-1.5 h-9 px-3.5 rounded-full text-xs font-semibold transition-all shrink-0"
+        style={{
+          background: mode === 'france' ? 'hsl(210 80% 50%)' : isLight ? 'rgba(255,255,255,0.9)' : 'rgba(26, 13, 21, 0.8)',
+          backdropFilter: 'blur(12px)',
+          border: mode === 'france' ? 'none' : isLight ? '1px solid hsl(230 15% 82%)' : '1px solid hsl(325 89% 50% / 0.1)',
+          color: mode === 'france' ? 'white' : isLight ? 'hsl(230 20% 30%)' : 'hsl(225 15% 70%)',
+          boxShadow: mode === 'france' ? '0 0 16px hsl(210 80% 50% / 0.3)' : isLight ? '0 2px 8px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.3)',
+        }}
+      >
+        <Globe size={11} />
+        <span>France</span>
       </button>
 
       {/* City dropdown trigger */}
