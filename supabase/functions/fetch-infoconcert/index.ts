@@ -126,7 +126,7 @@ Deno.serve(async (req) => {
 
     const slug = CITY_SLUGS[city] || city.toLowerCase().replace(/\s+/g, '-').replace(/[éèê]/g, 'e').replace(/[àâ]/g, 'a');
     const cityCoords = CITY_COORDS[city] || { lat: 48.8566, lng: 2.3522 };
-    const MAX_DISTANCE_KM = 80;
+    const MAX_DISTANCE_KM = 30;
 
     // InfoConcert URL pattern: https://www.infoconcert.com/ville/{slug}/concerts-a-venir.html
     const url = `https://www.infoconcert.com/ville/${slug}/concerts-a-venir.html`;
@@ -143,6 +143,13 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           url,
           formats: ['extract'],
+          actions: [
+            { type: 'wait', milliseconds: 2000 },
+            { type: 'scroll', direction: 'down', amount: 3000 },
+            { type: 'wait', milliseconds: 1000 },
+            { type: 'scroll', direction: 'down', amount: 3000 },
+            { type: 'wait', milliseconds: 1000 },
+          ],
           extract: {
             schema: {
               type: 'object',
@@ -167,9 +174,9 @@ Deno.serve(async (req) => {
               },
               required: ['events'],
             },
-            prompt: `Extract ALL concerts/events listed on this InfoConcert page. The current date is ${new Date().toISOString().slice(0, 10)}. For dates, use ISO 8601 format with the correct year (2026 for upcoming events). IMPORTANT: For the address field, extract the FULL STREET ADDRESS (street number, street name, postal code, city) — do NOT just write the city name. If you see a venue/salle name, put it in the venue field separately. Get artist/event name, venue, address, date/time, price, URL (full infoconcert.com URL), description/genre, and music genre tag.`,
+            prompt: `Extract ALL concerts/events listed on this InfoConcert page. The current date is ${new Date().toISOString().slice(0, 10)}. For dates, use ISO 8601 format with the correct year (2026 for upcoming events). IMPORTANT: For the address field, extract the FULL STREET ADDRESS (street number, street name, postal code, city) — do NOT just write the city name. If you see a venue/salle name, put it in the venue field separately. Get artist/event name, venue, address, date/time, price, URL (full infoconcert.com URL), description/genre, and music genre tag. Extract EVERY event on the page, do not stop early.`,
           },
-          waitFor: 3000,
+          waitFor: 6000,
           location: { country: 'FR', languages: ['fr'] },
         }),
       });
@@ -208,7 +215,7 @@ Deno.serve(async (req) => {
       let lng = cityCoords.lng;
       let geocoded = false;
 
-      if (e.address && i < 20) {
+      if (e.address && i < 40) {
         const coords = await geocode(e.address, city);
         if (coords) {
           const dist = distanceKm(coords.lat, coords.lng, cityCoords.lat, cityCoords.lng);
