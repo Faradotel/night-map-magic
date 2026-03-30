@@ -128,70 +128,90 @@ Deno.serve(async (req) => {
     const cityCoords = CITY_COORDS[city] || { lat: 48.8566, lng: 2.3522 };
     const MAX_DISTANCE_KM = 30;
 
-    // InfoConcert URL pattern: https://www.infoconcert.com/ville/{slug}/concerts-a-venir.html
-    const url = `https://www.infoconcert.com/ville/${slug}/concerts-a-venir.html`;
-    console.log(`Scraping InfoConcert for ${city}: ${url}`);
+    // InfoConcert URL pattern: page 1 = concerts-a-venir.html, page 2 = concerts-a-venir-2.html
+    const baseUrl = `https://www.infoconcert.com/ville/${slug}/concerts-a-venir`;
+    const pagesToScrape = [
+      `${baseUrl}.html`,
+      `${baseUrl}-2.html`,
+      `${baseUrl}-3.html`,
+    ];
+
+    const extractSchema = {
+      type: 'object',
+      properties: {
+        events: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              name: { type: 'string', description: 'Artist or event name/title' },
+              venue: { type: 'string', description: 'Venue/salle name (e.g. "La Belle Electrique", "Palais des Sports")' },
+              address: { type: 'string', description: 'Full street address with street number, street name, postal code and city (e.g. "12 Rue de la République, 38000 Grenoble"). Do NOT just put the city name.' },
+              date: { type: 'string', description: 'Concert date and time in ISO 8601 format (YYYY-MM-DDTHH:mm:ss). Use the CURRENT YEAR (2026) unless explicitly stated otherwise.' },
+              price: { type: 'string', description: 'Price range or "Gratuit" if free' },
+              url: { type: 'string', description: 'Event URL on InfoConcert (full URL starting with https://www.infoconcert.com/)' },
+              description: { type: 'string', description: 'Genre, style or short description of the concert' },
+              genre: { type: 'string', description: 'Music genre: rock, pop, rap, electro, jazz, classique, metal, reggae, chanson, variete, world, folk, blues, hip-hop, rnb, soul, funk, or other' },
+            },
+            required: ['name'],
+          },
+        },
+      },
+      required: ['events'],
+    };
+
+    const extractPrompt = `Extract ALL concerts/events listed on this InfoConcert page. The current date is ${new Date().toISOString().slice(0, 10)}. For dates, use ISO 8601 format with the correct year (2026 for upcoming events). IMPORTANT: For the address field, extract the FULL STREET ADDRESS (street number, street name, postal code, city) — do NOT just write the city name. If you see a venue/salle name, put it in the venue field separately. Get artist/event name, venue, address, date/time, price, URL (full infoconcert.com URL), description/genre, and music genre tag. Extract EVERY event on the page, do not stop early.`;
 
     let rawEvents: any[] = [];
-    try {
-      const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${firecrawlKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          url,
-          formats: ['extract'],
-          actions: [
-            { type: 'wait', milliseconds: 2000 },
-            { type: 'scroll', direction: 'down', amount: 3000 },
-            { type: 'wait', milliseconds: 1000 },
-            { type: 'scroll', direction: 'down', amount: 3000 },
-            { type: 'wait', milliseconds: 1000 },
-          ],
-          extract: {
-            schema: {
-              type: 'object',
-              properties: {
-                events: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      name: { type: 'string', description: 'Artist or event name/title' },
-                      venue: { type: 'string', description: 'Venue/salle name (e.g. "La Belle Electrique", "Palais des Sports")' },
-                      address: { type: 'string', description: 'Full street address with street number, street name, postal code and city (e.g. "12 Rue de la République, 38000 Grenoble"). Do NOT just put the city name.' },
-                      date: { type: 'string', description: 'Concert date and time in ISO 8601 format (YYYY-MM-DDTHH:mm:ss). Use the CURRENT YEAR (2026) unless explicitly stated otherwise.' },
-                      price: { type: 'string', description: 'Price range or "Gratuit" if free' },
-                      url: { type: 'string', description: 'Event URL on InfoConcert (full URL starting with https://www.infoconcert.com/)' },
-                      description: { type: 'string', description: 'Genre, style or short description of the concert' },
-                      genre: { type: 'string', description: 'Music genre: rock, pop, rap, electro, jazz, classique, metal, reggae, chanson, variete, world, folk, blues, hip-hop, rnb, soul, funk, or other' },
-                    },
-                    required: ['name'],
-                  },
-                },
-              },
-              required: ['events'],
-            },
-            prompt: `Extract ALL concerts/events listed on this InfoConcert page. The current date is ${new Date().toISOString().slice(0, 10)}. For dates, use ISO 8601 format with the correct year (2026 for upcoming events). IMPORTANT: For the address field, extract the FULL STREET ADDRESS (street number, street name, postal code, city) — do NOT just write the city name. If you see a venue/salle name, put it in the venue field separately. Get artist/event name, venue, address, date/time, price, URL (full infoconcert.com URL), description/genre, and music genre tag. Extract EVERY event on the page, do not stop early.`,
-          },
-          waitFor: 6000,
-          location: { country: 'FR', languages: ['fr'] },
-        }),
-      });
 
-      if (scrapeResponse.ok) {
+    // Scrape pages in parallel
+    const pageResults = await Promise.allSettled(
+      pagesToScrape.map(async (url) => {
+        console.log(`Scraping InfoConcert: ${url}`);
+        const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${firecrawlKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            url,
+            formats: ['extract'],
+            actions: [
+              { type: 'wait', milliseconds: 2000 },
+              { type: 'scroll', direction: 'down', amount: 3000 },
+              { type: 'wait', milliseconds: 1000 },
+              { type: 'scroll', direction: 'down', amount: 3000 },
+              { type: 'wait', milliseconds: 1000 },
+            ],
+            extract: { schema: extractSchema, prompt: extractPrompt },
+            waitFor: 6000,
+            location: { country: 'FR', languages: ['fr'] },
+          }),
+        });
+        if (!scrapeResponse.ok) return [];
         const scrapeData = await scrapeResponse.json();
         const extractedData = scrapeData?.data?.extract || scrapeData?.extract || {};
-        rawEvents = extractedData?.events || [];
-        console.log(`Extracted ${rawEvents.length} raw InfoConcert events for ${city}`);
-      } else {
-        console.error(`InfoConcert scrape failed with status ${scrapeResponse.status}`);
+        return extractedData?.events || [];
+      })
+    );
+
+    for (const result of pageResults) {
+      if (result.status === 'fulfilled') {
+        rawEvents.push(...result.value);
       }
-    } catch (err) {
-      console.error(`Error scraping InfoConcert for ${city}:`, err);
     }
+
+    // Deduplicate by name+date before processing
+    const seen = new Set<string>();
+    rawEvents = rawEvents.filter(e => {
+      const key = `${(e.name || '').toLowerCase().slice(0, 40)}-${e.date || ''}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    console.log(`Extracted ${rawEvents.length} raw InfoConcert events for ${city} (${pagesToScrape.length} pages)`);
 
     const events: any[] = [];
     for (let i = 0; i < rawEvents.length; i++) {
