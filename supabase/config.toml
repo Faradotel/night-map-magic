@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.fetch-infoconcert]
 verify_jwt = false
+
+[functions.fetch-routedesfestivals]
+verify_jwt = false
