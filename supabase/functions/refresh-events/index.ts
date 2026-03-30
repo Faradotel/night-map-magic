@@ -65,51 +65,32 @@ Deno.serve(async (req) => {
 
     let totalInserted = 0;
 
+    // Helper: fetch with timeout to avoid hanging
+    function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 25000): Promise<Response> {
+      return Promise.race([
+        fetch(url, options),
+        new Promise<Response>((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout')), timeoutMs)
+        ),
+      ]);
+    }
+
     // Process cities ONE AT A TIME to avoid timeout
     for (const city of citiesToRefresh) {
       try {
-        // Fetch from both sources for this city
+        const headers = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${anonKey}`,
+        };
+        const body = JSON.stringify({ city });
+
+        // Fetch from all sources for this city with individual timeouts
         const [shotgunRes, tmRes, ebRes, muRes, icRes] = await Promise.allSettled([
-          fetch(`${supabaseUrl}/functions/v1/scrape-shotgun`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${anonKey}`,
-            },
-            body: JSON.stringify({ city }),
-          }).then(r => r.json()),
-          fetch(`${supabaseUrl}/functions/v1/fetch-ticketmaster`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${anonKey}`,
-            },
-            body: JSON.stringify({ city }),
-          }).then(r => r.json()),
-          fetch(`${supabaseUrl}/functions/v1/fetch-eventbrite`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${anonKey}`,
-            },
-            body: JSON.stringify({ city }),
-          }).then(r => r.json()),
-          fetch(`${supabaseUrl}/functions/v1/fetch-meetup`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${anonKey}`,
-            },
-            body: JSON.stringify({ city }),
-          }).then(r => r.json()),
-          fetch(`${supabaseUrl}/functions/v1/fetch-infoconcert`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${anonKey}`,
-            },
-            body: JSON.stringify({ city }),
-          }).then(r => r.json()),
+          fetchWithTimeout(`${supabaseUrl}/functions/v1/scrape-shotgun`, { method: 'POST', headers, body }).then(r => r.json()),
+          fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-ticketmaster`, { method: 'POST', headers, body }).then(r => r.json()),
+          fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-eventbrite`, { method: 'POST', headers, body }).then(r => r.json()),
+          fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-meetup`, { method: 'POST', headers, body }).then(r => r.json()),
+          fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-infoconcert`, { method: 'POST', headers, body }).then(r => r.json()),
         ]);
 
         const events: any[] = [];
