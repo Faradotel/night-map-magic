@@ -328,7 +328,7 @@ export async function loadEventsNearby(lat: number, lng: number, radiusKm: numbe
     .lte('lat', lat + latDelta)
     .gte('lng', lng - lngDelta)
     .lte('lng', lng + lngDelta)
-    .gte('start_time', now);
+    .or(`start_time.gte.${now},end_time.gte.${now}`);
 
   if (error) {
     console.error('Error loading nearby cached events:', error);
