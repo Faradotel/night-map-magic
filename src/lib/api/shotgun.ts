@@ -401,7 +401,7 @@ export async function loadCachedEventsNearby(lat: number, lng: number, radiusKm:
     .lte('lat', lat + latDelta)
     .gte('lng', lng - lngDelta)
     .lte('lng', lng + lngDelta)
-    .gte('start_time', now);
+    .or(`start_time.gte.${now},end_time.gte.${now}`);
 
   if (error || !data) return [];
 
