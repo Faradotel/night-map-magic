@@ -87,13 +87,14 @@ Deno.serve(async (req) => {
         const body = JSON.stringify({ city });
 
         // Fetch from all sources for this city with individual timeouts
+        // RDF needs more time (map + extract per page)
         const [shotgunRes, tmRes, ebRes, muRes, icRes, rdfRes] = await Promise.allSettled([
           fetchWithTimeout(`${supabaseUrl}/functions/v1/scrape-shotgun`, { method: 'POST', headers, body }).then(r => r.json()),
           fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-ticketmaster`, { method: 'POST', headers, body }).then(r => r.json()),
           fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-eventbrite`, { method: 'POST', headers, body }).then(r => r.json()),
           fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-meetup`, { method: 'POST', headers, body }).then(r => r.json()),
           fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-infoconcert`, { method: 'POST', headers, body }).then(r => r.json()),
-          fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-routedesfestivals`, { method: 'POST', headers, body }).then(r => r.json()),
+          fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-routedesfestivals`, { method: 'POST', headers, body }, 55000).then(r => r.json()),
         ]);
 
         const events: any[] = [];
