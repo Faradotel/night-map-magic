@@ -1,4 +1,4 @@
-// Scrape Route des Festivals listings for a city using Firecrawl
+// Scrape Route des Festivals listings for a city using Firecrawl map + extract
 
 const ALLOWED_ORIGINS = [
   'https://pulse-map.live',
@@ -38,21 +38,6 @@ const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
   'Saint-Étienne': { lat: 45.4397, lng: 4.3872 }, 'Nîmes': { lat: 43.8367, lng: 4.3601 },
   'Dunkerque': { lat: 51.0343, lng: 2.3768 }, 'Mulhouse': { lat: 47.7508, lng: 7.3359 },
   'Valence': { lat: 44.9334, lng: 4.8924 },
-};
-
-// French departments/regions mapped to major cities for URL slugs
-const CITY_DEPARTMENT: Record<string, string> = {
-  'Paris': '75', 'Marseille': '13', 'Lyon': '69', 'Toulouse': '31',
-  'Nice': '06', 'Nantes': '44', 'Montpellier': '34', 'Strasbourg': '67',
-  'Bordeaux': '33', 'Lille': '59', 'Rennes': '35', 'Reims': '51',
-  'Grenoble': '38', 'Dijon': '21', 'Tours': '37', 'Rouen': '76',
-  'Metz': '57', 'Nancy': '54', 'Avignon': '84', 'Poitiers': '86',
-  'Besançon': '25', 'Caen': '14', 'Orléans': '45', 'Angers': '49',
-  'Brest': '29', 'Limoges': '87', 'Amiens': '80', 'Perpignan': '66',
-  'La Rochelle': '17', 'Pau': '64', 'Clermont-Ferrand': '63',
-  'Aix-en-Provence': '13', 'Monaco': '06', 'Toulon': '83',
-  'Saint-Étienne': '42', 'Nîmes': '30', 'Dunkerque': '59', 'Mulhouse': '68',
-  'Valence': '26',
 };
 
 function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -129,128 +114,169 @@ Deno.serve(async (req) => {
     }
 
     const cityCoords = CITY_COORDS[city] || { lat: 48.8566, lng: 2.3522 };
-    const dept = CITY_DEPARTMENT[city];
-    const MAX_DISTANCE_KM = 40;
-
-    // Route des Festivals URL: search by city name or department
-    // Try department-based URL first, then city-name search
     const citySlug = city.toLowerCase()
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/\s+/g, '-')
       .replace(/[^a-z0-9-]/g, '');
+    const MAX_DISTANCE_KM = 50;
 
-    // The site uses ?ville= or department filter
-    const url = dept
-      ? `https://www.routedesfestivals.com/index.php?departement=${dept}`
-      : `https://www.routedesfestivals.com/index.php?q=${encodeURIComponent(city)}`;
+    console.log(`[RDF] Step 1: Mapping festival URLs for "${city}"...`);
 
-    console.log(`Scraping Route des Festivals for ${city}: ${url}`);
-
-    let rawEvents: any[] = [];
-
+    // Step 1: Use Firecrawl MAP to discover festival URLs matching this city
+    let festivalUrls: string[] = [];
     try {
-      const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      const mapResponse = await fetch('https://api.firecrawl.dev/v1/map', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${firecrawlKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          url,
-          formats: ['extract'],
-          actions: [
-            { type: 'wait', milliseconds: 2000 },
-            { type: 'scroll', direction: 'down', amount: 2000 },
-            { type: 'wait', milliseconds: 1000 },
-            { type: 'scroll', direction: 'down', amount: 2000 },
-            { type: 'wait', milliseconds: 1000 },
-          ],
-          extract: {
-            schema: {
-              type: 'object',
-              properties: {
-                events: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      name: { type: 'string', description: 'Festival or event name' },
-                      venue: { type: 'string', description: 'Venue or site name' },
-                      address: { type: 'string', description: 'Full address with street, postal code and city. If only city is known, put the city name.' },
-                      city: { type: 'string', description: 'City where the event takes place' },
-                      startDate: { type: 'string', description: 'Start date in ISO 8601 format (YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss). Use current year 2026.' },
-                      endDate: { type: 'string', description: 'End date in ISO 8601 format if multi-day, or null' },
-                      price: { type: 'string', description: 'Price or "Gratuit" if free' },
-                      url: { type: 'string', description: 'Event URL on routedesfestivals.com' },
-                      description: { type: 'string', description: 'Genre, style or description of the festival' },
-                      genre: { type: 'string', description: 'Music genre: rock, pop, rap, electro, jazz, classique, metal, reggae, chanson, variete, world, folk, blues, hip-hop, rnb, soul, funk, or other' },
-                    },
-                    required: ['name'],
-                  },
-                },
-              },
-              required: ['events'],
-            },
-            prompt: `Extract ALL festivals and events listed on this Route des Festivals page for the city/department. The current date is ${new Date().toISOString().slice(0, 10)}. Only include events taking place in France. For dates, use ISO 8601 format with the correct year (2026 for upcoming events). Extract: festival name, venue, full address (with postal code and city if available), start date, end date (if multi-day), price, URL, description/genre. Extract EVERY event on the page.`,
-          },
-          waitFor: 6000,
-          location: { country: 'FR', languages: ['fr'] },
+          url: 'https://www.routedesfestivals.com',
+          search: city,
+          limit: 100,
+          includeSubdomains: false,
         }),
       });
 
-      if (scrapeResponse.ok) {
-        const scrapeData = await scrapeResponse.json();
-        const extractedData = scrapeData?.data?.extract || scrapeData?.extract || {};
-        rawEvents = extractedData?.events || [];
-        console.log(`Extracted ${rawEvents.length} raw Route des Festivals events for ${city}`);
+      if (mapResponse.ok) {
+        const mapData = await mapResponse.json();
+        const allLinks: string[] = mapData?.links || [];
+        // Keep only individual festival pages
+        festivalUrls = allLinks.filter((u: string) =>
+          u.includes('/festival/') && u.endsWith('.html')
+        );
+        console.log(`[RDF] Map found ${allLinks.length} total URLs, ${festivalUrls.length} festival pages for "${city}"`);
       } else {
-        console.error(`Route des Festivals scrape failed: ${scrapeResponse.status}`);
+        console.error(`[RDF] Map failed: ${mapResponse.status}`);
       }
     } catch (err) {
-      console.error(`Error scraping Route des Festivals for ${city}:`, err);
+      console.error(`[RDF] Map error:`, err);
     }
 
+    if (festivalUrls.length === 0) {
+      console.log(`[RDF] No festival URLs found for "${city}", returning empty`);
+      return new Response(
+        JSON.stringify({ success: true, events: [] }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Limit to avoid excessive API usage
+    const urlsToScrape = festivalUrls.slice(0, 15);
+    console.log(`[RDF] Step 2: Extracting details from ${urlsToScrape.length} festival pages...`);
+
+    // Step 2: Batch scrape individual festival pages using extract
+    const rawEvents: any[] = [];
+
+    // Process in parallel batches of 5
+    for (let batchStart = 0; batchStart < urlsToScrape.length; batchStart += 5) {
+      const batch = urlsToScrape.slice(batchStart, batchStart + 5);
+      const promises = batch.map(async (festUrl) => {
+        try {
+          const scrapeRes = await fetch('https://api.firecrawl.dev/v1/scrape', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${firecrawlKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              url: festUrl,
+              formats: ['extract'],
+              extract: {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    name: { type: 'string', description: 'Festival name' },
+                    venue: { type: 'string', description: 'Venue or site name' },
+                    cities: { type: 'string', description: 'All cities listed (comma-separated)' },
+                    address: { type: 'string', description: 'Full address or main city with postal code' },
+                    startDate: { type: 'string', description: 'Start date in YYYY-MM-DD format' },
+                    endDate: { type: 'string', description: 'End date in YYYY-MM-DD format, or null if single day' },
+                    price: { type: 'string', description: 'Price range or "Gratuit" if free' },
+                    description: { type: 'string', description: 'Short description of the festival (max 200 chars)' },
+                    genre: { type: 'string', description: 'Music genre: rock, pop, rap, electro, jazz, classique, metal, reggae, chanson, world, folk, blues, hip-hop, or other' },
+                  },
+                  required: ['name'],
+                },
+                prompt: `Extract the festival details from this Route des Festivals page. Today is ${new Date().toISOString().slice(0, 10)}. Extract: name, venue, cities, address, start/end dates (YYYY-MM-DD), price, description, genre.`,
+              },
+              waitFor: 3000,
+              location: { country: 'FR', languages: ['fr'] },
+            }),
+          });
+
+          if (scrapeRes.ok) {
+            const scrapeData = await scrapeRes.json();
+            const extracted = scrapeData?.data?.extract || scrapeData?.extract || {};
+            if (extracted.name) {
+              extracted._sourceUrl = festUrl;
+              return extracted;
+            }
+          }
+        } catch (err) {
+          console.error(`[RDF] Error scraping ${festUrl}:`, err);
+        }
+        return null;
+      });
+
+      const results = await Promise.allSettled(promises);
+      for (const r of results) {
+        if (r.status === 'fulfilled' && r.value) {
+          rawEvents.push(r.value);
+        }
+      }
+    }
+
+    console.log(`[RDF] Extracted ${rawEvents.length} festivals from individual pages`);
+
+    // Step 3: Process and geocode events
     const events: any[] = [];
     for (let i = 0; i < rawEvents.length; i++) {
       const e = rawEvents[i];
       if (!e.name || e.name.length <= 2) continue;
 
       // Reject foreign events
-      const addrLower = (e.address || '').toLowerCase();
-      const venueLower = (e.venue || '').toLowerCase();
-      const cityLower = (e.city || '').toLowerCase();
-      if (FOREIGN_KEYWORDS.some(kw => addrLower.includes(kw) || venueLower.includes(kw) || cityLower.includes(kw))) {
-        console.log(`Rejected foreign: "${e.name}" (${e.address})`);
+      const combined = `${e.address || ''} ${e.venue || ''} ${e.cities || ''}`.toLowerCase();
+      if (FOREIGN_KEYWORDS.some(kw => combined.includes(kw))) {
+        console.log(`[RDF] Rejected foreign: "${e.name}"`);
         continue;
       }
 
-      const startTime = fixEventDate(e.startDate || '');
-      if (!startTime) {
-        console.log(`Rejected bad date: "${e.name}" (${e.startDate})`);
-        continue;
-      }
-
+      // For multi-day festivals, accept if end date is still in the future
       const endTime = e.endDate ? fixEventDate(e.endDate) || null : null;
+      let startTime = fixEventDate(e.startDate || '');
+      if (!startTime && e.startDate && endTime) {
+        // Start date is in the past but end date is valid → festival still ongoing
+        try {
+          const parsed = new Date(e.startDate);
+          if (!isNaN(parsed.getTime())) {
+            startTime = parsed.toISOString();
+          }
+        } catch { /* skip */ }
+      }
+      if (!startTime) {
+        console.log(`[RDF] Rejected bad date: "${e.name}" (start=${e.startDate}, end=${e.endDate})`);
+        continue;
+      }
 
-      // Geocode using event's own city if provided, else use target city
-      const eventCity = e.city || city;
+      // Determine city from extracted data
+      const eventCity = e.cities?.split(',')[0]?.trim() || city;
       let lat = cityCoords.lat;
       let lng = cityCoords.lng;
       let geocoded = false;
 
-      if (i < 40) {
-        const addressToGeocode = e.address || eventCity;
-        const coords = await geocode(addressToGeocode, eventCity);
-        if (coords) {
-          const dist = distanceKm(coords.lat, coords.lng, cityCoords.lat, cityCoords.lng);
-          if (dist <= MAX_DISTANCE_KM) {
-            lat = coords.lat;
-            lng = coords.lng;
-            geocoded = true;
-          } else {
-            console.log(`Rejected too far (${dist.toFixed(0)}km): "${e.name}" (${e.address})`);
-            continue;
-          }
+      const addressToGeocode = e.address || eventCity;
+      const coords = await geocode(addressToGeocode, eventCity);
+      if (coords) {
+        const dist = distanceKm(coords.lat, coords.lng, cityCoords.lat, cityCoords.lng);
+        if (dist <= MAX_DISTANCE_KM) {
+          lat = coords.lat;
+          lng = coords.lng;
+          geocoded = true;
+        } else {
+          console.log(`[RDF] Rejected too far (${dist.toFixed(0)}km): "${e.name}" (${addressToGeocode})`);
+          continue;
         }
       }
 
@@ -260,7 +286,6 @@ Deno.serve(async (req) => {
       }
 
       const id = `rdf-${citySlug}-${i}-${Date.now()}`;
-
       const genres: string[] = [];
       if (e.genre && e.genre !== 'other') {
         genres.push(e.genre.toLowerCase());
@@ -277,21 +302,21 @@ Deno.serve(async (req) => {
         startTime,
         endTime: endTime || null,
         description: (e.genre ? `[${e.genre}] ` : '') + (e.description || '') + ' • via Route des Festivals',
-        ticketUrl: e.url || 'https://www.routedesfestivals.com/',
+        ticketUrl: e._sourceUrl || 'https://www.routedesfestivals.com/',
         price: e.price || null,
         genres,
         externalAttendees: null,
       });
     }
 
-    console.log(`Returning ${events.length} valid Route des Festivals events for ${city}`);
+    console.log(`[RDF] Returning ${events.length} valid festivals for "${city}"`);
 
     return new Response(
       JSON.stringify({ success: true, events }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Route des Festivals scrape error:', error);
+    console.error('[RDF] Error:', error);
     return new Response(
       JSON.stringify({ success: true, events: [] }),
       { status: 200, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
