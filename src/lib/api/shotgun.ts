@@ -373,7 +373,7 @@ export async function loadAllEvents(): Promise<NightEvent[]> {
   const { data, error } = await supabase
     .from('cached_events')
     .select('*')
-    .gte('start_time', now)
+    .or(`start_time.gte.${now},end_time.gte.${now}`)
     .order('start_time', { ascending: true })
     .limit(2000);
 
