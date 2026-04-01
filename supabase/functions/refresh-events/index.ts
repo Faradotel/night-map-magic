@@ -52,11 +52,13 @@ Deno.serve(async (req) => {
 
     console.log(`Refreshing ${citiesToRefresh.length} cities...`);
 
-    // Clean up past events before refreshing
+    // Clean up truly past events (where both start_time and end_time are in the past)
+    // Use end_time if available, otherwise start_time
     const { error: cleanupError } = await supabase
       .from('cached_events')
       .delete()
-      .lt('start_time', new Date().toISOString());
+      .lt('start_time', new Date().toISOString())
+      .or(`end_time.is.null,end_time.lt.${new Date().toISOString()}`);
     if (cleanupError) {
       console.error('Error cleaning up past events:', cleanupError.message);
     } else {
@@ -85,13 +87,14 @@ Deno.serve(async (req) => {
         const body = JSON.stringify({ city });
 
         // Fetch from all sources for this city with individual timeouts
+        // RDF needs more time (map + extract per page)
         const [shotgunRes, tmRes, ebRes, muRes, icRes, rdfRes] = await Promise.allSettled([
           fetchWithTimeout(`${supabaseUrl}/functions/v1/scrape-shotgun`, { method: 'POST', headers, body }).then(r => r.json()),
           fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-ticketmaster`, { method: 'POST', headers, body }).then(r => r.json()),
           fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-eventbrite`, { method: 'POST', headers, body }).then(r => r.json()),
           fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-meetup`, { method: 'POST', headers, body }).then(r => r.json()),
           fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-infoconcert`, { method: 'POST', headers, body }).then(r => r.json()),
-          fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-routedesfestivals`, { method: 'POST', headers, body }).then(r => r.json()),
+          fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-routedesfestivals`, { method: 'POST', headers, body }, 55000).then(r => r.json()),
         ]);
 
         const events: any[] = [];

@@ -303,7 +303,7 @@ export async function loadEventsForCity(city: string): Promise<NightEvent[]> {
     .from('cached_events')
     .select('*')
     .eq('city', city)
-    .gte('start_time', now);
+    .or(`start_time.gte.${now},end_time.gte.${now}`);
 
   if (error) {
     console.error('Error loading cached events:', error);
@@ -328,7 +328,7 @@ export async function loadEventsNearby(lat: number, lng: number, radiusKm: numbe
     .lte('lat', lat + latDelta)
     .gte('lng', lng - lngDelta)
     .lte('lng', lng + lngDelta)
-    .gte('start_time', now);
+    .or(`start_time.gte.${now},end_time.gte.${now}`);
 
   if (error) {
     console.error('Error loading nearby cached events:', error);
@@ -373,7 +373,7 @@ export async function loadAllEvents(): Promise<NightEvent[]> {
   const { data, error } = await supabase
     .from('cached_events')
     .select('*')
-    .gte('start_time', now)
+    .or(`start_time.gte.${now},end_time.gte.${now}`)
     .order('start_time', { ascending: true })
     .limit(2000);
 
@@ -401,7 +401,7 @@ export async function loadCachedEventsNearby(lat: number, lng: number, radiusKm:
     .lte('lat', lat + latDelta)
     .gte('lng', lng - lngDelta)
     .lte('lng', lng + lngDelta)
-    .gte('start_time', now);
+    .or(`start_time.gte.${now},end_time.gte.${now}`);
 
   if (error || !data) return [];
 
