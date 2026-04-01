@@ -266,8 +266,13 @@ Deno.serve(async (req) => {
       let lng = cityCoords.lng;
       let geocoded = false;
 
-      const addressToGeocode = e.address || eventCity;
-      const coords = await geocode(addressToGeocode, eventCity);
+      // Clean address for geocoding: remove department codes like "(38)", country suffixes
+      const cleanAddress = (e.address || eventCity)
+        .replace(/\(\d+\)/g, '')
+        .replace(/,\s*(FR|France)\s*$/i, '')
+        .trim();
+
+      const coords = await geocode(cleanAddress, 'France');
       if (coords) {
         const dist = distanceKm(coords.lat, coords.lng, cityCoords.lat, cityCoords.lng);
         if (dist <= MAX_DISTANCE_KM) {
@@ -275,8 +280,16 @@ Deno.serve(async (req) => {
           lng = coords.lng;
           geocoded = true;
         } else {
-          console.log(`[RDF] Rejected too far (${dist.toFixed(0)}km): "${e.name}" (${addressToGeocode})`);
-          continue;
+          // If the event's city matches the target city, keep it with default coords
+          const eventCityNorm = eventCity.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          const targetCityNorm = city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          if (eventCityNorm.includes(targetCityNorm) || targetCityNorm.includes(eventCityNorm)) {
+            console.log(`[RDF] Geocode far (${dist.toFixed(0)}km) but city matches, keeping: "${e.name}"`);
+            // Use city default coords with small jitter
+          } else {
+            console.log(`[RDF] Rejected too far (${dist.toFixed(0)}km): "${e.name}" (${cleanAddress})`);
+            continue;
+          }
         }
       }
 
