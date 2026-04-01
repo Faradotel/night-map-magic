@@ -52,11 +52,13 @@ Deno.serve(async (req) => {
 
     console.log(`Refreshing ${citiesToRefresh.length} cities...`);
 
-    // Clean up past events before refreshing
+    // Clean up truly past events (where both start_time and end_time are in the past)
+    // Use end_time if available, otherwise start_time
     const { error: cleanupError } = await supabase
       .from('cached_events')
       .delete()
-      .lt('start_time', new Date().toISOString());
+      .lt('start_time', new Date().toISOString())
+      .or(`end_time.is.null,end_time.lt.${new Date().toISOString()}`);
     if (cleanupError) {
       console.error('Error cleaning up past events:', cleanupError.message);
     } else {
