@@ -243,13 +243,22 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const startTime = fixEventDate(e.startDate || '');
+      // For multi-day festivals, accept if end date is still in the future
+      const endTime = e.endDate ? fixEventDate(e.endDate) || null : null;
+      let startTime = fixEventDate(e.startDate || '');
+      if (!startTime && e.startDate && endTime) {
+        // Start date is in the past but end date is valid → festival still ongoing
+        try {
+          const parsed = new Date(e.startDate);
+          if (!isNaN(parsed.getTime())) {
+            startTime = parsed.toISOString();
+          }
+        } catch { /* skip */ }
+      }
       if (!startTime) {
-        console.log(`[RDF] Rejected bad date: "${e.name}" (${e.startDate})`);
+        console.log(`[RDF] Rejected bad date: "${e.name}" (start=${e.startDate}, end=${e.endDate})`);
         continue;
       }
-
-      const endTime = e.endDate ? fixEventDate(e.endDate) || null : null;
 
       // Determine city from extracted data
       const eventCity = e.cities?.split(',')[0]?.trim() || city;
