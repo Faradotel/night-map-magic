@@ -40,6 +40,47 @@ const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
   'Valence': { lat: 44.9334, lng: 4.8924 },
 };
 
+// Map cities to RDF ville page slugs for direct scraping
+const CITY_RDF_VILLE: Record<string, string[]> = {
+  'Paris': ['paris-1938', 'paris-1-1939', 'paris-2-1940', 'paris-3-1941'],
+  'Marseille': ['marseille-1900'],
+  'Lyon': ['lyon-1893'],
+  'Toulouse': ['toulouse-2086'],
+  'Nice': ['nice-1921'],
+  'Nantes': ['nantes-1915'],
+  'Montpellier': ['montpellier-1911'],
+  'Strasbourg': ['strasbourg-2071'],
+  'Bordeaux': ['bordeaux-1794'],
+  'Lille': ['lille-1884'],
+  'Rennes': ['rennes-2004'],
+  'Grenoble': ['grenoble-1842', 'meylan-2193'],
+  'Dijon': ['dijon-1827'],
+  'Reims': ['reims-2001'],
+  'Tours': ['tours-2091'],
+  'Rouen': ['rouen-2017'],
+  'Metz': ['metz-1907'],
+  'Nancy': ['nancy-1914'],
+  'Avignon': ['avignon-1778'],
+  'Poitiers': ['poitiers-1962'],
+  'Besançon': ['besancon-1786'],
+  'Caen': ['caen-1800'],
+  'Orléans': ['orleans-1934'],
+  'Angers': ['angers-1769'],
+  'Brest': ['brest-1796'],
+  'Limoges': ['limoges-1886'],
+  'Amiens': ['amiens-1765'],
+  'Perpignan': ['perpignan-1952'],
+  'La Rochelle': ['la-rochelle-1871'],
+  'Pau': ['pau-1944'],
+  'Clermont-Ferrand': ['clermont-ferrand-1815'],
+  'Aix-en-Provence': ['aix-en-provence-1757'],
+  'Toulon': ['toulon-2083'],
+  'Saint-Étienne': ['saint-etienne-2025'],
+  'Nîmes': ['nimes-1923'],
+  'Monaco': ['monaco-1909'],
+  'Valence': ['valence-2098'],
+};
+
 function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -120,53 +161,90 @@ Deno.serve(async (req) => {
       .replace(/[^a-z0-9-]/g, '');
     const MAX_DISTANCE_KM = 50;
 
-    console.log(`[RDF] Step 1: Mapping festival URLs for "${city}"...`);
-
-    // Step 1: Use Firecrawl MAP to discover festival URLs matching this city
+    // Strategy: Use RDF ville pages directly (more reliable than map search)
+    // These pages list all upcoming festivals for a specific city
+    const villeSlugs = CITY_RDF_VILLE[city] || [];
     let festivalUrls: string[] = [];
-    try {
-      const mapResponse = await fetch('https://api.firecrawl.dev/v1/map', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${firecrawlKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          url: 'https://www.routedesfestivals.com',
-          search: city,
-          limit: 100,
-          includeSubdomains: false,
-        }),
-      });
 
-      if (mapResponse.ok) {
-        const mapData = await mapResponse.json();
-        const allLinks: string[] = mapData?.links || [];
-        // Keep only individual festival pages
-        festivalUrls = allLinks.filter((u: string) =>
-          u.includes('/festival/') && u.endsWith('.html')
-        );
-        console.log(`[RDF] Map found ${allLinks.length} total URLs, ${festivalUrls.length} festival pages for "${city}"`);
-      } else {
-        console.error(`[RDF] Map failed: ${mapResponse.status}`);
+    if (villeSlugs.length > 0) {
+      console.log(`[RDF] Scraping ${villeSlugs.length} ville pages for "${city}"...`);
+      
+      // Scrape ville pages to get festival links
+      const villeResults = await Promise.allSettled(
+        villeSlugs.map(async (slug) => {
+          const villeUrl = `https://www.routedesfestivals.com/ville/${slug}.html`;
+          console.log(`[RDF] Scraping ville page: ${villeUrl}`);
+          const res = await fetch('https://api.firecrawl.dev/v1/scrape', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${firecrawlKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              url: villeUrl,
+              formats: ['links'],
+              waitFor: 3000,
+              location: { country: 'FR', languages: ['fr'] },
+            }),
+          });
+          if (!res.ok) return [];
+          const data = await res.json();
+          const links: string[] = data?.data?.links || data?.links || [];
+          return links.filter((u: string) => u.includes('/festival/') && u.endsWith('.html'));
+        })
+      );
+
+      for (const r of villeResults) {
+        if (r.status === 'fulfilled') {
+          festivalUrls.push(...r.value);
+        }
       }
-    } catch (err) {
-      console.error(`[RDF] Map error:`, err);
     }
 
+    // Fallback: also try map search
+    if (festivalUrls.length < 5) {
+      console.log(`[RDF] Also trying map search for "${city}"...`);
+      try {
+        const mapResponse = await fetch('https://api.firecrawl.dev/v1/map', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${firecrawlKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            url: 'https://www.routedesfestivals.com',
+            search: city,
+            limit: 100,
+            includeSubdomains: false,
+          }),
+        });
+        if (mapResponse.ok) {
+          const mapData = await mapResponse.json();
+          const allLinks: string[] = mapData?.links || [];
+          const mapFestUrls = allLinks.filter((u: string) =>
+            u.includes('/festival/') && u.endsWith('.html')
+          );
+          festivalUrls.push(...mapFestUrls);
+        }
+      } catch (err) {
+        console.error(`[RDF] Map error:`, err);
+      }
+    }
+
+    // Deduplicate URLs
+    festivalUrls = [...new Set(festivalUrls)];
+    console.log(`[RDF] Found ${festivalUrls.length} unique festival URLs for "${city}"`);
+
     if (festivalUrls.length === 0) {
-      console.log(`[RDF] No festival URLs found for "${city}", returning empty`);
       return new Response(
         JSON.stringify({ success: true, events: [] }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Limit to avoid excessive API usage
-    const urlsToScrape = festivalUrls.slice(0, 15);
-    console.log(`[RDF] Step 2: Extracting details from ${urlsToScrape.length} festival pages...`);
+    const urlsToScrape = festivalUrls.slice(0, 20);
+    console.log(`[RDF] Extracting details from ${urlsToScrape.length} festival pages...`);
 
-    // Step 2: Batch scrape individual festival pages using extract
     const rawEvents: any[] = [];
 
     // Process in parallel batches of 5
@@ -230,43 +308,29 @@ Deno.serve(async (req) => {
 
     console.log(`[RDF] Extracted ${rawEvents.length} festivals from individual pages`);
 
-    // Step 3: Process and geocode events
     const events: any[] = [];
     for (let i = 0; i < rawEvents.length; i++) {
       const e = rawEvents[i];
       if (!e.name || e.name.length <= 2) continue;
 
-      // Reject foreign events
       const combined = `${e.address || ''} ${e.venue || ''} ${e.cities || ''}`.toLowerCase();
-      if (FOREIGN_KEYWORDS.some(kw => combined.includes(kw))) {
-        console.log(`[RDF] Rejected foreign: "${e.name}"`);
-        continue;
-      }
+      if (FOREIGN_KEYWORDS.some(kw => combined.includes(kw))) continue;
 
-      // For multi-day festivals, accept if end date is still in the future
       const endTime = e.endDate ? fixEventDate(e.endDate) || null : null;
       let startTime = fixEventDate(e.startDate || '');
       if (!startTime && e.startDate && endTime) {
-        // Start date is in the past but end date is valid → festival still ongoing
         try {
           const parsed = new Date(e.startDate);
-          if (!isNaN(parsed.getTime())) {
-            startTime = parsed.toISOString();
-          }
+          if (!isNaN(parsed.getTime())) startTime = parsed.toISOString();
         } catch { /* skip */ }
       }
-      if (!startTime) {
-        console.log(`[RDF] Rejected bad date: "${e.name}" (start=${e.startDate}, end=${e.endDate})`);
-        continue;
-      }
+      if (!startTime) continue;
 
-      // Determine city from extracted data
       const eventCity = e.cities?.split(',')[0]?.trim() || city;
       let lat = cityCoords.lat;
       let lng = cityCoords.lng;
       let geocoded = false;
 
-      // Clean address for geocoding: remove department codes like "(38)", country suffixes
       const cleanAddress = (e.address || eventCity)
         .replace(/\(\d+\)/g, '')
         .replace(/,\s*(FR|France)\s*$/i, '')
@@ -280,14 +344,12 @@ Deno.serve(async (req) => {
           lng = coords.lng;
           geocoded = true;
         } else {
-          // If the event's city matches the target city, keep it with default coords
           const eventCityNorm = eventCity.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
           const targetCityNorm = city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
           if (eventCityNorm.includes(targetCityNorm) || targetCityNorm.includes(eventCityNorm)) {
-            console.log(`[RDF] Geocode far (${dist.toFixed(0)}km) but city matches, keeping: "${e.name}"`);
-            // Use city default coords with small jitter
+            console.log(`[RDF] Geocode far but city matches, keeping: "${e.name}"`);
           } else {
-            console.log(`[RDF] Rejected too far (${dist.toFixed(0)}km): "${e.name}" (${cleanAddress})`);
+            console.log(`[RDF] Rejected too far (${dist.toFixed(0)}km): "${e.name}"`);
             continue;
           }
         }
@@ -300,9 +362,7 @@ Deno.serve(async (req) => {
 
       const id = `rdf-${citySlug}-${i}-${Date.now()}`;
       const genres: string[] = [];
-      if (e.genre && e.genre !== 'other') {
-        genres.push(e.genre.toLowerCase());
-      }
+      if (e.genre && e.genre !== 'other') genres.push(e.genre.toLowerCase());
 
       events.push({
         id,
@@ -310,9 +370,7 @@ Deno.serve(async (req) => {
         venue: e.venue || '',
         address: e.address || eventCity,
         city: eventCity,
-        lat,
-        lng,
-        startTime,
+        lat, lng, startTime,
         endTime: endTime || null,
         description: (e.genre ? `[${e.genre}] ` : '') + (e.description || '') + ' • via Route des Festivals',
         ticketUrl: e._sourceUrl || 'https://www.routedesfestivals.com/',
