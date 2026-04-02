@@ -136,6 +136,8 @@ Deno.serve(async (req) => {
       `${baseUrl}-3.html`,
       `${baseUrl}-4.html`,
       `${baseUrl}-5.html`,
+      `${baseUrl}-6.html`,
+      `${baseUrl}-7.html`,
     ];
 
     const extractSchema = {
