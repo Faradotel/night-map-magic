@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.fetch-routedesfestivals]
 verify_jwt = false
+
+[functions.fetch-brocabrac]
+verify_jwt = false

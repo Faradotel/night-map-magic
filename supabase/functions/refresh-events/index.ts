@@ -142,7 +142,7 @@ Deno.serve(async (req) => {
           description: e.description || '',
           venue: e.venue || '',
           ticket_url: e.ticketUrl || null,
-          source: e.id?.startsWith('eb-') ? 'eventbrite' : e.id?.startsWith('tm-') ? 'ticketmaster' : e.id?.startsWith('mu-') ? 'meetup' : e.id?.startsWith('ic-') ? 'infoconcert' : e.id?.startsWith('rdf-') ? 'routedesfestivals' : 'shotgun',
+          source: e.id?.startsWith('eb-') ? 'eventbrite' : e.id?.startsWith('tm-') ? 'ticketmaster' : e.id?.startsWith('mu-') ? 'meetup' : e.id?.startsWith('ic-') ? 'infoconcert' : e.id?.startsWith('rdf-') ? 'routedesfestivals' : e.id?.startsWith('bb-') ? 'brocabrac' : 'shotgun',
           updated_at: new Date().toISOString(),
           external_attendees: e.externalAttendees || null,
         }));
