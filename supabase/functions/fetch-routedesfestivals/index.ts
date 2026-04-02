@@ -40,6 +40,49 @@ const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
   'Valence': { lat: 44.9334, lng: 4.8924 },
 };
 
+// Map cities to RDF département page slugs
+const CITY_DEPT_SLUG: Record<string, string> = {
+  'Paris': 'paris-75',
+  'Marseille': 'bouches-du-rhone-13',
+  'Lyon': 'rhone-69',
+  'Toulouse': 'haute-garonne-31',
+  'Nice': 'alpes-maritimes-06',
+  'Nantes': 'loire-atlantique-44',
+  'Montpellier': 'herault-34',
+  'Strasbourg': 'bas-rhin-67',
+  'Bordeaux': 'gironde-33',
+  'Lille': 'nord-59',
+  'Rennes': 'ille-et-vilaine-35',
+  'Grenoble': 'isere-38',
+  'Dijon': 'cote-d-or-21',
+  'Reims': 'marne-51',
+  'Tours': 'indre-et-loire-37',
+  'Rouen': 'seine-maritime-76',
+  'Metz': 'moselle-57',
+  'Nancy': 'meurthe-et-moselle-54',
+  'Avignon': 'vaucluse-84',
+  'Poitiers': 'vienne-86',
+  'Besançon': 'doubs-25',
+  'Caen': 'calvados-14',
+  'Orléans': 'loiret-45',
+  'Angers': 'maine-et-loire-49',
+  'Brest': 'finistere-29',
+  'Limoges': 'haute-vienne-87',
+  'Amiens': 'somme-80',
+  'Perpignan': 'pyrenees-orientales-66',
+  'La Rochelle': 'charente-maritime-17',
+  'Pau': 'pyrenees-atlantiques-64',
+  'Clermont-Ferrand': 'puy-de-dome-63',
+  'Aix-en-Provence': 'bouches-du-rhone-13',
+  'Toulon': 'var-83',
+  'Saint-Étienne': 'loire-42',
+  'Nîmes': 'gard-30',
+  'Dunkerque': 'nord-59',
+  'Mulhouse': 'haut-rhin-68',
+  'Valence': 'drome-26',
+  'Monaco': 'alpes-maritimes-06',
+};
+
 // Map cities to RDF ville page slugs for direct scraping
 const CITY_RDF_VILLE: Record<string, string[]> = {
   'Paris': ['paris-1938', 'paris-1-1939', 'paris-2-1940', 'paris-3-1941'],
@@ -166,14 +209,22 @@ Deno.serve(async (req) => {
     const villeSlugs = CITY_RDF_VILLE[city] || [];
     let festivalUrls: string[] = [];
 
-    if (villeSlugs.length > 0) {
-      console.log(`[RDF] Scraping ${villeSlugs.length} ville pages for "${city}"...`);
-      
-      // Scrape ville pages to get festival links
-      const villeResults = await Promise.allSettled(
-        villeSlugs.map(async (slug) => {
-          const villeUrl = `https://www.routedesfestivals.com/ville/${slug}.html`;
-          console.log(`[RDF] Scraping ville page: ${villeUrl}`);
+    // Build list of pages to scrape: ville pages + département page
+    const pagesToScrape: string[] = [];
+    for (const slug of villeSlugs) {
+      pagesToScrape.push(`https://www.routedesfestivals.com/ville/${slug}.html`);
+    }
+    const deptSlug = CITY_DEPT_SLUG[city];
+    if (deptSlug) {
+      pagesToScrape.push(`https://www.routedesfestivals.com/departement/${deptSlug}.html`);
+    }
+
+    if (pagesToScrape.length > 0) {
+      console.log(`[RDF] Scraping ${pagesToScrape.length} pages for "${city}" (ville + département)...`);
+
+      const pageResults = await Promise.allSettled(
+        pagesToScrape.map(async (pageUrl) => {
+          console.log(`[RDF] Scraping: ${pageUrl}`);
           const res = await fetch('https://api.firecrawl.dev/v1/scrape', {
             method: 'POST',
             headers: {
@@ -181,7 +232,7 @@ Deno.serve(async (req) => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              url: villeUrl,
+              url: pageUrl,
               formats: ['links'],
               waitFor: 3000,
               location: { country: 'FR', languages: ['fr'] },
@@ -194,7 +245,7 @@ Deno.serve(async (req) => {
         })
       );
 
-      for (const r of villeResults) {
+      for (const r of pageResults) {
         if (r.status === 'fulfilled') {
           festivalUrls.push(...r.value);
         }
