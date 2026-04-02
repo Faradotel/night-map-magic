@@ -141,7 +141,8 @@ Deno.serve(async (req) => {
 
     const cityCoords = CITY_COORDS[city] || { lat: 48.8566, lng: 2.3522 };
     const MAX_DISTANCE_KM = 40;
-    const url = `https://brocabrac.fr/${mapping.dept}/${mapping.slug}/`;
+    // Try department page (broader coverage) + city filter via extract prompt
+    const url = `https://www.brocabrac.fr/vide-greniers/departement-${mapping.dept}/`;
     console.log(`[Brocabrac] Scraping: ${url}`);
 
     const extractSchema = {

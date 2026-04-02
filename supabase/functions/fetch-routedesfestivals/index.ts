@@ -209,7 +209,8 @@ Deno.serve(async (req) => {
     const villeSlugs = CITY_RDF_VILLE[city] || [];
     let festivalUrls: string[] = [];
 
-    // Build list of pages to scrape: ville pages + département page
+    // Build list of listing pages: ville pages + département page
+    // Extract festival data DIRECTLY from listing pages (no per-festival scraping = much faster)
     const pagesToScrape: string[] = [];
     for (const slug of villeSlugs) {
       pagesToScrape.push(`https://www.routedesfestivals.com/ville/${slug}.html`);
@@ -219,149 +220,87 @@ Deno.serve(async (req) => {
       pagesToScrape.push(`https://www.routedesfestivals.com/departement/${deptSlug}.html`);
     }
 
-    if (pagesToScrape.length > 0) {
-      console.log(`[RDF] Scraping ${pagesToScrape.length} pages for "${city}" (ville + département)...`);
-
-      const pageResults = await Promise.allSettled(
-        pagesToScrape.map(async (pageUrl) => {
-          console.log(`[RDF] Scraping: ${pageUrl}`);
-          const res = await fetch('https://api.firecrawl.dev/v1/scrape', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${firecrawlKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              url: pageUrl,
-              formats: ['links'],
-              waitFor: 3000,
-              location: { country: 'FR', languages: ['fr'] },
-            }),
-          });
-          if (!res.ok) return [];
-          const data = await res.json();
-          const links: string[] = data?.data?.links || data?.links || [];
-          return links.filter((u: string) => u.includes('/festival/') && u.endsWith('.html'));
-        })
-      );
-
-      for (const r of pageResults) {
-        if (r.status === 'fulfilled') {
-          festivalUrls.push(...r.value);
-        }
-      }
-    }
-
-    // Fallback: also try map search
-    if (festivalUrls.length < 5) {
-      console.log(`[RDF] Also trying map search for "${city}"...`);
-      try {
-        const mapResponse = await fetch('https://api.firecrawl.dev/v1/map', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${firecrawlKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            url: 'https://www.routedesfestivals.com',
-            search: city,
-            limit: 100,
-            includeSubdomains: false,
-          }),
-        });
-        if (mapResponse.ok) {
-          const mapData = await mapResponse.json();
-          const allLinks: string[] = mapData?.links || [];
-          const mapFestUrls = allLinks.filter((u: string) =>
-            u.includes('/festival/') && u.endsWith('.html')
-          );
-          festivalUrls.push(...mapFestUrls);
-        }
-      } catch (err) {
-        console.error(`[RDF] Map error:`, err);
-      }
-    }
-
-    // Deduplicate URLs
-    festivalUrls = [...new Set(festivalUrls)];
-    console.log(`[RDF] Found ${festivalUrls.length} unique festival URLs for "${city}"`);
-
-    if (festivalUrls.length === 0) {
+    if (pagesToScrape.length === 0) {
       return new Response(
         JSON.stringify({ success: true, events: [] }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const urlsToScrape = festivalUrls.slice(0, 20);
-    console.log(`[RDF] Extracting details from ${urlsToScrape.length} festival pages...`);
+    console.log(`[RDF] Extracting from ${pagesToScrape.length} listing pages for "${city}"...`);
+
+    const extractSchema = {
+      type: 'object',
+      properties: {
+        festivals: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              name: { type: 'string', description: 'Festival name' },
+              venue: { type: 'string', description: 'Venue or site name' },
+              city: { type: 'string', description: 'City where the festival takes place' },
+              address: { type: 'string', description: 'Address or city with postal code' },
+              startDate: { type: 'string', description: 'Start date in YYYY-MM-DD format' },
+              endDate: { type: 'string', description: 'End date in YYYY-MM-DD or null' },
+              price: { type: 'string', description: 'Price or "Gratuit"' },
+              description: { type: 'string', description: 'Genre or short description' },
+              url: { type: 'string', description: 'URL of the festival on routedesfestivals.com' },
+            },
+            required: ['name'],
+          },
+        },
+      },
+      required: ['festivals'],
+    };
+
+    const extractPrompt = `Extract ALL festivals listed on this Route des Festivals page. Today is ${new Date().toISOString().slice(0, 10)}. Only include upcoming festivals (future dates). Extract every festival: name, venue, city, address, start date, end date, price, description/genre, URL. Use YYYY-MM-DD for dates with year 2026.`;
+
+    const pageResults = await Promise.allSettled(
+      pagesToScrape.map(async (pageUrl) => {
+        console.log(`[RDF] Extracting: ${pageUrl}`);
+        const res = await fetch('https://api.firecrawl.dev/v1/scrape', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${firecrawlKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: pageUrl,
+            formats: ['extract'],
+            actions: [
+              { type: 'wait', milliseconds: 2000 },
+              { type: 'scroll', direction: 'down', amount: 3000 },
+              { type: 'wait', milliseconds: 1000 },
+            ],
+            extract: { schema: extractSchema, prompt: extractPrompt },
+            waitFor: 4000,
+            location: { country: 'FR', languages: ['fr'] },
+          }),
+        });
+        if (!res.ok) return [];
+        const data = await res.json();
+        const extracted = data?.data?.extract || data?.extract || {};
+        return (extracted?.festivals || []).map((f: any) => ({ ...f, _sourceUrl: pageUrl }));
+      })
+    );
 
     const rawEvents: any[] = [];
-
-    // Process in parallel batches of 5
-    for (let batchStart = 0; batchStart < urlsToScrape.length; batchStart += 5) {
-      const batch = urlsToScrape.slice(batchStart, batchStart + 5);
-      const promises = batch.map(async (festUrl) => {
-        try {
-          const scrapeRes = await fetch('https://api.firecrawl.dev/v1/scrape', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${firecrawlKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              url: festUrl,
-              formats: ['extract'],
-              extract: {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    name: { type: 'string', description: 'Festival name' },
-                    venue: { type: 'string', description: 'Venue or site name' },
-                    cities: { type: 'string', description: 'All cities listed (comma-separated)' },
-                    address: { type: 'string', description: 'Full address or main city with postal code' },
-                    startDate: { type: 'string', description: 'Start date in YYYY-MM-DD format' },
-                    endDate: { type: 'string', description: 'End date in YYYY-MM-DD format, or null if single day' },
-                    price: { type: 'string', description: 'Price range or "Gratuit" if free' },
-                    description: { type: 'string', description: 'Short description of the festival (max 200 chars)' },
-                    genre: { type: 'string', description: 'Music genre: rock, pop, rap, electro, jazz, classique, metal, reggae, chanson, world, folk, blues, hip-hop, or other' },
-                  },
-                  required: ['name'],
-                },
-                prompt: `Extract the festival details from this Route des Festivals page. Today is ${new Date().toISOString().slice(0, 10)}. Extract: name, venue, cities, address, start/end dates (YYYY-MM-DD), price, description, genre.`,
-              },
-              waitFor: 3000,
-              location: { country: 'FR', languages: ['fr'] },
-            }),
-          });
-
-          if (scrapeRes.ok) {
-            const scrapeData = await scrapeRes.json();
-            const extracted = scrapeData?.data?.extract || scrapeData?.extract || {};
-            if (extracted.name) {
-              extracted._sourceUrl = festUrl;
-              return extracted;
-            }
-          }
-        } catch (err) {
-          console.error(`[RDF] Error scraping ${festUrl}:`, err);
-        }
-        return null;
-      });
-
-      const results = await Promise.allSettled(promises);
-      for (const r of results) {
-        if (r.status === 'fulfilled' && r.value) {
-          rawEvents.push(r.value);
-        }
-      }
+    for (const r of pageResults) {
+      if (r.status === 'fulfilled') rawEvents.push(...r.value);
     }
 
-    console.log(`[RDF] Extracted ${rawEvents.length} festivals from individual pages`);
+    // Deduplicate by name
+    const seenNames = new Set<string>();
+    const dedupedEvents = rawEvents.filter(e => {
+      const key = (e.name || '').toLowerCase().slice(0, 40);
+      if (seenNames.has(key)) return false;
+      seenNames.add(key);
+      return true;
+    });
+
+    console.log(`[RDF] Extracted ${dedupedEvents.length} festivals from listing pages`);
 
     const events: any[] = [];
-    for (let i = 0; i < rawEvents.length; i++) {
-      const e = rawEvents[i];
+    for (let i = 0; i < dedupedEvents.length; i++) {
+      const e = dedupedEvents[i];
       if (!e.name || e.name.length <= 2) continue;
 
       const combined = `${e.address || ''} ${e.venue || ''} ${e.cities || ''}`.toLowerCase();
@@ -377,7 +316,7 @@ Deno.serve(async (req) => {
       }
       if (!startTime) continue;
 
-      const eventCity = e.cities?.split(',')[0]?.trim() || city;
+      const eventCity = e.city || e.cities?.split(',')[0]?.trim() || city;
       let lat = cityCoords.lat;
       let lng = cityCoords.lng;
       let geocoded = false;
@@ -424,7 +363,7 @@ Deno.serve(async (req) => {
         lat, lng, startTime,
         endTime: endTime || null,
         description: (e.genre ? `[${e.genre}] ` : '') + (e.description || '') + ' • via Route des Festivals',
-        ticketUrl: e._sourceUrl || 'https://www.routedesfestivals.com/',
+        ticketUrl: e.url || e._sourceUrl || 'https://www.routedesfestivals.com/',
         price: e.price || null,
         genres,
         externalAttendees: null,
