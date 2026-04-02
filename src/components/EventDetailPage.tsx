@@ -46,8 +46,10 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
   const vibe = vibeConfig[event.vibe];
   const type = typeConfig[event.type];
 
-  const source = event.id.startsWith('tm-') ? 'Ticketmaster' : event.id.startsWith('shotgun-') ? 'Shotgun' : event.id.startsWith('eb-') ? 'Eventbrite' : event.id.startsWith('mu-') ? 'Meetup' : event.id.startsWith('ic-') ? 'InfoConcert' : event.id.startsWith('bb-') ? 'Brocabrac' : 'PulseMap';
+  const source = event.id.startsWith('tm-') ? 'Ticketmaster' : event.id.startsWith('shotgun-') ? 'Shotgun' : event.id.startsWith('eb-') ? 'Eventbrite' : event.id.startsWith('mu-') ? 'Meetup' : event.id.startsWith('ic-') ? 'InfoConcert' : event.id.startsWith('bb-') ? 'Brocabrac' : event.id.startsWith('rt-') ? 'RunTrail' : event.id.startsWith('oa-') ? 'OpenAgenda' : 'PulseMap';
   const isBrocabrac = event.id.startsWith('bb-');
+  const isRunTrail = event.id.startsWith('rt-');
+  const isOpenAgenda = event.id.startsWith('oa-');
   const sourceColor = source === 'Ticketmaster' ? 'hsl(210 100% 56%)' : source === 'Shotgun' ? 'hsl(25 95% 55%)' : source === 'Eventbrite' ? 'hsl(15 85% 55%)' : source === 'Meetup' ? 'hsl(0 82% 55%)' : source === 'InfoConcert' ? 'hsl(280 70% 55%)' : 'hsl(var(--primary))';
 
   const priceColor =
@@ -166,7 +168,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
                 )}
               </div>
               <h1 className="text-xl font-black tracking-tight leading-tight text-foreground">
-                {isBrocabrac ? '🧺 ' : ''}{event.name}
+                {isBrocabrac ? '🧺 ' : isRunTrail ? '🏃‍♂️ ' : isOpenAgenda ? '🗓️ ' : ''}{event.name}
               </h1>
             </div>
           </div>

@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
 
         // Fetch from all sources for this city with individual timeouts
         // RDF needs more time (map + extract per page)
-        const [shotgunRes, tmRes, ebRes, muRes, icRes, rdfRes, bbRes] = await Promise.allSettled([
+        const [shotgunRes, tmRes, ebRes, muRes, icRes, rdfRes, bbRes, rtRes, oaRes] = await Promise.allSettled([
           fetchWithTimeout(`${supabaseUrl}/functions/v1/scrape-shotgun`, { method: 'POST', headers, body }).then(r => r.json()),
           fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-ticketmaster`, { method: 'POST', headers, body }).then(r => r.json()),
           fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-eventbrite`, { method: 'POST', headers, body }).then(r => r.json()),
@@ -96,30 +96,20 @@ Deno.serve(async (req) => {
           fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-infoconcert`, { method: 'POST', headers, body }).then(r => r.json()),
           fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-routedesfestivals`, { method: 'POST', headers, body }, 55000).then(r => r.json()),
           fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-brocabrac`, { method: 'POST', headers, body }).then(r => r.json()),
+          fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-runtrail`, { method: 'POST', headers, body }).then(r => r.json()),
+          fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-openagenda`, { method: 'POST', headers, body }).then(r => r.json()),
         ]);
 
         const events: any[] = [];
-        if (shotgunRes.status === 'fulfilled' && shotgunRes.value?.events) {
-          events.push(...shotgunRes.value.events);
-        }
-        if (tmRes.status === 'fulfilled' && tmRes.value?.events) {
-          events.push(...tmRes.value.events);
-        }
-        if (ebRes.status === 'fulfilled' && ebRes.value?.events) {
-          events.push(...ebRes.value.events);
-        }
-        if (muRes.status === 'fulfilled' && muRes.value?.events) {
-          events.push(...muRes.value.events);
-        }
-        if (icRes.status === 'fulfilled' && icRes.value?.events) {
-          events.push(...icRes.value.events);
-        }
-        if (rdfRes.status === 'fulfilled' && rdfRes.value?.events) {
-          events.push(...rdfRes.value.events);
-        }
-        if (bbRes.status === 'fulfilled' && bbRes.value?.events) {
-          events.push(...bbRes.value.events);
-        }
+        if (shotgunRes.status === 'fulfilled' && shotgunRes.value?.events) events.push(...shotgunRes.value.events);
+        if (tmRes.status === 'fulfilled' && tmRes.value?.events) events.push(...tmRes.value.events);
+        if (ebRes.status === 'fulfilled' && ebRes.value?.events) events.push(...ebRes.value.events);
+        if (muRes.status === 'fulfilled' && muRes.value?.events) events.push(...muRes.value.events);
+        if (icRes.status === 'fulfilled' && icRes.value?.events) events.push(...icRes.value.events);
+        if (rdfRes.status === 'fulfilled' && rdfRes.value?.events) events.push(...rdfRes.value.events);
+        if (bbRes.status === 'fulfilled' && bbRes.value?.events) events.push(...bbRes.value.events);
+        if (rtRes.status === 'fulfilled' && rtRes.value?.events) events.push(...rtRes.value.events);
+        if (oaRes.status === 'fulfilled' && oaRes.value?.events) events.push(...oaRes.value.events);
 
         if (events.length === 0) continue;
 
@@ -142,7 +132,7 @@ Deno.serve(async (req) => {
           description: e.description || '',
           venue: e.venue || '',
           ticket_url: e.ticketUrl || null,
-          source: e.id?.startsWith('eb-') ? 'eventbrite' : e.id?.startsWith('tm-') ? 'ticketmaster' : e.id?.startsWith('mu-') ? 'meetup' : e.id?.startsWith('ic-') ? 'infoconcert' : e.id?.startsWith('rdf-') ? 'routedesfestivals' : e.id?.startsWith('bb-') ? 'brocabrac' : 'shotgun',
+          source: e.id?.startsWith('eb-') ? 'eventbrite' : e.id?.startsWith('tm-') ? 'ticketmaster' : e.id?.startsWith('mu-') ? 'meetup' : e.id?.startsWith('ic-') ? 'infoconcert' : e.id?.startsWith('rdf-') ? 'routedesfestivals' : e.id?.startsWith('bb-') ? 'brocabrac' : e.id?.startsWith('rt-') ? 'runtrail' : e.id?.startsWith('oa-') ? 'openagenda' : 'shotgun',
           updated_at: new Date().toISOString(),
           external_attendees: e.externalAttendees || null,
         }));
