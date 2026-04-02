@@ -117,6 +117,9 @@ Deno.serve(async (req) => {
         if (rdfRes.status === 'fulfilled' && rdfRes.value?.events) {
           events.push(...rdfRes.value.events);
         }
+        if (bbRes.status === 'fulfilled' && bbRes.value?.events) {
+          events.push(...bbRes.value.events);
+        }
 
         if (events.length === 0) continue;
 
