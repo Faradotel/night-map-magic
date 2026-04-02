@@ -76,7 +76,8 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
             {results.map(event => {
               const vibe = vibeConfig[event.vibe];
               const type = typeConfig[event.type];
-              const source = event.id.startsWith('tm-') ? 'TM' : event.id.startsWith('shotgun-') ? 'SG' : event.id.startsWith('eb-') ? 'EB' : event.id.startsWith('mu-') ? 'MU' : event.id.startsWith('ic-') ? 'IC' : null;
+              const source = event.id.startsWith('tm-') ? 'TM' : event.id.startsWith('shotgun-') ? 'SG' : event.id.startsWith('eb-') ? 'EB' : event.id.startsWith('mu-') ? 'MU' : event.id.startsWith('ic-') ? 'IC' : event.id.startsWith('bb-') ? 'BB' : null;
+              const isBrocabrac = event.id.startsWith('bb-');
               return (
                 <button
                   key={event.id}
@@ -104,7 +105,7 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
                               <span className="text-[10px] font-bold" style={{ color: 'hsl(var(--accent))' }}>● LIVE</span>
                             )}
                           </div>
-                          <h3 className="text-sm font-extrabold tracking-tight">{event.name}</h3>
+                          <h3 className="text-sm font-extrabold tracking-tight">{isBrocabrac ? '🧺 ' : ''}{event.name}</h3>
                         </div>
                         <span
                           className="text-xs font-bold shrink-0 mt-0.5"
