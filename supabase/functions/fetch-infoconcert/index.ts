@@ -162,7 +162,7 @@ Deno.serve(async (req) => {
       required: ['events'],
     };
 
-    const extractPrompt = `Extract ALL concerts/events listed on this InfoConcert page. The current date is ${new Date().toISOString().slice(0, 10)}. For dates, use ISO 8601 format with the correct year (2026 for upcoming events). IMPORTANT: For the address field, extract the FULL STREET ADDRESS (street number, street name, postal code, city) — do NOT just write the city name. If you see a venue/salle name, put it in the venue field separately. Get artist/event name, venue, address, date/time, price, URL (full infoconcert.com URL), description/genre, and music genre tag. Extract EVERY event on the page, do not stop early.`;
+    const extractPrompt = `Extract ALL concerts/events listed on this InfoConcert page. The current date is ${new Date().toISOString().slice(0, 10)}. The current year is ${new Date().getFullYear()}. For dates, use ISO 8601 format with the CURRENT YEAR. IMPORTANT: For the address field, extract the FULL STREET ADDRESS (street number, street name, postal code, city) — do NOT just write the city name. If you see a venue/salle name, put it in the venue field separately. Get artist/event name, venue, address, date/time, price, URL (full infoconcert.com URL), description/genre, and music genre tag. Extract EVERY SINGLE event on the page without exception, including multi-date events. Do not stop early. Even events with only a name and date should be extracted.`;
 
     let rawEvents: any[] = [];
 
