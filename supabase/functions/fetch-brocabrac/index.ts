@@ -17,48 +17,35 @@ function getCorsHeaders(req: Request) {
   };
 }
 
-// Map city names to brocabrac dept/city slug
-const CITY_BROCABRAC: Record<string, { dept: string; slug: string }> = {
-  'Paris': { dept: '75', slug: 'paris' },
-  'Marseille': { dept: '13', slug: 'marseille' },
-  'Lyon': { dept: '69', slug: 'lyon' },
-  'Toulouse': { dept: '31', slug: 'toulouse' },
-  'Nice': { dept: '06', slug: 'nice' },
-  'Nantes': { dept: '44', slug: 'nantes' },
-  'Montpellier': { dept: '34', slug: 'montpellier' },
-  'Strasbourg': { dept: '67', slug: 'strasbourg' },
-  'Bordeaux': { dept: '33', slug: 'bordeaux' },
-  'Lille': { dept: '59', slug: 'lille' },
-  'Rennes': { dept: '35', slug: 'rennes' },
-  'Reims': { dept: '51', slug: 'reims' },
-  'Saint-Étienne': { dept: '42', slug: 'saint-etienne' },
-  'Le Havre': { dept: '76', slug: 'le-havre' },
-  'Toulon': { dept: '83', slug: 'toulon' },
-  'Grenoble': { dept: '38', slug: 'grenoble' },
-  'Dijon': { dept: '21', slug: 'dijon' },
-  'Angers': { dept: '49', slug: 'angers' },
-  'Nîmes': { dept: '30', slug: 'nimes' },
-  'Clermont-Ferrand': { dept: '63', slug: 'clermont-ferrand' },
-  'Aix-en-Provence': { dept: '13', slug: 'aix-en-provence' },
-  'Brest': { dept: '29', slug: 'brest' },
-  'Tours': { dept: '37', slug: 'tours' },
-  'Limoges': { dept: '87', slug: 'limoges' },
-  'Amiens': { dept: '80', slug: 'amiens' },
-  'Metz': { dept: '57', slug: 'metz' },
-  'Rouen': { dept: '76', slug: 'rouen' },
-  'Perpignan': { dept: '66', slug: 'perpignan' },
-  'Orléans': { dept: '45', slug: 'orleans' },
-  'Caen': { dept: '14', slug: 'caen' },
-  'Mulhouse': { dept: '68', slug: 'mulhouse' },
-  'Nancy': { dept: '54', slug: 'nancy' },
-  'Avignon': { dept: '84', slug: 'avignon' },
-  'Poitiers': { dept: '86', slug: 'poitiers' },
-  'Pau': { dept: '64', slug: 'pau' },
-  'La Rochelle': { dept: '17', slug: 'la-rochelle' },
-  'Besançon': { dept: '25', slug: 'besancon' },
-  'Valence': { dept: '26', slug: 'valence' },
-  'Monaco': { dept: '06', slug: 'monaco' },
-  'Dunkerque': { dept: '59', slug: 'dunkerque' },
+// Map city names to brocabrac department number
+// URL format: https://brocabrac.fr/{dept}/
+const CITY_BROCABRAC: Record<string, { dept: string }> = {
+  'Paris': { dept: '75' }, 'Marseille': { dept: '13' }, 'Lyon': { dept: '69' },
+  'Toulouse': { dept: '31' }, 'Nice': { dept: '06' }, 'Nantes': { dept: '44' },
+  'Montpellier': { dept: '34' }, 'Strasbourg': { dept: '67' }, 'Bordeaux': { dept: '33' },
+  'Lille': { dept: '59' }, 'Rennes': { dept: '35' }, 'Reims': { dept: '51' },
+  'Saint-Étienne': { dept: '42' }, 'Le Havre': { dept: '76' }, 'Toulon': { dept: '83' },
+  'Grenoble': { dept: '38' }, 'Dijon': { dept: '21' }, 'Angers': { dept: '49' },
+  'Nîmes': { dept: '30' }, 'Clermont-Ferrand': { dept: '63' }, 'Aix-en-Provence': { dept: '13' },
+  'Brest': { dept: '29' }, 'Tours': { dept: '37' }, 'Limoges': { dept: '87' },
+  'Amiens': { dept: '80' }, 'Metz': { dept: '57' }, 'Rouen': { dept: '76' },
+  'Perpignan': { dept: '66' }, 'Orléans': { dept: '45' }, 'Caen': { dept: '14' },
+  'Mulhouse': { dept: '68' }, 'Nancy': { dept: '54' }, 'Avignon': { dept: '84' },
+  'Poitiers': { dept: '86' }, 'Pau': { dept: '64' }, 'La Rochelle': { dept: '17' },
+  'Besançon': { dept: '25' }, 'Valence': { dept: '26' }, 'Monaco': { dept: '06' },
+  'Dunkerque': { dept: '59' }, 'Versailles': { dept: '78' }, 'Argenteuil': { dept: '95' },
+  'Montreuil': { dept: '93' }, 'Roubaix': { dept: '59' }, 'Tourcoing': { dept: '59' },
+  'Nanterre': { dept: '92' }, 'Courbevoie': { dept: '92' }, 'Vitry-sur-Seine': { dept: '94' },
+  'Créteil': { dept: '94' }, 'Colombes': { dept: '92' }, 'Châteauroux': { dept: '36' },
+  'Alençon': { dept: '61' }, 'Auxerre': { dept: '89' }, 'Blois': { dept: '41' },
+  'Bourges': { dept: '18' }, 'Brive-la-Gaillarde': { dept: '19' }, 'Charleville-Mézières': { dept: '08' },
+  'Châlons-en-Champagne': { dept: '51' }, 'Cherbourg': { dept: '50' }, 'Évreux': { dept: '27' },
+  'Gap': { dept: '05' }, 'Laval': { dept: '53' }, 'Le Mans': { dept: '72' },
+  'Lorient': { dept: '56' }, 'Niort': { dept: '79' }, 'Quimper': { dept: '29' },
+  'Saint-Brieuc': { dept: '22' }, 'Saint-Nazaire': { dept: '44' }, 'Tarbes': { dept: '65' },
+  'Troyes': { dept: '10' }, 'Vannes': { dept: '56' }, 'Chambéry': { dept: '73' },
+  'Annecy': { dept: '74' }, 'Bayonne': { dept: '64' }, 'Béziers': { dept: '34' },
+  'Cannes': { dept: '06' }, 'Colmar': { dept: '68' }, 'Villeurbanne': { dept: '69' },
 };
 
 const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
@@ -141,8 +128,7 @@ Deno.serve(async (req) => {
 
     const cityCoords = CITY_COORDS[city] || { lat: 48.8566, lng: 2.3522 };
     const MAX_DISTANCE_KM = 40;
-    // Try department page (broader coverage) + city filter via extract prompt
-    const url = `https://www.brocabrac.fr/vide-greniers/departement-${mapping.dept}/`;
+    const url = `https://brocabrac.fr/${mapping.dept}/`;
     console.log(`[Brocabrac] Scraping: ${url}`);
 
     const extractSchema = {
