@@ -179,10 +179,12 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             url,
             formats: ['extract'],
-            actions: [
+          actions: [
               { type: 'wait', milliseconds: 2000 },
               { type: 'scroll', direction: 'down', amount: 3000 },
-              { type: 'wait', milliseconds: 1000 },
+              { type: 'wait', milliseconds: 1500 },
+              { type: 'scroll', direction: 'down', amount: 3000 },
+              { type: 'wait', milliseconds: 1500 },
               { type: 'scroll', direction: 'down', amount: 3000 },
               { type: 'wait', milliseconds: 1000 },
             ],
