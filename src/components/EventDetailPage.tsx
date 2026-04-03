@@ -2,6 +2,7 @@ import { useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import { X, MapPin, Clock, Ticket, ExternalLink, Check, ChevronDown, Share2, Music, Users, Info, Heart } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, formatTime, formatDate } from '@/data/mockEvents';
+import { getSourceEmoji } from '@/lib/sourceEmoji';
 import { useEventAttendanceCount } from '@/hooks/useEventAttendanceCount';
 import { EventPassUpload } from '@/components/EventPassUpload';
 import type { useAttendance } from '@/hooks/useAttendance';
