@@ -1,5 +1,6 @@
 import { X, MapPin, Clock, Ticket, ExternalLink, Check } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, formatTime, formatDate } from '@/data/mockEvents';
+import { getSourceEmoji } from '@/lib/sourceEmoji';
 import { useEffect, useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 
