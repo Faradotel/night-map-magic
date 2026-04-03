@@ -146,7 +146,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
                 boxShadow: `0 0 20px ${vibe.color}22`,
               }}
             >
-              {getSourceEmoji(event.id, type.emoji)}
+              {getSourceEmoji(event.id, type.emoji, event.type)}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
@@ -160,7 +160,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
                 >
                   {vibe.emoji} {vibe.label}
                 </span>
-                <span className="text-[10px] text-muted-foreground">{getSourceEmoji(event.id, type.emoji)} {type.label}</span>
+                <span className="text-[10px] text-muted-foreground">{getSourceEmoji(event.id, type.emoji, event.type)} {type.label}</span>
                 {event.isLive && (
                   <span className="text-[10px] font-bold flex items-center gap-1" style={{ color: 'hsl(var(--accent))' }}>
                     <span className="w-1.5 h-1.5 rounded-full inline-block neon-pulse" style={{ background: 'hsl(var(--accent))' }} />
@@ -169,7 +169,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
                 )}
               </div>
               <h1 className="text-xl font-black tracking-tight leading-tight text-foreground">
-                {isBrocabrac ? '🧺 ' : isRunTrail ? '🏃‍♂️ ' : isOpenAgenda ? '🗓️ ' : ''}{event.name}
+                {isBrocabrac && event.type !== 'sport' ? '🧺 ' : isRunTrail ? '🏃‍♂️ ' : isOpenAgenda ? '🗓️ ' : ''}{event.name}
               </h1>
             </div>
           </div>
@@ -337,7 +337,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Type</span>
-                <span className="font-medium text-foreground">{getSourceEmoji(event.id, type.emoji)} {type.label}</span>
+                <span className="font-medium text-foreground">{getSourceEmoji(event.id, type.emoji, event.type)} {type.label}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Ambiance</span>

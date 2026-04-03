@@ -1,6 +1,6 @@
-/** Returns a source-specific emoji override for Brocabrac, RunTrail, OpenAgenda events */
-export function getSourceEmoji(eventId: string, fallbackEmoji: string): string {
-  if (eventId.startsWith('bb-')) return '🧺';
+/** Returns a source-specific emoji override, respecting event type for Brocabrac */
+export function getSourceEmoji(eventId: string, fallbackEmoji: string, eventType = ''): string {
+  if (eventId.startsWith('bb-') && eventType !== 'sport') return '🧺';
   if (eventId.startsWith('rt-')) return '🏃‍♂️';
   if (eventId.startsWith('oa-')) return '🗓️';
   return fallbackEmoji;

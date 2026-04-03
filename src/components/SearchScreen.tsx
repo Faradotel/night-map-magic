@@ -100,7 +100,7 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
                             <span className="text-[10px] font-semibold" style={{ color: 'hsl(var(--accent))' }}>
                               {vibe.emoji} {vibe.label}
                             </span>
-                            <span className="text-[10px] text-muted-foreground">{getSourceEmoji(event.id, type.emoji)} {type.label}</span>
+                            <span className="text-[10px] text-muted-foreground">{getSourceEmoji(event.id, type.emoji, event.type)} {type.label}</span>
                             {source && (
                               <span className="text-[8px] uppercase tracking-wider text-muted-foreground opacity-60 font-medium">{source}</span>
                             )}
@@ -108,7 +108,7 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
                               <span className="text-[10px] font-bold" style={{ color: 'hsl(var(--accent))' }}>● LIVE</span>
                             )}
                           </div>
-                          <h3 className="text-sm font-extrabold tracking-tight">{isBrocabrac ? '🧺 ' : isRunTrail ? '🏃‍♂️ ' : isOpenAgenda ? '🗓️ ' : ''}{event.name}</h3>
+                          <h3 className="text-sm font-extrabold tracking-tight">{isBrocabrac && event.type !== 'sport' ? '🧺 ' : isRunTrail ? '🏃‍♂️ ' : isOpenAgenda ? '🗓️ ' : ''}{event.name}</h3>
                         </div>
                         <span
                           className="text-xs font-bold shrink-0 mt-0.5"

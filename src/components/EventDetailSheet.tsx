@@ -89,7 +89,7 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
                   }}>
                     {vibe.emoji} {vibe.label}
                   </span>
-                  <span className="text-xs text-muted-foreground">{getSourceEmoji(event.id, type.emoji)} {type.label}</span>
+                  <span className="text-xs text-muted-foreground">{getSourceEmoji(event.id, type.emoji, event.type)} {type.label}</span>
                   {event.isLive && (
                     <span className="text-xs font-bold flex items-center gap-1" style={{ color: 'hsl(325 89% 50%)' }}>
                       <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: 'hsl(325 89% 50%)', animation: 'neon-pulse 1s infinite' }} />
@@ -98,7 +98,7 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
                   )}
                 </div>
                 <h2 className="text-lg font-extrabold tracking-tight leading-tight text-foreground truncate">
-                  {isBrocabrac ? '🧺 ' : isRunTrail ? '🏃‍♂️ ' : isOpenAgenda ? '🗓️ ' : ''}{event.name}
+                  {isBrocabrac && event.type !== 'sport' ? '🧺 ' : isRunTrail ? '🏃‍♂️ ' : isOpenAgenda ? '🗓️ ' : ''}{event.name}
                 </h2>
               </div>
 

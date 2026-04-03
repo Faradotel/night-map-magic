@@ -19,7 +19,7 @@ interface EventMapProps {
 
 function createEventIcon(event: NightEvent, isSelected: boolean, isDark: boolean): L.DivIcon {
   const vibe = vibeConfig[event.vibe];
-  const typeEmoji = getSourceEmoji(event.id, typeConfig[event.type]?.emoji ?? '📍');
+  const typeEmoji = getSourceEmoji(event.id, typeConfig[event.type]?.emoji ?? '📍', event.type);
   const color = vibe.color;
   const size = isSelected ? 52 : 42;
   const bg = isDark ? 'rgba(26,13,21,0.85)' : 'rgba(255,255,255,0.92)';
