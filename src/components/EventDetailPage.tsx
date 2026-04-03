@@ -160,7 +160,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
                 >
                   {vibe.emoji} {vibe.label}
                 </span>
-                <span className="text-[10px] text-muted-foreground">{type.emoji} {type.label}</span>
+                <span className="text-[10px] text-muted-foreground">{getSourceEmoji(event.id, type.emoji)} {type.label}</span>
                 {event.isLive && (
                   <span className="text-[10px] font-bold flex items-center gap-1" style={{ color: 'hsl(var(--accent))' }}>
                     <span className="w-1.5 h-1.5 rounded-full inline-block neon-pulse" style={{ background: 'hsl(var(--accent))' }} />
