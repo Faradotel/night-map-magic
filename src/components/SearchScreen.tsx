@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Search, MapPin, Clock, X } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, formatTime, formatDate } from '@/data/mockEvents';
+import { getSourceEmoji } from '@/lib/sourceEmoji';
 import { EventDetailPage } from '@/components/EventDetailPage';
 import { useAttendance } from '@/hooks/useAttendance';
 import { useFavorites } from '@/hooks/useFavorites';
