@@ -133,11 +133,30 @@ Deno.serve(async (req) => {
         // Delete old events for this city, then insert new ones
         await supabase.from('cached_events').delete().eq('city', city);
 
-        const batch = events.map((e: any) => ({
+        const SPORT_KEYWORDS = /football|rugby|tennis|basket|volley|vélo|velo|cyclisme|athlétisme|natation|ski|pétanque|handball|judo|karaté|escrime|tir|course|trail|run|sport|gym|fitness|escalade|équitation|equitation|pucier/i;
+
+        function getTypeVibe(e: any): { type: string; vibe: string } {
+          const id: string = e.id || '';
+          const name: string = e.name || '';
+          if (id.startsWith('rt-')) return { type: 'sport', vibe: 'sport' };
+          if (id.startsWith('rdf-')) return { type: 'festival', vibe: 'concert' };
+          if (id.startsWith('oa-')) return { type: 'spectacle', vibe: 'culture' };
+          if (id.startsWith('bb-')) {
+            if (SPORT_KEYWORDS.test(name)) return { type: 'sport', vibe: 'sport' };
+            return { type: 'expo', vibe: 'chill' };
+          }
+          if (id.startsWith('mu-')) return { type: 'afterwork', vibe: 'afterwork' };
+          // ic-, tm-, eb-, shotgun-
+          return { type: 'concert', vibe: 'concert' };
+        }
+
+        const batch = events.map((e: any) => {
+          const { type, vibe } = getTypeVibe(e);
+          return ({
           id: e.id,
           name: e.name || '',
-          type: 'soirée',
-          vibe: 'rave',
+          type,
+          vibe,
           genres: e.genres || [],
           lat: e.lat || 0,
           lng: e.lng || 0,
@@ -152,7 +171,8 @@ Deno.serve(async (req) => {
           source: e.id?.startsWith('eb-') ? 'eventbrite' : e.id?.startsWith('tm-') ? 'ticketmaster' : e.id?.startsWith('mu-') ? 'meetup' : e.id?.startsWith('ic-') ? 'infoconcert' : e.id?.startsWith('rdf-') ? 'routedesfestivals' : e.id?.startsWith('bb-') ? 'brocabrac' : e.id?.startsWith('rt-') ? 'runtrail' : e.id?.startsWith('oa-') ? 'openagenda' : 'shotgun',
           updated_at: new Date().toISOString(),
           external_attendees: e.externalAttendees || null,
-        }));
+          });
+        });
 
         const { error } = await supabase.from('cached_events').upsert(batch, { onConflict: 'id' });
         if (error) {
