@@ -146,7 +146,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
                 boxShadow: `0 0 20px ${vibe.color}22`,
               }}
             >
-              {type.emoji}
+              {getSourceEmoji(event.id, type.emoji)}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
