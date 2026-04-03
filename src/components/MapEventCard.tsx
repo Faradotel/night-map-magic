@@ -5,6 +5,7 @@ import { useDistanceUnit } from '@/hooks/useDistanceUnit';
 import { useTheme } from '@/hooks/useTheme';
 import { useEventAttendanceCount } from '@/hooks/useEventAttendanceCount';
 import { formatDate, formatTime } from '@/data/mockEvents';
+import { getSourceEmoji } from '@/lib/sourceEmoji';
 
 interface MapEventCardProps {
   event: NightEvent;
