@@ -27,6 +27,9 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
 
   const vibe = vibeConfig[event.vibe];
   const type = typeConfig[event.type];
+  const isBrocabrac = event.id.startsWith('bb-');
+  const isRunTrail = event.id.startsWith('rt-');
+  const isOpenAgenda = event.id.startsWith('oa-');
 
   const priceColor =
     event.priceRange === 'gratuit' ? 'hsl(130 60% 55%)' :
@@ -94,7 +97,7 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
                   )}
                 </div>
                 <h2 className="text-lg font-extrabold tracking-tight leading-tight text-foreground truncate">
-                  {event.name}
+                  {isBrocabrac ? '🧺 ' : isRunTrail ? '🏃‍♂️ ' : isOpenAgenda ? '🗓️ ' : ''}{event.name}
                 </h2>
               </div>
 

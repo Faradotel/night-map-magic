@@ -80,6 +80,23 @@ Deno.serve(async (req) => {
     // Process cities ONE AT A TIME to avoid timeout
     for (const city of citiesToRefresh) {
       try {
+        // Skip city if refreshed within the last 4 minutes (prevents double-refresh race)
+        if (citiesToRefresh.length > 1) {
+          const { data: recentCheck } = await supabase
+            .from('cached_events')
+            .select('updated_at')
+            .eq('city', city)
+            .limit(1)
+            .maybeSingle();
+          if (recentCheck?.updated_at) {
+            const ageMs = Date.now() - new Date(recentCheck.updated_at).getTime();
+            if (ageMs < 4 * 60 * 1000) {
+              console.log(`${city}: skipped (refreshed ${Math.round(ageMs / 1000)}s ago)`);
+              continue;
+            }
+          }
+        }
+
         const headers = {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${anonKey}`,
