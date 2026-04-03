@@ -7,14 +7,25 @@ type DateFilter = 'today' | 'weekend' | 'week' | 'all';
 type PriceFilter = 'all' | 'free' | 'paid';
 type GenreFilter = 'electro' | 'techno' | 'house' | 'pop' | 'rock' | 'indie' | 'r&b' | 'jazz';
 type VibeFilter = 'chill' | 'rave' | 'afterwork' | 'cosy' | 'concert' | 'culture' | 'sport';
+export type SourceFilter = 'concert' | 'brocante' | 'sport' | 'agenda' | 'festival' | 'meetup';
 
 export interface Filters {
   date: DateFilter;
   price: PriceFilter;
   genres: GenreFilter[];
   vibes: VibeFilter[];
+  sources: SourceFilter[];
   radiusKm: number;
 }
+
+export const SOURCE_OPTIONS: { key: SourceFilter; label: string; emoji: string; prefixes: string[] }[] = [
+  { key: 'concert', label: 'Concert', emoji: '🎵', prefixes: ['ic-', 'tm-', 'eb-', 'shotgun-'] },
+  { key: 'festival', label: 'Festival', emoji: '🎪', prefixes: ['rdf-'] },
+  { key: 'brocante', label: 'Brocante', emoji: '🧺', prefixes: ['bb-'] },
+  { key: 'sport', label: 'Sport', emoji: '🏃‍♂️', prefixes: ['rt-'] },
+  { key: 'agenda', label: 'Agenda', emoji: '🗓️', prefixes: ['oa-'] },
+  { key: 'meetup', label: 'Meetup', emoji: '👥', prefixes: ['mu-'] },
+];
 
 interface FilterBarProps {
   filters: Filters;
@@ -70,7 +81,8 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
   const activeCount = (filters.genres.length > 0 ? 1 : 0)
     + (filters.vibes.length > 0 ? 1 : 0)
     + (filters.price !== 'all' ? 1 : 0)
-    + (filters.date !== 'all' ? 1 : 0);
+    + (filters.date !== 'all' ? 1 : 0)
+    + (filters.sources.length > 0 ? 1 : 0);
 
   function toggleGenre(g: GenreFilter) {
     const next = filters.genres.includes(g)
@@ -84,6 +96,13 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
       ? filters.vibes.filter(x => x !== v)
       : [...filters.vibes, v];
     onChange({ ...filters, vibes: next });
+  }
+
+  function toggleSource(s: SourceFilter) {
+    const next = filters.sources.includes(s)
+      ? filters.sources.filter(x => x !== s)
+      : [...filters.sources, s];
+    onChange({ ...filters, sources: next });
   }
 
   return (
@@ -193,6 +212,30 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
                 </div>
               </div>
 
+              {/* Source / Type */}
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Type</span>
+                <div className="flex flex-wrap gap-1">
+                  {SOURCE_OPTIONS.map(s => {
+                    const active = filters.sources.includes(s.key);
+                    return (
+                      <button
+                        key={s.key}
+                        onClick={() => toggleSource(s.key)}
+                        className="h-7 px-2.5 rounded-full text-[11px] font-semibold transition-all"
+                        style={{
+                          background: active ? 'hsl(325 89% 50%)' : isLight ? 'hsl(0 0% 0% / 0.06)' : 'hsl(0 0% 100% / 0.08)',
+                          color: active ? 'white' : isLight ? 'hsl(230 25% 15%)' : 'hsl(225 15% 65%)',
+                          boxShadow: active ? '0 0 12px hsl(325 89% 50% / 0.3)' : 'none',
+                        }}
+                      >
+                        {s.emoji} {s.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* Genres */}
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Genres</span>
@@ -243,7 +286,7 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
               {/* Reset */}
               {activeCount > 0 && (
                 <button
-                  onClick={() => onChange({ date: 'all', price: 'all', genres: [], vibes: [], radiusKm: 10 })}
+                  onClick={() => onChange({ date: 'all', price: 'all', genres: [], vibes: [], sources: [], radiusKm: 10 })}
                   className="w-full h-7 rounded-full text-[11px] font-semibold transition-colors"
                   style={{ background: isLight ? 'hsl(0 0% 0% / 0.04)' : 'hsl(0 0% 100% / 0.06)', color: isLight ? 'hsl(230 25% 25%)' : 'hsl(225 15% 55%)' }}
                 >

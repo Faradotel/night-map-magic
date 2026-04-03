@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { EventMap } from '@/components/EventMap';
 import { EventDetailPage } from '@/components/EventDetailPage';
 import { MapEventCard } from '@/components/MapEventCard';
-import { FilterBar, Filters } from '@/components/FilterBar';
+import { FilterBar, Filters, SOURCE_OPTIONS } from '@/components/FilterBar';
 import { BottomNav } from '@/components/BottomNav';
 import { SearchScreen } from '@/components/SearchScreen';
 import { ProfileScreen } from '@/components/ProfileScreen';
@@ -65,6 +65,7 @@ export default function Index() {
     price: 'all',
     genres: [],
     vibes: [],
+    sources: [],
     radiusKm: NEARBY_RADIUS_DEFAULT
   });
 
@@ -193,6 +194,13 @@ export default function Index() {
 
     if (filters.genres.length > 0 && !event.genres.some((g) => filters.genres.includes(g as any))) return false;
     if (filters.vibes.length > 0 && !filters.vibes.includes(event.vibe as any)) return false;
+    if (filters.sources.length > 0) {
+      const matches = filters.sources.some(src => {
+        const opt = SOURCE_OPTIONS.find(o => o.key === src);
+        return opt?.prefixes.some(p => event.id.startsWith(p));
+      });
+      if (!matches) return false;
+    }
 
     if (filterCenter) {
       const dist = getDistance(filterCenter[0], filterCenter[1], event.lat, event.lng);
