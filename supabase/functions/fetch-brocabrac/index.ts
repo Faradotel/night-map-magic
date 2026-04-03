@@ -127,23 +127,45 @@ function parseMarkdown(md: string, dept: string, city: string, baseUrl: string):
   return events;
 }
 
-function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
 
-async function geocodeCommune(commune: string, postalCode: string): Promise<{ lat: number; lng: number } | null> {
+async function geocodeQuery(q: string): Promise<{ lat: number; lng: number } | null> {
   try {
-    const q = postalCode ? `${postalCode} ${commune}, France` : `${commune}, France`;
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&limit=1`,
       { headers: { 'User-Agent': 'PulseMap/1.0' } }
     );
     const data = await res.json();
     if (data?.[0]) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  } catch { /* fallback */ }
+  return null;
+}
+
+// Fetch exact address from a Brocabrac event page via its JSON-LD Event schema
+async function fetchEventAddress(eventUrl: string): Promise<{ address: string; venue: string } | null> {
+  try {
+    const res = await fetch(eventUrl, { headers: { 'User-Agent': 'Mozilla/5.0 PulseMap/1.0' } });
+    if (!res.ok) return null;
+    const html = await res.text();
+    // Find all JSON-LD blocks and look for @type: Event
+    const scriptRe = /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+    let m: RegExpExecArray | null;
+    while ((m = scriptRe.exec(html)) !== null) {
+      try {
+        const d = JSON.parse(m[1]);
+        const items: any[] = Array.isArray(d) ? d : (d['@graph'] ? d['@graph'] : [d]);
+        for (const item of items) {
+          if (item['@type'] !== 'Event') continue;
+          const loc = item.location;
+          if (!loc) continue;
+          const venue = loc.name || '';
+          const addr = loc.address;
+          if (!addr) continue;
+          if (typeof addr === 'string') return { address: addr, venue };
+          const parts = [addr.streetAddress, addr.postalCode, addr.addressLocality].filter(Boolean);
+          if (parts.length >= 2) return { address: parts.join(', '), venue };
+        }
+      } catch { /* next script */ }
+    }
   } catch { /* fallback */ }
   return null;
 }
@@ -195,24 +217,32 @@ Deno.serve(async (req) => {
 
     const sliced = rawEvents.slice(0, 60);
 
-    // Collect unique commune slugs from event URLs
-    const slugSet = new Set<string>();
-    for (const e of sliced) {
+    // Fetch exact addresses from each event page in parallel
+    const pageData = await Promise.all(sliced.map((e: any) => fetchEventAddress(e.url)));
+    console.log(`[Brocabrac] Got ${pageData.filter(Boolean).length}/${sliced.length} exact addresses`);
+
+    // Build geocoding queries: exact address if available, else commune slug
+    const geoQueries = sliced.map((e: any, i: number) => {
+      if (pageData[i]?.address) return pageData[i]!.address;
       try {
         const parts = new URL(e.url).pathname.split('/').filter(Boolean);
-        if (parts[1]) slugSet.add(parts[1]);
-      } catch { /* skip */ }
-    }
+        return parts[1] ? parts[1].replace(/-/g, ' ') + ', France' : '';
+      } catch { return ''; }
+    });
 
-    // Geocode all unique communes in parallel
-    const communeCoords = new Map<string, { lat: number; lng: number }>();
-    await Promise.all([...slugSet].map(async (slug) => {
-      const coords = await geocodeCommune(slug.replace(/-/g, ' '), '');
-      if (coords) communeCoords.set(slug, coords);
+    // Geocode unique queries in parallel
+    const geoCache = new Map<string, { lat: number; lng: number }>();
+    const uniqueQueries = [...new Set(geoQueries.filter(Boolean))];
+    await Promise.all(uniqueQueries.map(async (q) => {
+      const coords = await geocodeQuery(q);
+      if (coords) geoCache.set(q, coords);
     }));
-    console.log(`[Brocabrac] Geocoded ${communeCoords.size}/${slugSet.size} communes`);
+    console.log(`[Brocabrac] Geocoded ${geoCache.size}/${uniqueQueries.length} locations`);
 
     const events = sliced.map((e: any, i: number) => {
+      const pd = pageData[i];
+      const geoKey = geoQueries[i];
+      const coords = (geoKey && geoCache.get(geoKey)) || cityCoords;
       const communeSlug = (() => {
         try {
           const parts = new URL(e.url).pathname.split('/').filter(Boolean);
@@ -220,13 +250,13 @@ Deno.serve(async (req) => {
         } catch { return ''; }
       })();
       const commune = communeSlug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
-      const coords = communeCoords.get(communeSlug) || cityCoords;
+      const displayAddress = pd?.address || `${e.postalCode || ''} ${commune || city}`.trim();
 
       return {
         id: `bb-${dept}-${i}-${e.date}-${Date.now()}`,
         name: e.name,
-        venue: '',
-        address: `${e.postalCode || ''} ${commune || city}`.trim(),
+        venue: pd?.venue || '',
+        address: displayAddress,
         city,
         lat: coords.lat,
         lng: coords.lng,
