@@ -127,6 +127,27 @@ function parseMarkdown(md: string, dept: string, city: string, baseUrl: string):
   return events;
 }
 
+function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+async function geocodeCommune(commune: string, postalCode: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const q = postalCode ? `${postalCode} ${commune}, France` : `${commune}, France`;
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&limit=1`,
+      { headers: { 'User-Agent': 'PulseMap/1.0' } }
+    );
+    const data = await res.json();
+    if (data?.[0]) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  } catch { /* fallback */ }
+  return null;
+}
+
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
@@ -172,29 +193,52 @@ Deno.serve(async (req) => {
     const rawEvents = parseMarkdown(markdown, dept, city, url);
     console.log(`[Brocabrac] Parsed ${rawEvents.length} events for ${city}`);
 
-    const events = rawEvents.slice(0, 30).map((e: any, i: number) => ({
-      id: `bb-${dept}-${i}-${e.date}-${Date.now()}`,
-      name: e.name,
-      venue: '',
-      address: (() => {
+    const sliced = rawEvents.slice(0, 60);
+
+    // Collect unique commune slugs from event URLs
+    const slugSet = new Set<string>();
+    for (const e of sliced) {
+      try {
+        const parts = new URL(e.url).pathname.split('/').filter(Boolean);
+        if (parts[1]) slugSet.add(parts[1]);
+      } catch { /* skip */ }
+    }
+
+    // Geocode all unique communes in parallel
+    const communeCoords = new Map<string, { lat: number; lng: number }>();
+    await Promise.all([...slugSet].map(async (slug) => {
+      const coords = await geocodeCommune(slug.replace(/-/g, ' '), '');
+      if (coords) communeCoords.set(slug, coords);
+    }));
+    console.log(`[Brocabrac] Geocoded ${communeCoords.size}/${slugSet.size} communes`);
+
+    const events = sliced.map((e: any, i: number) => {
+      const communeSlug = (() => {
         try {
           const parts = new URL(e.url).pathname.split('/').filter(Boolean);
-          // URL format: /38/moirans/1342727-slug → parts[1] = 'moirans'
-          const commune = (parts[1] || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-          return `${e.postalCode || ''} ${commune || city}`.trim();
-        } catch { return `${e.postalCode || ''} ${city}`.trim(); }
-      })(),
-      city,
-      lat: cityCoords.lat + (Math.random() - 0.5) * 0.02,
-      lng: cityCoords.lng + (Math.random() - 0.5) * 0.02,
-      startTime: new Date(e.date).toISOString(),
-      endTime: null,
-      description: `[${e.type}] ${e.name} • via Brocabrac`,
-      ticketUrl: e.url || url,
-      price: 'Gratuit',
-      genres: [e.type],
-      externalAttendees: null,
-    }));
+          return parts[1] || '';
+        } catch { return ''; }
+      })();
+      const commune = communeSlug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+      const coords = communeCoords.get(communeSlug) || cityCoords;
+
+      return {
+        id: `bb-${dept}-${i}-${e.date}-${Date.now()}`,
+        name: e.name,
+        venue: '',
+        address: `${e.postalCode || ''} ${commune || city}`.trim(),
+        city,
+        lat: coords.lat,
+        lng: coords.lng,
+        startTime: new Date(e.date).toISOString(),
+        endTime: null,
+        description: `[${e.type}] ${e.name} • via Brocabrac`,
+        ticketUrl: e.url || url,
+        price: 'Gratuit',
+        genres: [e.type],
+        externalAttendees: null,
+      };
+    });
 
     console.log(`[Brocabrac] Returning ${events.length} events for ${city}`);
     return new Response(JSON.stringify({ success: true, events }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });

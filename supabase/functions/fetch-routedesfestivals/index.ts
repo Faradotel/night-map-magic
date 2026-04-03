@@ -202,8 +202,6 @@ Deno.serve(async (req) => {
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/\s+/g, '-')
       .replace(/[^a-z0-9-]/g, '');
-    const MAX_DISTANCE_KM = 50;
-
     // Strategy: Use RDF ville pages directly (more reliable than map search)
     // These pages list all upcoming festivals for a specific city
     const villeSlugs = CITY_RDF_VILLE[city] || [];
@@ -321,31 +319,30 @@ Deno.serve(async (req) => {
       let lng = cityCoords.lng;
       let geocoded = false;
 
-      const cleanAddress = (e.address || eventCity)
-        .replace(/\(\d+\)/g, '')
-        .replace(/,\s*(FR|France)\s*$/i, '')
-        .trim();
+      // Only geocode if we have actual location data — don't fall back to searched city
+      const rawLocation = e.address || e.city || e.cities?.split(',')[0]?.trim() || '';
+      const hasLocationInfo = rawLocation.trim().length > 0;
 
-      const coords = await geocode(cleanAddress, 'France');
-      if (coords) {
-        const dist = distanceKm(coords.lat, coords.lng, cityCoords.lat, cityCoords.lng);
-        if (dist <= MAX_DISTANCE_KM) {
+      if (hasLocationInfo) {
+        const cleanAddress = rawLocation
+          .replace(/\(\d+\)/g, '')
+          .replace(/,\s*(FR|France)\s*$/i, '')
+          .trim();
+
+        const coords = await geocode(cleanAddress, 'France');
+        if (coords) {
           lat = coords.lat;
           lng = coords.lng;
           geocoded = true;
-        } else {
-          const eventCityNorm = eventCity.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-          const targetCityNorm = city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-          if (eventCityNorm.includes(targetCityNorm) || targetCityNorm.includes(eventCityNorm)) {
-            console.log(`[RDF] Geocode far but city matches, keeping: "${e.name}"`);
-          } else {
-            console.log(`[RDF] Rejected too far (${dist.toFixed(0)}km): "${e.name}"`);
-            continue;
-          }
         }
       }
 
       if (!geocoded) {
+        if (!hasLocationInfo) {
+          // No location data at all — skip to avoid placing event at wrong city
+          console.log(`[RDF] Skipped (no location data): "${e.name}"`);
+          continue;
+        }
         lat += (Math.random() - 0.5) * 0.02;
         lng += (Math.random() - 0.5) * 0.02;
       }

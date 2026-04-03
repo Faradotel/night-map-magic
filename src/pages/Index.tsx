@@ -29,8 +29,8 @@ type Tab = 'map' | 'search' | 'friends' | 'profile';
 
 const DEFAULT_CENTER: [number, number] = [48.8566, 2.3522]; // Paris
 const DEFAULT_ZOOM = 12;
-const NEARBY_RADIUS_DEFAULT = 15;
-const CITY_RADIUS_DEFAULT = 40;
+const NEARBY_RADIUS_DEFAULT = 30;
+const CITY_RADIUS_DEFAULT = 80;
 
 export default function Index() {
   const { user, loading: authLoading } = useAuth();

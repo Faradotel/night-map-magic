@@ -301,10 +301,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Geocode each venue (limit to 25 events)
+    // Geocode each venue
     const geocodedEvents: ShotgunEvent[] = [];
 
-    for (const raw of rawEvents.slice(0, 25)) {
+    for (const raw of rawEvents.slice(0, 50)) {
       let lat = cityLat;
       let lng = cityLng;
       let geocoded = false;
