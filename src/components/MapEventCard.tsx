@@ -138,7 +138,7 @@ export function MapEventCard({ event, onClose, onDetails, userLocation, coLocate
               border: '1px solid hsl(0 0% 100% / 0.1)',
             }}
           >
-            {type.emoji}
+            {getSourceEmoji(event.id, type.emoji)}
           </div>
 
           {/* Info */}
