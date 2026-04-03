@@ -67,8 +67,7 @@ Deno.serve(async (req) => {
 
     let totalInserted = 0;
 
-    // Helper: fetch with timeout to avoid hanging
-    function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 25000): Promise<Response> {
+    function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 20000): Promise<Response> {
       return Promise.race([
         fetch(url, options),
         new Promise<Response>((_, reject) =>
@@ -77,82 +76,76 @@ Deno.serve(async (req) => {
       ]);
     }
 
-    // Process cities ONE AT A TIME to avoid timeout
-    for (const city of citiesToRefresh) {
-      try {
-        // Skip city if refreshed within the last 4 minutes (prevents double-refresh race)
-        if (citiesToRefresh.length > 1) {
-          const { data: recentCheck } = await supabase
-            .from('cached_events')
-            .select('updated_at')
-            .eq('city', city)
-            .limit(1)
-            .maybeSingle();
-          if (recentCheck?.updated_at) {
-            const ageMs = Date.now() - new Date(recentCheck.updated_at).getTime();
-            if (ageMs < 4 * 60 * 1000) {
-              console.log(`${city}: skipped (refreshed ${Math.round(ageMs / 1000)}s ago)`);
-              continue;
-            }
+    const SPORT_KEYWORDS = /football|rugby|tennis|basket|volley|vélo|velo|cyclisme|athlétisme|natation|ski|pétanque|handball|judo|karaté|escrime|tir|course|trail|run|sport|gym|fitness|escalade|équitation|equitation|pucier/i;
+
+    function getTypeVibe(e: any): { type: string; vibe: string } {
+      const id: string = e.id || '';
+      const name: string = e.name || '';
+      if (id.startsWith('rt-')) return { type: 'sport', vibe: 'sport' };
+      if (id.startsWith('rdf-')) return { type: 'festival', vibe: 'concert' };
+      if (id.startsWith('oa-')) return { type: 'spectacle', vibe: 'culture' };
+      if (id.startsWith('bb-')) {
+        if (SPORT_KEYWORDS.test(name)) return { type: 'sport', vibe: 'sport' };
+        return { type: 'expo', vibe: 'chill' };
+      }
+      if (id.startsWith('mu-')) return { type: 'afterwork', vibe: 'afterwork' };
+      return { type: 'concert', vibe: 'concert' };
+    }
+
+    async function processCity(city: string): Promise<number> {
+      // Skip city if refreshed within the last 4 minutes (prevents double-refresh race)
+      if (citiesToRefresh.length > 1) {
+        const { data: recentCheck } = await supabase
+          .from('cached_events')
+          .select('updated_at')
+          .eq('city', city)
+          .limit(1)
+          .maybeSingle();
+        if (recentCheck?.updated_at) {
+          const ageMs = Date.now() - new Date(recentCheck.updated_at).getTime();
+          if (ageMs < 4 * 60 * 1000) {
+            console.log(`${city}: skipped (refreshed ${Math.round(ageMs / 1000)}s ago)`);
+            return 0;
           }
         }
+      }
 
-        const headers = {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${anonKey}`,
-        };
-        const body = JSON.stringify({ city });
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${anonKey}`,
+      };
+      const body = JSON.stringify({ city });
 
-        // Fetch from all sources for this city with individual timeouts
-        // RDF needs more time (map + extract per page)
-        const [shotgunRes, tmRes, ebRes, muRes, icRes, rdfRes, bbRes, rtRes, oaRes] = await Promise.allSettled([
-          fetchWithTimeout(`${supabaseUrl}/functions/v1/scrape-shotgun`, { method: 'POST', headers, body }).then(r => r.json()),
-          fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-ticketmaster`, { method: 'POST', headers, body }).then(r => r.json()),
-          fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-eventbrite`, { method: 'POST', headers, body }).then(r => r.json()),
-          fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-meetup`, { method: 'POST', headers, body }).then(r => r.json()),
-          fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-infoconcert`, { method: 'POST', headers, body }).then(r => r.json()),
-          fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-routedesfestivals`, { method: 'POST', headers, body }, 55000).then(r => r.json()),
-          fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-brocabrac`, { method: 'POST', headers, body }).then(r => r.json()),
-          fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-runtrail`, { method: 'POST', headers, body }).then(r => r.json()),
-          fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-openagenda`, { method: 'POST', headers, body }).then(r => r.json()),
-        ]);
+      const [shotgunRes, tmRes, ebRes, muRes, icRes, rdfRes, bbRes, rtRes, oaRes] = await Promise.allSettled([
+        fetchWithTimeout(`${supabaseUrl}/functions/v1/scrape-shotgun`, { method: 'POST', headers, body }).then(r => r.json()),
+        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-ticketmaster`, { method: 'POST', headers, body }).then(r => r.json()),
+        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-eventbrite`, { method: 'POST', headers, body }).then(r => r.json()),
+        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-meetup`, { method: 'POST', headers, body }).then(r => r.json()),
+        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-infoconcert`, { method: 'POST', headers, body }).then(r => r.json()),
+        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-routedesfestivals`, { method: 'POST', headers, body }, 50000).then(r => r.json()),
+        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-brocabrac`, { method: 'POST', headers, body }).then(r => r.json()),
+        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-runtrail`, { method: 'POST', headers, body }).then(r => r.json()),
+        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-openagenda`, { method: 'POST', headers, body }).then(r => r.json()),
+      ]);
 
-        const events: any[] = [];
-        if (shotgunRes.status === 'fulfilled' && shotgunRes.value?.events) events.push(...shotgunRes.value.events);
-        if (tmRes.status === 'fulfilled' && tmRes.value?.events) events.push(...tmRes.value.events);
-        if (ebRes.status === 'fulfilled' && ebRes.value?.events) events.push(...ebRes.value.events);
-        if (muRes.status === 'fulfilled' && muRes.value?.events) events.push(...muRes.value.events);
-        if (icRes.status === 'fulfilled' && icRes.value?.events) events.push(...icRes.value.events);
-        if (rdfRes.status === 'fulfilled' && rdfRes.value?.events) events.push(...rdfRes.value.events);
-        if (bbRes.status === 'fulfilled' && bbRes.value?.events) events.push(...bbRes.value.events);
-        if (rtRes.status === 'fulfilled' && rtRes.value?.events) events.push(...rtRes.value.events);
-        if (oaRes.status === 'fulfilled' && oaRes.value?.events) events.push(...oaRes.value.events);
+      const events: any[] = [];
+      if (shotgunRes.status === 'fulfilled' && shotgunRes.value?.events) events.push(...shotgunRes.value.events);
+      if (tmRes.status === 'fulfilled' && tmRes.value?.events) events.push(...tmRes.value.events);
+      if (ebRes.status === 'fulfilled' && ebRes.value?.events) events.push(...ebRes.value.events);
+      if (muRes.status === 'fulfilled' && muRes.value?.events) events.push(...muRes.value.events);
+      if (icRes.status === 'fulfilled' && icRes.value?.events) events.push(...icRes.value.events);
+      if (rdfRes.status === 'fulfilled' && rdfRes.value?.events) events.push(...rdfRes.value.events);
+      if (bbRes.status === 'fulfilled' && bbRes.value?.events) events.push(...bbRes.value.events);
+      if (rtRes.status === 'fulfilled' && rtRes.value?.events) events.push(...rtRes.value.events);
+      if (oaRes.status === 'fulfilled' && oaRes.value?.events) events.push(...oaRes.value.events);
 
-        if (events.length === 0) continue;
+      if (events.length === 0) return 0;
 
-        // Delete old events for this city, then insert new ones
-        await supabase.from('cached_events').delete().eq('city', city);
+      await supabase.from('cached_events').delete().eq('city', city);
 
-        const SPORT_KEYWORDS = /football|rugby|tennis|basket|volley|vélo|velo|cyclisme|athlétisme|natation|ski|pétanque|handball|judo|karaté|escrime|tir|course|trail|run|sport|gym|fitness|escalade|équitation|equitation|pucier/i;
-
-        function getTypeVibe(e: any): { type: string; vibe: string } {
-          const id: string = e.id || '';
-          const name: string = e.name || '';
-          if (id.startsWith('rt-')) return { type: 'sport', vibe: 'sport' };
-          if (id.startsWith('rdf-')) return { type: 'festival', vibe: 'concert' };
-          if (id.startsWith('oa-')) return { type: 'spectacle', vibe: 'culture' };
-          if (id.startsWith('bb-')) {
-            if (SPORT_KEYWORDS.test(name)) return { type: 'sport', vibe: 'sport' };
-            return { type: 'expo', vibe: 'chill' };
-          }
-          if (id.startsWith('mu-')) return { type: 'afterwork', vibe: 'afterwork' };
-          // ic-, tm-, eb-, shotgun-
-          return { type: 'concert', vibe: 'concert' };
-        }
-
-        const batch = events.map((e: any) => {
-          const { type, vibe } = getTypeVibe(e);
-          return ({
+      const batch = events.map((e: any) => {
+        const { type, vibe } = getTypeVibe(e);
+        return {
           id: e.id,
           name: e.name || '',
           type,
@@ -171,18 +164,25 @@ Deno.serve(async (req) => {
           source: e.id?.startsWith('eb-') ? 'eventbrite' : e.id?.startsWith('tm-') ? 'ticketmaster' : e.id?.startsWith('mu-') ? 'meetup' : e.id?.startsWith('ic-') ? 'infoconcert' : e.id?.startsWith('rdf-') ? 'routedesfestivals' : e.id?.startsWith('bb-') ? 'brocabrac' : e.id?.startsWith('rt-') ? 'runtrail' : e.id?.startsWith('oa-') ? 'openagenda' : 'shotgun',
           updated_at: new Date().toISOString(),
           external_attendees: e.externalAttendees || null,
-          });
-        });
+        };
+      });
 
-        const { error } = await supabase.from('cached_events').upsert(batch, { onConflict: 'id' });
-        if (error) {
-          console.error(`Error inserting ${city}:`, error.message);
-        } else {
-          totalInserted += batch.length;
-          console.log(`${city}: ${batch.length} events cached`);
-        }
-      } catch (err) {
-        console.error(`Failed to refresh ${city}:`, err);
+      const { error } = await supabase.from('cached_events').upsert(batch, { onConflict: 'id' });
+      if (error) {
+        console.error(`Error inserting ${city}:`, error.message);
+        return 0;
+      }
+      console.log(`${city}: ${batch.length} events cached`);
+      return batch.length;
+    }
+
+    // Process cities in parallel batches of 3 (~3x faster than sequential)
+    const BATCH_SIZE = 3;
+    for (let i = 0; i < citiesToRefresh.length; i += BATCH_SIZE) {
+      const cityBatch = citiesToRefresh.slice(i, i + BATCH_SIZE);
+      const results = await Promise.allSettled(cityBatch.map(processCity));
+      for (const r of results) {
+        if (r.status === 'fulfilled') totalInserted += r.value;
       }
     }
 
