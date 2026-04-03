@@ -176,7 +176,14 @@ Deno.serve(async (req) => {
       id: `bb-${dept}-${i}-${e.date}-${Date.now()}`,
       name: e.name,
       venue: '',
-      address: `${e.postalCode || ''} ${city}`.trim(),
+      address: (() => {
+        try {
+          const parts = new URL(e.url).pathname.split('/').filter(Boolean);
+          // URL format: /38/moirans/1342727-slug → parts[1] = 'moirans'
+          const commune = (parts[1] || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          return `${e.postalCode || ''} ${commune || city}`.trim();
+        } catch { return `${e.postalCode || ''} ${city}`.trim(); }
+      })(),
       city,
       lat: cityCoords.lat + (Math.random() - 0.5) * 0.02,
       lng: cityCoords.lng + (Math.random() - 0.5) * 0.02,
