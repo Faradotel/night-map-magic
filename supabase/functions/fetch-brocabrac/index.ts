@@ -166,14 +166,12 @@ Deno.serve(async (req) => {
         url,
         formats: ['extract'],
         actions: [
-          { type: 'wait', milliseconds: 2000 },
-          { type: 'scroll', direction: 'down', amount: 5000 },
-          { type: 'wait', milliseconds: 1000 },
-          { type: 'scroll', direction: 'down', amount: 5000 },
+          { type: 'wait', milliseconds: 1500 },
+          { type: 'scroll', direction: 'down', amount: 3000 },
           { type: 'wait', milliseconds: 1000 },
         ],
         extract: { schema: extractSchema, prompt: extractPrompt },
-        waitFor: 5000,
+        waitFor: 3000,
         location: { country: 'FR', languages: ['fr'] },
       }),
     });
