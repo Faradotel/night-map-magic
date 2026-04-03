@@ -93,6 +93,9 @@ Deno.serve(async (req) => {
     }
 
     async function processCity(city: string): Promise<number> {
+      // Capture timestamp BEFORE scraping — used to delete stale events after upsert
+      const refreshStart = new Date().toISOString();
+
       // Skip city if refreshed within the last 4 minutes (prevents double-refresh race)
       if (citiesToRefresh.length > 1) {
         const { data: recentCheck } = await supabase
@@ -141,8 +144,6 @@ Deno.serve(async (req) => {
 
       if (events.length === 0) return 0;
 
-      await supabase.from('cached_events').delete().eq('city', city);
-
       const batch = events.map((e: any) => {
         const { type, vibe } = getTypeVibe(e);
         return {
@@ -167,11 +168,19 @@ Deno.serve(async (req) => {
         };
       });
 
+      // 1. Upsert new events FIRST — users always see data, no gap
       const { error } = await supabase.from('cached_events').upsert(batch, { onConflict: 'id' });
       if (error) {
         console.error(`Error inserting ${city}:`, error.message);
         return 0;
       }
+
+      // 2. Remove stale events from previous refreshes (updated_at predates this run)
+      await supabase.from('cached_events')
+        .delete()
+        .eq('city', city)
+        .lt('updated_at', refreshStart);
+
       console.log(`${city}: ${batch.length} events cached`);
       return batch.length;
     }
