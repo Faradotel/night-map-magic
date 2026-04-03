@@ -337,7 +337,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Type</span>
-                <span className="font-medium text-foreground">{type.emoji} {type.label}</span>
+                <span className="font-medium text-foreground">{getSourceEmoji(event.id, type.emoji)} {type.label}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Ambiance</span>
