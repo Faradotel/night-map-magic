@@ -2,6 +2,7 @@ import { useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import { X, MapPin, Clock, Ticket, ExternalLink, Check, ChevronDown, Share2, Music, Users, Info, Heart } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, formatTime, formatDate } from '@/data/mockEvents';
+import { getSourceEmoji } from '@/lib/sourceEmoji';
 import { useEventAttendanceCount } from '@/hooks/useEventAttendanceCount';
 import { EventPassUpload } from '@/components/EventPassUpload';
 import type { useAttendance } from '@/hooks/useAttendance';
@@ -145,7 +146,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
                 boxShadow: `0 0 20px ${vibe.color}22`,
               }}
             >
-              {type.emoji}
+              {getSourceEmoji(event.id, type.emoji)}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
@@ -159,7 +160,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
                 >
                   {vibe.emoji} {vibe.label}
                 </span>
-                <span className="text-[10px] text-muted-foreground">{type.emoji} {type.label}</span>
+                <span className="text-[10px] text-muted-foreground">{getSourceEmoji(event.id, type.emoji)} {type.label}</span>
                 {event.isLive && (
                   <span className="text-[10px] font-bold flex items-center gap-1" style={{ color: 'hsl(var(--accent))' }}>
                     <span className="w-1.5 h-1.5 rounded-full inline-block neon-pulse" style={{ background: 'hsl(var(--accent))' }} />
@@ -336,7 +337,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Type</span>
-                <span className="font-medium text-foreground">{type.emoji} {type.label}</span>
+                <span className="font-medium text-foreground">{getSourceEmoji(event.id, type.emoji)} {type.label}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Ambiance</span>

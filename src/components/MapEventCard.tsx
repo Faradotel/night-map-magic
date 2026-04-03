@@ -5,6 +5,7 @@ import { useDistanceUnit } from '@/hooks/useDistanceUnit';
 import { useTheme } from '@/hooks/useTheme';
 import { useEventAttendanceCount } from '@/hooks/useEventAttendanceCount';
 import { formatDate, formatTime } from '@/data/mockEvents';
+import { getSourceEmoji } from '@/lib/sourceEmoji';
 
 interface MapEventCardProps {
   event: NightEvent;
@@ -137,7 +138,7 @@ export function MapEventCard({ event, onClose, onDetails, userLocation, coLocate
               border: '1px solid hsl(0 0% 100% / 0.1)',
             }}
           >
-            {type.emoji}
+            {getSourceEmoji(event.id, type.emoji)}
           </div>
 
           {/* Info */}

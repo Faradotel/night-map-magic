@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Search, MapPin, Clock, X } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, formatTime, formatDate } from '@/data/mockEvents';
+import { getSourceEmoji } from '@/lib/sourceEmoji';
 import { EventDetailPage } from '@/components/EventDetailPage';
 import { useAttendance } from '@/hooks/useAttendance';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -99,7 +100,7 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
                             <span className="text-[10px] font-semibold" style={{ color: 'hsl(var(--accent))' }}>
                               {vibe.emoji} {vibe.label}
                             </span>
-                            <span className="text-[10px] text-muted-foreground">{type.emoji} {type.label}</span>
+                            <span className="text-[10px] text-muted-foreground">{getSourceEmoji(event.id, type.emoji)} {type.label}</span>
                             {source && (
                               <span className="text-[8px] uppercase tracking-wider text-muted-foreground opacity-60 font-medium">{source}</span>
                             )}
