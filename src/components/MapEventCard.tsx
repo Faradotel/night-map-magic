@@ -29,9 +29,6 @@ export function MapEventCard({ event, onClose, onDetails, userLocation, coLocate
 
   const attendanceCount = useEventAttendanceCount(event.id);
   const source = event.id.startsWith('tm-') ? 'Ticketmaster' : event.id.startsWith('shotgun-') ? 'Shotgun' : event.id.startsWith('eb-') ? 'Eventbrite' : event.id.startsWith('mu-') ? 'Meetup' : event.id.startsWith('ic-') ? 'InfoConcert' : event.id.startsWith('bb-') ? 'Brocabrac' : event.id.startsWith('rt-') ? 'RunTrail' : event.id.startsWith('oa-') ? 'OpenAgenda' : null;
-  const isBrocabrac = event.id.startsWith('bb-');
-  const isRunTrail = event.id.startsWith('rt-');
-  const isOpenAgenda = event.id.startsWith('oa-');
 
   // Co-located navigation
   const group = useMemo(() => coLocatedEvents && coLocatedEvents.length > 1 ? coLocatedEvents : null, [coLocatedEvents]);
@@ -156,7 +153,7 @@ export function MapEventCard({ event, onClose, onDetails, userLocation, coLocate
                 </span>
               )}
             </div>
-            <h3 className="text-sm font-bold tracking-tight leading-tight truncate" style={{ color: isLight ? 'hsl(230 25% 15%)' : undefined }}>{isBrocabrac && event.type !== 'sport' ? '🧺 ' : isRunTrail ? '🏃‍♂️ ' : isOpenAgenda ? '🗓️ ' : ''}{event.name}</h3>
+            <h3 className="text-sm font-bold tracking-tight leading-tight truncate" style={{ color: isLight ? 'hsl(230 25% 15%)' : undefined }}>{event.name}</h3>
             <p className="text-[11px] flex items-center gap-1 flex-wrap" style={{ color: isLight ? 'hsl(225 15% 40%)' : 'hsl(225 15% 50%)' }}>
               {formatDate(event.startTime)} • {formatTime(event.startTime)}
               {distanceKm != null && ` • ${formatDistance(distanceKm)}`}
