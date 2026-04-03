@@ -1,12 +1,10 @@
-// Scrape Brocabrac listings (brocantes, vide-greniers) for a city using Firecrawl
+// Scrape Brocabrac listings (brocantes, vide-greniers) for a city using Firecrawl markdown
 
 const ALLOWED_ORIGINS = [
-  'https://pulse-map.live',
-  'https://www.pulse-map.live',
+  'https://pulse-map.live', 'https://www.pulse-map.live',
   'https://pulsemap-official.lovable.app',
   'https://id-preview--558c7333-dd3f-4317-a4d6-54b2b3b30b02.lovable.app',
-  'http://localhost:5173',
-  'http://localhost:8080',
+  'http://localhost:5173', 'http://localhost:8080',
 ];
 
 function getCorsHeaders(req: Request) {
@@ -17,35 +15,23 @@ function getCorsHeaders(req: Request) {
   };
 }
 
-// Map city names to brocabrac department number
-// URL format: https://brocabrac.fr/{dept}/
-const CITY_BROCABRAC: Record<string, { dept: string }> = {
-  'Paris': { dept: '75' }, 'Marseille': { dept: '13' }, 'Lyon': { dept: '69' },
-  'Toulouse': { dept: '31' }, 'Nice': { dept: '06' }, 'Nantes': { dept: '44' },
-  'Montpellier': { dept: '34' }, 'Strasbourg': { dept: '67' }, 'Bordeaux': { dept: '33' },
-  'Lille': { dept: '59' }, 'Rennes': { dept: '35' }, 'Reims': { dept: '51' },
-  'Saint-Étienne': { dept: '42' }, 'Le Havre': { dept: '76' }, 'Toulon': { dept: '83' },
-  'Grenoble': { dept: '38' }, 'Dijon': { dept: '21' }, 'Angers': { dept: '49' },
-  'Nîmes': { dept: '30' }, 'Clermont-Ferrand': { dept: '63' }, 'Aix-en-Provence': { dept: '13' },
-  'Brest': { dept: '29' }, 'Tours': { dept: '37' }, 'Limoges': { dept: '87' },
-  'Amiens': { dept: '80' }, 'Metz': { dept: '57' }, 'Rouen': { dept: '76' },
-  'Perpignan': { dept: '66' }, 'Orléans': { dept: '45' }, 'Caen': { dept: '14' },
-  'Mulhouse': { dept: '68' }, 'Nancy': { dept: '54' }, 'Avignon': { dept: '84' },
-  'Poitiers': { dept: '86' }, 'Pau': { dept: '64' }, 'La Rochelle': { dept: '17' },
-  'Besançon': { dept: '25' }, 'Valence': { dept: '26' }, 'Monaco': { dept: '06' },
-  'Dunkerque': { dept: '59' }, 'Versailles': { dept: '78' }, 'Argenteuil': { dept: '95' },
-  'Montreuil': { dept: '93' }, 'Roubaix': { dept: '59' }, 'Tourcoing': { dept: '59' },
-  'Nanterre': { dept: '92' }, 'Courbevoie': { dept: '92' }, 'Vitry-sur-Seine': { dept: '94' },
-  'Créteil': { dept: '94' }, 'Colombes': { dept: '92' }, 'Châteauroux': { dept: '36' },
-  'Alençon': { dept: '61' }, 'Auxerre': { dept: '89' }, 'Blois': { dept: '41' },
-  'Bourges': { dept: '18' }, 'Brive-la-Gaillarde': { dept: '19' }, 'Charleville-Mézières': { dept: '08' },
-  'Châlons-en-Champagne': { dept: '51' }, 'Cherbourg': { dept: '50' }, 'Évreux': { dept: '27' },
-  'Gap': { dept: '05' }, 'Laval': { dept: '53' }, 'Le Mans': { dept: '72' },
-  'Lorient': { dept: '56' }, 'Niort': { dept: '79' }, 'Quimper': { dept: '29' },
-  'Saint-Brieuc': { dept: '22' }, 'Saint-Nazaire': { dept: '44' }, 'Tarbes': { dept: '65' },
-  'Troyes': { dept: '10' }, 'Vannes': { dept: '56' }, 'Chambéry': { dept: '73' },
-  'Annecy': { dept: '74' }, 'Bayonne': { dept: '64' }, 'Béziers': { dept: '34' },
-  'Cannes': { dept: '06' }, 'Colmar': { dept: '68' }, 'Villeurbanne': { dept: '69' },
+const CITY_DEPT: Record<string, string> = {
+  'Paris': '75', 'Marseille': '13', 'Lyon': '69', 'Toulouse': '31', 'Nice': '06',
+  'Nantes': '44', 'Montpellier': '34', 'Strasbourg': '67', 'Bordeaux': '33',
+  'Lille': '59', 'Rennes': '35', 'Reims': '51', 'Saint-Étienne': '42',
+  'Le Havre': '76', 'Toulon': '83', 'Grenoble': '38', 'Dijon': '21',
+  'Angers': '49', 'Nîmes': '30', 'Clermont-Ferrand': '63', 'Aix-en-Provence': '13',
+  'Brest': '29', 'Tours': '37', 'Limoges': '87', 'Amiens': '80', 'Metz': '57',
+  'Rouen': '76', 'Perpignan': '66', 'Orléans': '45', 'Caen': '14',
+  'Mulhouse': '68', 'Nancy': '54', 'Avignon': '84', 'Poitiers': '86',
+  'Pau': '64', 'La Rochelle': '17', 'Besançon': '25', 'Valence': '26',
+  'Monaco': '06', 'Dunkerque': '59', 'Versailles': '78', 'Argenteuil': '95',
+  'Montreuil': '93', 'Roubaix': '59', 'Tourcoing': '59', 'Nanterre': '92',
+  'Courbevoie': '92', 'Vitry-sur-Seine': '94', 'Créteil': '94', 'Colombes': '92',
+  'Chambéry': '73', 'Annecy': '74', 'Bayonne': '64', 'Béziers': '34',
+  'Cannes': '06', 'Colmar': '68', 'Villeurbanne': '69', 'Le Mans': '72',
+  'Lorient': '56', 'Niort': '79', 'Quimper': '29', 'Saint-Brieuc': '22',
+  'Saint-Nazaire': '44', 'Tarbes': '65', 'Troyes': '10', 'Vannes': '56',
 };
 
 const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
@@ -68,202 +54,145 @@ const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
   'Aix-en-Provence': { lat: 43.5297, lng: 5.4474 }, 'Toulon': { lat: 43.1242, lng: 5.9280 },
   'Saint-Étienne': { lat: 45.4397, lng: 4.3872 }, 'Nîmes': { lat: 43.8367, lng: 4.3601 },
   'Dunkerque': { lat: 51.0343, lng: 2.3768 }, 'Mulhouse': { lat: 47.7508, lng: 7.3359 },
-  'Valence': { lat: 44.9334, lng: 4.8924 },
+  'Valence': { lat: 44.9334, lng: 4.8924 }, 'Chambéry': { lat: 45.5646, lng: 5.9178 },
+  'Annecy': { lat: 45.8992, lng: 6.1294 },
 };
 
-function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
+// Parse brocabrac markdown to extract events
+function parseMarkdown(md: string, dept: string, city: string, baseUrl: string): any[] {
+  const events: any[] = [];
+  const lines = md.split('\n');
+  const seen = new Set<string>();
 
-async function geocode(address: string, city: string): Promise<{ lat: number; lng: number } | null> {
-  try {
-    const q = `${address}, ${city}, France`;
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&limit=1`,
-      { headers: { 'User-Agent': 'PulseMap/1.0' } }
-    );
-    const data = await res.json();
-    if (data?.[0]) {
-      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  let currentDate = '';
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Month names in French
+  const MONTHS: Record<string, number> = {
+    'janvier': 0, 'février': 1, 'mars': 2, 'avril': 3, 'mai': 4, 'juin': 5,
+    'juillet': 6, 'août': 7, 'septembre': 8, 'octobre': 9, 'novembre': 10, 'décembre': 11,
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    // Match date headers like "## 04 Avril 2026" or "## 05 Avril 2026"
+    const dateMatch = line.match(/^#{1,3}\s+(\d{1,2})\s+(\w+)\s+(\d{4})/i);
+    if (dateMatch) {
+      const day = parseInt(dateMatch[1]);
+      const monthName = dateMatch[2].toLowerCase();
+      const year = parseInt(dateMatch[3]);
+      const monthIdx = MONTHS[monthName];
+      if (monthIdx !== undefined) {
+        const d = new Date(year, monthIdx, day);
+        if (d >= today) {
+          currentDate = d.toISOString().slice(0, 10);
+        } else {
+          currentDate = '';
+        }
+      }
+      continue;
     }
-  } catch { /* fallback */ }
-  return null;
+
+    // Match event links like "[GrenobleVide grenier](https://brocabrac.fr/38/grenoble/1352385-vide-grenier)"
+    const eventMatch = line.match(/\[([^\]]+)\]\((https:\/\/brocabrac\.fr\/[^\)]+)\)/);
+    if (eventMatch && currentDate) {
+      const name = eventMatch[1].replace(/([a-z])([A-Z])/g, '$1 - $2').trim();
+      const url = eventMatch[2];
+
+      // Look at next lines for postal code and type
+      let postalCode = '';
+      let eventType = 'brocante';
+      for (let j = i + 1; j < Math.min(i + 6, lines.length); j++) {
+        const nextLine = lines[j].trim();
+        const pcMatch = nextLine.match(/^(\d{5})$/);
+        if (pcMatch) postalCode = pcMatch[1];
+        if (nextLine.match(/vide.?grenier/i)) eventType = 'vide-grenier';
+        else if (nextLine.match(/brocante/i)) eventType = 'brocante';
+        else if (nextLine.match(/vide.?dressing/i)) eventType = 'vide-dressing';
+        else if (nextLine.match(/braderie/i)) eventType = 'braderie';
+        else if (nextLine.match(/bourse/i)) eventType = 'bourse';
+        else if (nextLine.match(/march[eé]/i)) eventType = 'marché';
+      }
+
+      const key = `${name.toLowerCase().slice(0, 30)}-${currentDate}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      events.push({ name, date: currentDate, postalCode, type: eventType, url });
+    }
+  }
+
+  return events;
 }
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
     const { city } = await req.json();
-    if (!city) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Missing city parameter' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    if (!city) return new Response(JSON.stringify({ success: false, error: 'Missing city' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
     const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY');
-    if (!firecrawlKey) {
-      return new Response(
-        JSON.stringify({ success: true, events: [] }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    if (!firecrawlKey) return new Response(JSON.stringify({ success: true, events: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
-    const mapping = CITY_BROCABRAC[city];
-    if (!mapping) {
-      console.log(`[Brocabrac] No mapping for city "${city}"`);
-      return new Response(
-        JSON.stringify({ success: true, events: [] }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    const dept = CITY_DEPT[city];
+    if (!dept) {
+      console.log(`[Brocabrac] No dept for "${city}"`);
+      return new Response(JSON.stringify({ success: true, events: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     const cityCoords = CITY_COORDS[city] || { lat: 48.8566, lng: 2.3522 };
-    const MAX_DISTANCE_KM = 40;
-    const url = `https://brocabrac.fr/${mapping.dept}/`;
+    const url = `https://brocabrac.fr/${dept}/`;
     console.log(`[Brocabrac] Scraping: ${url}`);
 
-    const extractSchema = {
-      type: 'object',
-      properties: {
-        events: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              name: { type: 'string', description: 'Event name (e.g. "Vide grenier", "Brocante professionnelle")' },
-              city: { type: 'string', description: 'City name' },
-              postalCode: { type: 'string', description: 'Postal code (e.g. "38000")' },
-              address: { type: 'string', description: 'Street address or location description' },
-              type: { type: 'string', description: 'Event type: brocante, vide-grenier, vide-dressing, braderie, bourse, marche' },
-              dates: { type: 'array', items: { type: 'string' }, description: 'All event dates in YYYY-MM-DD format' },
-              url: { type: 'string', description: 'Full URL of the event on brocabrac.fr' },
-            },
-            required: ['name'],
-          },
-        },
-      },
-      required: ['events'],
-    };
-
-    const extractPrompt = `Extract ALL brocantes, vide-greniers, and similar events listed on this Brocabrac page. Today is ${new Date().toISOString().slice(0, 10)}. For each event extract: name, city, postal code, address/location, type (brocante/vide-grenier/vide-dressing/braderie/bourse/marche), ALL upcoming dates in YYYY-MM-DD format, and the full URL. Only include events with future dates.`;
-
-    const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+    // Use markdown format (much faster, no 408 timeout)
+    const scrapeRes = await fetch('https://api.firecrawl.dev/v1/scrape', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${firecrawlKey}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Authorization': `Bearer ${firecrawlKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         url,
-        formats: ['extract'],
-        actions: [
-          { type: 'wait', milliseconds: 1500 },
-          { type: 'scroll', direction: 'down', amount: 3000 },
-          { type: 'wait', milliseconds: 1000 },
-        ],
-        extract: { schema: extractSchema, prompt: extractPrompt },
-        waitFor: 3000,
+        formats: ['markdown'],
+        waitFor: 2000,
         location: { country: 'FR', languages: ['fr'] },
       }),
     });
 
-    if (!scrapeResponse.ok) {
-      console.error(`[Brocabrac] Scrape failed: ${scrapeResponse.status}`);
-      return new Response(
-        JSON.stringify({ success: true, events: [] }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (!scrapeRes.ok) {
+      console.error(`[Brocabrac] Scrape failed: ${scrapeRes.status}`);
+      return new Response(JSON.stringify({ success: true, events: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const scrapeData = await scrapeResponse.json();
-    const extractedData = scrapeData?.data?.extract || scrapeData?.extract || {};
-    const rawEvents = extractedData?.events || [];
-    console.log(`[Brocabrac] Extracted ${rawEvents.length} raw events for ${city}`);
+    const scrapeData = await scrapeRes.json();
+    const markdown = scrapeData?.data?.markdown || scrapeData?.markdown || '';
+    console.log(`[Brocabrac] Got ${markdown.length} chars of markdown`);
 
-    const events: any[] = [];
-    const seen = new Set<string>();
+    const rawEvents = parseMarkdown(markdown, dept, city, url);
+    console.log(`[Brocabrac] Parsed ${rawEvents.length} events for ${city}`);
 
-    for (let i = 0; i < rawEvents.length; i++) {
-      const e = rawEvents[i];
-      if (!e.name || e.name.length <= 2) continue;
+    const events = rawEvents.slice(0, 30).map((e: any, i: number) => ({
+      id: `bb-${dept}-${i}-${e.date}-${Date.now()}`,
+      name: e.name,
+      venue: '',
+      address: `${e.postalCode || ''} ${city}`.trim(),
+      city,
+      lat: cityCoords.lat + (Math.random() - 0.5) * 0.02,
+      lng: cityCoords.lng + (Math.random() - 0.5) * 0.02,
+      startTime: new Date(e.date).toISOString(),
+      endTime: null,
+      description: `[${e.type}] ${e.name} • via Brocabrac`,
+      ticketUrl: e.url || url,
+      price: 'Gratuit',
+      genres: [e.type],
+      externalAttendees: null,
+    }));
 
-      // Each event can have multiple dates
-      const dates: string[] = e.dates || [];
-      if (dates.length === 0) continue;
-
-      for (const dateStr of dates) {
-        const parsed = new Date(dateStr);
-        if (isNaN(parsed.getTime())) continue;
-        if (parsed.getTime() < Date.now() - 86400000) continue;
-
-        const key = `${e.name.toLowerCase().slice(0, 30)}-${dateStr}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-
-        let lat = cityCoords.lat;
-        let lng = cityCoords.lng;
-        let geocoded = false;
-
-        const addr = e.address || '';
-        if (addr && i < 30) {
-          const fullAddr = `${addr}, ${e.postalCode || ''} ${e.city || city}`;
-          const coords = await geocode(fullAddr, city);
-          if (coords) {
-            const dist = distanceKm(coords.lat, coords.lng, cityCoords.lat, cityCoords.lng);
-            if (dist <= MAX_DISTANCE_KM) {
-              lat = coords.lat;
-              lng = coords.lng;
-              geocoded = true;
-            }
-          }
-        }
-
-        if (!geocoded) {
-          lat += (Math.random() - 0.5) * 0.015;
-          lng += (Math.random() - 0.5) * 0.015;
-        }
-
-        const id = `bb-${mapping.dept}-${i}-${dateStr}-${Date.now()}`;
-        const eventType = (e.type || 'brocante').toLowerCase();
-
-        events.push({
-          id,
-          name: e.name,
-          venue: '',
-          address: `${addr}${e.postalCode ? ', ' + e.postalCode : ''} ${e.city || city}`.trim(),
-          city: e.city || city,
-          lat, lng,
-          startTime: parsed.toISOString(),
-          endTime: null,
-          description: `[${eventType}] ${e.name} • via Brocabrac`,
-          ticketUrl: e.url || url,
-          price: 'Gratuit',
-          genres: [eventType],
-          externalAttendees: null,
-        });
-      }
-    }
-
-    console.log(`[Brocabrac] Returning ${events.length} valid events for ${city}`);
-
-    return new Response(
-      JSON.stringify({ success: true, events }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    console.log(`[Brocabrac] Returning ${events.length} events for ${city}`);
+    return new Response(JSON.stringify({ success: true, events }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
     console.error('[Brocabrac] Error:', error);
-    return new Response(
-      JSON.stringify({ success: true, events: [] }),
-      { status: 200, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ success: true, events: [] }), { status: 200, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
   }
 });
