@@ -34,7 +34,7 @@ const CITY_SLUGS: Record<string, string> = {
   'Aix-en-Provence': 'aix-en-provence-1757', 'Toulon': 'toulon-2083',
   'Saint-Étienne': 'saint-etienne-2025', 'Nîmes': 'nimes-1923',
   'Valence': 'valence-2098', 'Mulhouse': 'mulhouse-1912',
-  'Nancy': 'nancy-1914', 'Dunkerque': 'dunkerque-1831',
+  'Dunkerque': 'dunkerque-1831',
 };
 
 const CITY_COORDS: Record<string, { lat: number; lng: number }> = {

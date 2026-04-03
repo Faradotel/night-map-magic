@@ -383,7 +383,7 @@ Deno.serve(async (req) => {
         startTime: parseFrenchDate(raw.date) || new Date().toISOString(),
         description,
         ticketUrl: ticketUrl || `https://shotgun.live/fr/cities/${slug}`,
-        price: raw.price || null,
+        price: raw.price || undefined,
         genres: raw.genres,
       });
     }

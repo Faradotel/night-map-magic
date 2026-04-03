@@ -23,3 +23,9 @@ verify_jwt = false
 
 [functions.fetch-brocabrac]
 verify_jwt = false
+
+[functions.fetch-runtrail]
+verify_jwt = false
+
+[functions.fetch-openagenda]
+verify_jwt = false
