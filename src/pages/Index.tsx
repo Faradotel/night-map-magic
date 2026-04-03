@@ -86,16 +86,20 @@ export default function Index() {
     setShotgunLoading(true);
 
     async function load() {
-      // Try offline cache first if no connection
+      // Immediately show cached events so the map never goes blank during refresh
+      const cached = getCachedEvents();
+      if (cached && cached.length > 0 && myLoadId === loadIdRef.current) {
+        setAllShotgunEvents(cached);
+      }
+
+      // Offline: stay on cache, don't attempt network
       if (!navigator.onLine) {
-        const cached = getCachedEvents();
         if (cached && cached.length > 0 && myLoadId === loadIdRef.current) {
-          setAllShotgunEvents(cached);
           setLoadedKey(currentLoadKey);
           toast.info('Mode hors-ligne — événements en cache');
-          setShotgunLoading(false);
-          return;
         }
+        if (myLoadId === loadIdRef.current) setShotgunLoading(false);
+        return;
       }
 
       try {
