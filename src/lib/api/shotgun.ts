@@ -302,7 +302,7 @@ export async function loadEventsForCity(city: string): Promise<NightEvent[]> {
   const { data, error } = await supabase
     .from('cached_events')
     .select('*')
-    .eq('city', city)
+    .ilike('city', `${city}%`)
     .or(`start_time.gte.${now},end_time.gte.${now}`);
 
   if (error) {

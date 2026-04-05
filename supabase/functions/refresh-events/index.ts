@@ -155,7 +155,7 @@ Deno.serve(async (req) => {
           lat: e.lat || 0,
           lng: e.lng || 0,
           address: e.address || '',
-          city: e.city || city,
+          city: (e.city || city).replace(/\s*\(\d+\)\s*$/, '').trim(),
           start_time: e.startTime || new Date().toISOString(),
           end_time: e.endTime || null,
           price_range: e.price || '€10-20',
