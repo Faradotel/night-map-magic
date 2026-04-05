@@ -182,7 +182,9 @@ Deno.serve(async (req) => {
       if (seen.has(key)) continue;
       seen.add(key);
 
-      const eventCity = e.city || city;
+      // Strip department codes like "(13)" from city names
+      const rawCity = e.city || city;
+      const eventCity = rawCity.replace(/\s*\(\d+\)\s*$/, '').trim();
       let lat = cityCoords.lat;
       let lng = cityCoords.lng;
 
