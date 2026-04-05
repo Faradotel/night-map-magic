@@ -1,4 +1,4 @@
-// Scrape Brocabrac listings (brocantes, vide-greniers) for a city using Firecrawl markdown
+// Scrape Brocabrac listings (brocantes, vide-greniers) for a department using Firecrawl markdown
 
 const ALLOWED_ORIGINS = [
   'https://pulse-map.live', 'https://www.pulse-map.live',
@@ -15,6 +15,7 @@ function getCorsHeaders(req: Request) {
   };
 }
 
+// City → department code (used when called with { city })
 const CITY_DEPT: Record<string, string> = {
   'Paris': '75', 'Marseille': '13', 'Lyon': '69', 'Toulouse': '31', 'Nice': '06',
   'Nantes': '44', 'Montpellier': '34', 'Strasbourg': '67', 'Bordeaux': '33',
@@ -34,32 +35,108 @@ const CITY_DEPT: Record<string, string> = {
   'Saint-Nazaire': '44', 'Tarbes': '65', 'Troyes': '10', 'Vannes': '56',
 };
 
-const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
-  'Paris': { lat: 48.8566, lng: 2.3522 }, 'Marseille': { lat: 43.2965, lng: 5.3698 },
-  'Lyon': { lat: 45.7640, lng: 4.8357 }, 'Toulouse': { lat: 43.6047, lng: 1.4442 },
-  'Nice': { lat: 43.7102, lng: 7.2620 }, 'Nantes': { lat: 47.2184, lng: -1.5536 },
-  'Montpellier': { lat: 43.6108, lng: 3.8767 }, 'Strasbourg': { lat: 48.5734, lng: 7.7521 },
-  'Bordeaux': { lat: 44.8378, lng: -0.5792 }, 'Lille': { lat: 50.6292, lng: 3.0573 },
-  'Rennes': { lat: 48.1173, lng: -1.6778 }, 'Grenoble': { lat: 45.1885, lng: 5.7245 },
-  'Dijon': { lat: 47.3220, lng: 5.0415 }, 'Monaco': { lat: 43.7384, lng: 7.4246 },
-  'Reims': { lat: 49.2583, lng: 4.0317 }, 'Tours': { lat: 47.3941, lng: 0.6848 },
-  'Rouen': { lat: 49.4432, lng: 1.0999 }, 'Metz': { lat: 49.1193, lng: 6.1757 },
-  'Nancy': { lat: 48.6921, lng: 6.1844 }, 'Avignon': { lat: 43.9493, lng: 4.8055 },
-  'Poitiers': { lat: 46.5802, lng: 0.3404 }, 'Besançon': { lat: 47.2378, lng: 6.0241 },
-  'Caen': { lat: 49.1829, lng: -0.3707 }, 'Orléans': { lat: 47.9029, lng: 1.9093 },
-  'Angers': { lat: 47.4784, lng: -0.5632 }, 'Brest': { lat: 48.3904, lng: -4.4861 },
-  'Limoges': { lat: 45.8336, lng: 1.2611 }, 'Amiens': { lat: 49.8941, lng: 2.2958 },
-  'Perpignan': { lat: 42.6887, lng: 2.8948 }, 'La Rochelle': { lat: 46.1603, lng: -1.1511 },
-  'Pau': { lat: 43.2951, lng: -0.3708 }, 'Clermont-Ferrand': { lat: 45.7772, lng: 3.0870 },
-  'Aix-en-Provence': { lat: 43.5297, lng: 5.4474 }, 'Toulon': { lat: 43.1242, lng: 5.9280 },
-  'Saint-Étienne': { lat: 45.4397, lng: 4.3872 }, 'Nîmes': { lat: 43.8367, lng: 4.3601 },
-  'Dunkerque': { lat: 51.0343, lng: 2.3768 }, 'Mulhouse': { lat: 47.7508, lng: 7.3359 },
-  'Valence': { lat: 44.9334, lng: 4.8924 }, 'Chambéry': { lat: 45.5646, lng: 5.9178 },
-  'Annecy': { lat: 45.8992, lng: 6.1294 },
+// Department code → approximate center coords (for fallback geocoding)
+const DEPT_COORDS: Record<string, { lat: number; lng: number; name: string }> = {
+  '01': { lat: 46.2, lng: 5.6, name: 'Ain' },
+  '02': { lat: 49.5, lng: 3.6, name: 'Aisne' },
+  '03': { lat: 46.3, lng: 3.2, name: 'Allier' },
+  '04': { lat: 44.1, lng: 6.2, name: 'Alpes-de-Haute-Provence' },
+  '05': { lat: 44.7, lng: 6.3, name: 'Hautes-Alpes' },
+  '06': { lat: 43.7, lng: 7.1, name: 'Alpes-Maritimes' },
+  '07': { lat: 44.7, lng: 4.6, name: 'Ardèche' },
+  '08': { lat: 49.6, lng: 4.6, name: 'Ardennes' },
+  '09': { lat: 42.9, lng: 1.6, name: 'Ariège' },
+  '10': { lat: 48.3, lng: 4.1, name: 'Aube' },
+  '11': { lat: 43.2, lng: 2.4, name: 'Aude' },
+  '12': { lat: 44.3, lng: 2.6, name: 'Aveyron' },
+  '13': { lat: 43.5, lng: 5.1, name: 'Bouches-du-Rhône' },
+  '14': { lat: 49.1, lng: -0.4, name: 'Calvados' },
+  '15': { lat: 45.0, lng: 2.7, name: 'Cantal' },
+  '16': { lat: 45.7, lng: 0.2, name: 'Charente' },
+  '17': { lat: 45.9, lng: -0.8, name: 'Charente-Maritime' },
+  '18': { lat: 47.1, lng: 2.4, name: 'Cher' },
+  '19': { lat: 45.4, lng: 1.8, name: 'Corrèze' },
+  '21': { lat: 47.3, lng: 4.8, name: 'Côte-d\'Or' },
+  '22': { lat: 48.5, lng: -3.0, name: 'Côtes-d\'Armor' },
+  '23': { lat: 46.1, lng: 2.1, name: 'Creuse' },
+  '24': { lat: 45.2, lng: 0.7, name: 'Dordogne' },
+  '25': { lat: 47.2, lng: 6.4, name: 'Doubs' },
+  '26': { lat: 44.7, lng: 5.2, name: 'Drôme' },
+  '27': { lat: 49.1, lng: 1.2, name: 'Eure' },
+  '28': { lat: 48.3, lng: 1.5, name: 'Eure-et-Loir' },
+  '29': { lat: 48.4, lng: -4.2, name: 'Finistère' },
+  '2A': { lat: 41.9, lng: 9.0, name: 'Corse-du-Sud' },
+  '2B': { lat: 42.4, lng: 9.2, name: 'Haute-Corse' },
+  '30': { lat: 44.0, lng: 4.1, name: 'Gard' },
+  '31': { lat: 43.5, lng: 1.3, name: 'Haute-Garonne' },
+  '32': { lat: 43.7, lng: 0.6, name: 'Gers' },
+  '33': { lat: 44.8, lng: -0.6, name: 'Gironde' },
+  '34': { lat: 43.6, lng: 3.5, name: 'Hérault' },
+  '35': { lat: 48.1, lng: -1.7, name: 'Ille-et-Vilaine' },
+  '36': { lat: 46.8, lng: 1.6, name: 'Indre' },
+  '37': { lat: 47.3, lng: 0.7, name: 'Indre-et-Loire' },
+  '38': { lat: 45.3, lng: 5.6, name: 'Isère' },
+  '39': { lat: 46.7, lng: 5.7, name: 'Jura' },
+  '40': { lat: 43.9, lng: -0.8, name: 'Landes' },
+  '41': { lat: 47.6, lng: 1.3, name: 'Loir-et-Cher' },
+  '42': { lat: 45.7, lng: 4.2, name: 'Loire' },
+  '43': { lat: 45.1, lng: 3.7, name: 'Haute-Loire' },
+  '44': { lat: 47.3, lng: -1.8, name: 'Loire-Atlantique' },
+  '45': { lat: 47.9, lng: 2.2, name: 'Loiret' },
+  '46': { lat: 44.6, lng: 1.6, name: 'Lot' },
+  '47': { lat: 44.3, lng: 0.5, name: 'Lot-et-Garonne' },
+  '48': { lat: 44.5, lng: 3.5, name: 'Lozère' },
+  '49': { lat: 47.4, lng: -0.7, name: 'Maine-et-Loire' },
+  '50': { lat: 48.9, lng: -1.3, name: 'Manche' },
+  '51': { lat: 48.9, lng: 3.9, name: 'Marne' },
+  '52': { lat: 48.1, lng: 5.3, name: 'Haute-Marne' },
+  '53': { lat: 48.1, lng: -0.8, name: 'Mayenne' },
+  '54': { lat: 48.7, lng: 6.2, name: 'Meurthe-et-Moselle' },
+  '55': { lat: 49.0, lng: 5.4, name: 'Meuse' },
+  '56': { lat: 47.8, lng: -2.8, name: 'Morbihan' },
+  '57': { lat: 49.0, lng: 6.6, name: 'Moselle' },
+  '58': { lat: 47.1, lng: 3.5, name: 'Nièvre' },
+  '59': { lat: 50.4, lng: 3.1, name: 'Nord' },
+  '60': { lat: 49.4, lng: 2.4, name: 'Oise' },
+  '61': { lat: 48.6, lng: 0.1, name: 'Orne' },
+  '62': { lat: 50.5, lng: 2.3, name: 'Pas-de-Calais' },
+  '63': { lat: 45.7, lng: 3.1, name: 'Puy-de-Dôme' },
+  '64': { lat: 43.3, lng: -0.8, name: 'Pyrénées-Atlantiques' },
+  '65': { lat: 43.1, lng: 0.1, name: 'Hautes-Pyrénées' },
+  '66': { lat: 42.6, lng: 2.5, name: 'Pyrénées-Orientales' },
+  '67': { lat: 48.6, lng: 7.5, name: 'Bas-Rhin' },
+  '68': { lat: 47.9, lng: 7.2, name: 'Haut-Rhin' },
+  '69': { lat: 45.8, lng: 4.7, name: 'Rhône' },
+  '70': { lat: 47.6, lng: 6.2, name: 'Haute-Saône' },
+  '71': { lat: 46.6, lng: 4.4, name: 'Saône-et-Loire' },
+  '72': { lat: 47.9, lng: 0.2, name: 'Sarthe' },
+  '73': { lat: 45.5, lng: 6.4, name: 'Savoie' },
+  '74': { lat: 46.0, lng: 6.3, name: 'Haute-Savoie' },
+  '75': { lat: 48.9, lng: 2.4, name: 'Paris' },
+  '76': { lat: 49.5, lng: 1.1, name: 'Seine-Maritime' },
+  '77': { lat: 48.6, lng: 2.9, name: 'Seine-et-Marne' },
+  '78': { lat: 48.8, lng: 1.9, name: 'Yvelines' },
+  '79': { lat: 46.5, lng: -0.4, name: 'Deux-Sèvres' },
+  '80': { lat: 49.9, lng: 2.3, name: 'Somme' },
+  '81': { lat: 43.8, lng: 2.1, name: 'Tarn' },
+  '82': { lat: 44.0, lng: 1.3, name: 'Tarn-et-Garonne' },
+  '83': { lat: 43.5, lng: 6.3, name: 'Var' },
+  '84': { lat: 44.0, lng: 5.1, name: 'Vaucluse' },
+  '85': { lat: 46.7, lng: -1.3, name: 'Vendée' },
+  '86': { lat: 46.6, lng: 0.5, name: 'Vienne' },
+  '87': { lat: 45.9, lng: 1.3, name: 'Haute-Vienne' },
+  '88': { lat: 48.2, lng: 6.4, name: 'Vosges' },
+  '89': { lat: 47.8, lng: 3.6, name: 'Yonne' },
+  '90': { lat: 47.6, lng: 6.9, name: 'Territoire de Belfort' },
+  '91': { lat: 48.5, lng: 2.2, name: 'Essonne' },
+  '92': { lat: 48.8, lng: 2.2, name: 'Hauts-de-Seine' },
+  '93': { lat: 48.9, lng: 2.5, name: 'Seine-Saint-Denis' },
+  '94': { lat: 48.8, lng: 2.5, name: 'Val-de-Marne' },
+  '95': { lat: 49.1, lng: 2.2, name: 'Val-d\'Oise' },
 };
 
 // Parse brocabrac markdown to extract events
-function parseMarkdown(md: string, dept: string, city: string, baseUrl: string): any[] {
+function parseMarkdown(md: string, dept: string): any[] {
   const events: any[] = [];
   const lines = md.split('\n');
   const seen = new Set<string>();
@@ -68,7 +145,6 @@ function parseMarkdown(md: string, dept: string, city: string, baseUrl: string):
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Month names in French
   const MONTHS: Record<string, number> = {
     'janvier': 0, 'février': 1, 'mars': 2, 'avril': 3, 'mai': 4, 'juin': 5,
     'juillet': 6, 'août': 7, 'septembre': 8, 'octobre': 9, 'novembre': 10, 'décembre': 11,
@@ -77,7 +153,6 @@ function parseMarkdown(md: string, dept: string, city: string, baseUrl: string):
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
 
-    // Match date headers like "## 04 Avril 2026" or "## 05 Avril 2026"
     const dateMatch = line.match(/^#{1,3}\s+(\d{1,2})\s+(\w+)\s+(\d{4})/i);
     if (dateMatch) {
       const day = parseInt(dateMatch[1]);
@@ -86,22 +161,16 @@ function parseMarkdown(md: string, dept: string, city: string, baseUrl: string):
       const monthIdx = MONTHS[monthName];
       if (monthIdx !== undefined) {
         const d = new Date(year, monthIdx, day);
-        if (d >= today) {
-          currentDate = d.toISOString().slice(0, 10);
-        } else {
-          currentDate = '';
-        }
+        currentDate = d >= today ? d.toISOString().slice(0, 10) : '';
       }
       continue;
     }
 
-    // Match event links like "[GrenobleVide grenier](https://brocabrac.fr/38/grenoble/1352385-vide-grenier)"
     const eventMatch = line.match(/\[([^\]]+)\]\((https:\/\/brocabrac\.fr\/[^\)]+)\)/);
     if (eventMatch && currentDate) {
       const name = eventMatch[1].replace(/([a-z])([A-Z])/g, '$1 - $2').trim();
       const url = eventMatch[2];
 
-      // Look at next lines for postal code and type
       let postalCode = '';
       let eventType = 'brocante';
       for (let j = i + 1; j < Math.min(i + 6, lines.length); j++) {
@@ -127,7 +196,6 @@ function parseMarkdown(md: string, dept: string, city: string, baseUrl: string):
   return events;
 }
 
-
 async function geocodeQuery(q: string): Promise<{ lat: number; lng: number } | null> {
   try {
     const res = await fetch(
@@ -141,12 +209,11 @@ async function geocodeQuery(q: string): Promise<{ lat: number; lng: number } | n
 }
 
 // Fetch exact address from a Brocabrac event page via its JSON-LD Event schema
-async function fetchEventAddress(eventUrl: string): Promise<{ address: string; venue: string } | null> {
+async function fetchEventAddress(eventUrl: string): Promise<{ address: string; venue: string; city?: string } | null> {
   try {
     const res = await fetch(eventUrl, { headers: { 'User-Agent': 'Mozilla/5.0 PulseMap/1.0' } });
     if (!res.ok) return null;
     const html = await res.text();
-    // Find all JSON-LD blocks and look for @type: Event
     const scriptRe = /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
     let m: RegExpExecArray | null;
     while ((m = scriptRe.exec(html)) !== null) {
@@ -160,9 +227,10 @@ async function fetchEventAddress(eventUrl: string): Promise<{ address: string; v
           const venue = loc.name || '';
           const addr = loc.address;
           if (!addr) continue;
-          if (typeof addr === 'string') return { address: addr, venue };
+          const cityName = typeof addr === 'object' ? addr.addressLocality : undefined;
+          if (typeof addr === 'string') return { address: addr, venue, city: cityName };
           const parts = [addr.streetAddress, addr.postalCode, addr.addressLocality].filter(Boolean);
-          if (parts.length >= 2) return { address: parts.join(', '), venue };
+          if (parts.length >= 2) return { address: parts.join(', '), venue, city: addr.addressLocality };
         }
       } catch { /* next script */ }
     }
@@ -175,23 +243,28 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
-    const { city } = await req.json();
-    if (!city) return new Response(JSON.stringify({ success: false, error: 'Missing city' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    const body = await req.json();
+    const city = body.city as string | undefined;
+    let dept = body.dept as string | undefined;
+
+    // Resolve department code
+    if (!dept && city) {
+      dept = CITY_DEPT[city];
+    }
+    if (!dept) {
+      console.log(`[Brocabrac] No dept resolved for city="${city}" dept="${body.dept}"`);
+      return new Response(JSON.stringify({ success: true, events: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
 
     const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY');
     if (!firecrawlKey) return new Response(JSON.stringify({ success: true, events: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
-    const dept = CITY_DEPT[city];
-    if (!dept) {
-      console.log(`[Brocabrac] No dept for "${city}"`);
-      return new Response(JSON.stringify({ success: true, events: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-    }
+    const deptInfo = DEPT_COORDS[dept] || { lat: 46.6, lng: 2.2, name: dept };
+    const fallbackCoords = { lat: deptInfo.lat, lng: deptInfo.lng };
 
-    const cityCoords = CITY_COORDS[city] || { lat: 48.8566, lng: 2.3522 };
     const url = `https://brocabrac.fr/${dept}/`;
-    console.log(`[Brocabrac] Scraping: ${url}`);
+    console.log(`[Brocabrac] Scraping dept ${dept} (${deptInfo.name}): ${url}`);
 
-    // Use markdown format (much faster, no 408 timeout)
     const scrapeRes = await fetch('https://api.firecrawl.dev/v1/scrape', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${firecrawlKey}`, 'Content-Type': 'application/json' },
@@ -210,18 +283,20 @@ Deno.serve(async (req) => {
 
     const scrapeData = await scrapeRes.json();
     const markdown = scrapeData?.data?.markdown || scrapeData?.markdown || '';
-    console.log(`[Brocabrac] Got ${markdown.length} chars of markdown`);
+    console.log(`[Brocabrac] Got ${markdown.length} chars of markdown for dept ${dept}`);
 
-    const rawEvents = parseMarkdown(markdown, dept, city, url);
-    console.log(`[Brocabrac] Parsed ${rawEvents.length} events for ${city}`);
+    const rawEvents = parseMarkdown(markdown, dept);
+    console.log(`[Brocabrac] Parsed ${rawEvents.length} events for dept ${dept}`);
 
     const sliced = rawEvents.slice(0, 60);
 
-    // Fetch exact addresses from each event page in parallel
-    const pageData = await Promise.all(sliced.map((e: any) => fetchEventAddress(e.url)));
+    // Fetch exact addresses from each event page in parallel (max 40 to avoid rate limiting)
+    const pageData = await Promise.all(sliced.slice(0, 40).map((e: any) => fetchEventAddress(e.url)));
+    // Fill remaining with null
+    while (pageData.length < sliced.length) pageData.push(null);
     console.log(`[Brocabrac] Got ${pageData.filter(Boolean).length}/${sliced.length} exact addresses`);
 
-    // Build geocoding queries: exact address if available, else commune slug
+    // Build geocoding queries
     const geoQueries = sliced.map((e: any, i: number) => {
       if (pageData[i]?.address) return pageData[i]!.address;
       try {
@@ -242,7 +317,7 @@ Deno.serve(async (req) => {
     const events = sliced.map((e: any, i: number) => {
       const pd = pageData[i];
       const geoKey = geoQueries[i];
-      const coords = (geoKey && geoCache.get(geoKey)) || cityCoords;
+      const coords = (geoKey && geoCache.get(geoKey)) || fallbackCoords;
       const communeSlug = (() => {
         try {
           const parts = new URL(e.url).pathname.split('/').filter(Boolean);
@@ -250,14 +325,15 @@ Deno.serve(async (req) => {
         } catch { return ''; }
       })();
       const commune = communeSlug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
-      const displayAddress = pd?.address || `${e.postalCode || ''} ${commune || city}`.trim();
+      const displayCity = pd?.city || commune || deptInfo.name;
+      const displayAddress = pd?.address || `${e.postalCode || ''} ${commune || deptInfo.name}`.trim();
 
       return {
         id: `bb-${dept}-${i}-${e.date}-${Date.now()}`,
         name: e.name,
         venue: pd?.venue || '',
         address: displayAddress,
-        city,
+        city: displayCity,
         lat: coords.lat,
         lng: coords.lng,
         startTime: new Date(e.date).toISOString(),
@@ -270,7 +346,7 @@ Deno.serve(async (req) => {
       };
     });
 
-    console.log(`[Brocabrac] Returning ${events.length} events for ${city}`);
+    console.log(`[Brocabrac] Returning ${events.length} events for dept ${dept}`);
     return new Response(JSON.stringify({ success: true, events }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
     console.error('[Brocabrac] Error:', error);

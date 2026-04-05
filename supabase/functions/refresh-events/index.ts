@@ -195,6 +195,87 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ── Brocabrac: scrape ALL French departments not already covered by city loop ──
+    const CITY_TO_DEPT: Record<string, string> = {
+      'Paris': '75', 'Marseille': '13', 'Lyon': '69', 'Toulouse': '31', 'Nice': '06',
+      'Nantes': '44', 'Montpellier': '34', 'Strasbourg': '67', 'Bordeaux': '33',
+      'Lille': '59', 'Rennes': '35', 'Reims': '51', 'Saint-Étienne': '42',
+      'Le Havre': '76', 'Toulon': '83', 'Grenoble': '38', 'Dijon': '21',
+      'Angers': '49', 'Nîmes': '30', 'Clermont-Ferrand': '63', 'Aix-en-Provence': '13',
+      'Brest': '29', 'Tours': '37', 'Limoges': '87', 'Amiens': '80', 'Metz': '57',
+      'Rouen': '76', 'Perpignan': '66', 'Orléans': '45', 'Caen': '14',
+      'Mulhouse': '68', 'Nancy': '54', 'Avignon': '84', 'Poitiers': '86',
+      'Pau': '64', 'La Rochelle': '17', 'Besançon': '25', 'Valence': '26',
+      'Monaco': '06', 'Dunkerque': '59', 'Versailles': '78', 'Argenteuil': '95',
+      'Montreuil': '93', 'Roubaix': '59', 'Tourcoing': '59', 'Nanterre': '92',
+      'Courbevoie': '92', 'Vitry-sur-Seine': '94', 'Créteil': '94', 'Colombes': '92',
+    };
+
+    const coveredDepts = new Set(citiesToRefresh.map(c => CITY_TO_DEPT[c]).filter(Boolean));
+    const ALL_DEPTS = [
+      '01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
+      '21','22','23','24','25','26','27','28','29','2A','2B',
+      '30','31','32','33','34','35','36','37','38','39',
+      '40','41','42','43','44','45','46','47','48','49',
+      '50','51','52','53','54','55','56','57','58','59',
+      '60','61','62','63','64','65','66','67','68','69',
+      '70','71','72','73','74','75','76','77','78','79',
+      '80','81','82','83','84','85','86','87','88','89',
+      '90','91','92','93','94','95',
+    ];
+    const missingDepts = ALL_DEPTS.filter(d => !coveredDepts.has(d));
+    console.log(`Brocabrac extra: scraping ${missingDepts.length} uncovered departments...`);
+
+    const BB_BATCH = 5;
+    for (let i = 0; i < missingDepts.length; i += BB_BATCH) {
+      const deptBatch = missingDepts.slice(i, i + BB_BATCH);
+      const bbResults = await Promise.allSettled(deptBatch.map(async (dept) => {
+        try {
+          const res = await fetchWithTimeout(
+            `${supabaseUrl}/functions/v1/fetch-brocabrac`,
+            { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${anonKey}` },
+              body: JSON.stringify({ dept }) },
+            45000
+          );
+          const data = await res.json();
+          const events = data?.events || [];
+          if (events.length === 0) return 0;
+
+          const batch = events.map((e: any, idx: number) => ({
+            id: e.id || `bb-${dept}-${idx}-${Date.now()}`,
+            name: e.name || '',
+            type: 'expo',
+            vibe: 'chill',
+            genres: e.genres || [],
+            lat: e.lat || 0,
+            lng: e.lng || 0,
+            address: e.address || '',
+            city: (e.city || '').replace(/\s*\(\d+\)\s*$/, '').trim(),
+            start_time: e.startTime || new Date().toISOString(),
+            end_time: e.endTime || null,
+            price_range: e.price || 'Gratuit',
+            description: e.description || '',
+            venue: e.venue || '',
+            ticket_url: e.ticketUrl || null,
+            source: 'brocabrac',
+            updated_at: new Date().toISOString(),
+            external_attendees: null,
+          }));
+
+          const { error } = await supabase.from('cached_events').upsert(batch, { onConflict: 'id' });
+          if (error) { console.error(`BB dept ${dept}:`, error.message); return 0; }
+          console.log(`BB dept ${dept}: ${batch.length} events`);
+          return batch.length;
+        } catch (err) {
+          console.error(`BB dept ${dept} failed:`, err);
+          return 0;
+        }
+      }));
+      for (const r of bbResults) {
+        if (r.status === 'fulfilled') totalInserted += r.value;
+      }
+    }
+
     console.log(`Total: ${totalInserted} events cached`);
 
     return new Response(
