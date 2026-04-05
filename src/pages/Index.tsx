@@ -307,17 +307,18 @@ export default function Index() {
         <div className="absolute top-0 left-0 right-0 z-[500] pointer-events-none"
           style={{ background: 'var(--top-gradient)' }}>
           <div className="px-3 pt-10 pb-2 pointer-events-auto">
-            {/* Row: Location pills left + Settings button right */}
-            <div className="flex items-center gap-2">
-              <div className="flex-1 min-w-0">
-                <LocationMode
-                  mode={locationMode}
-                  selectedCity={selectedCityName}
-                  onModeChange={handleModeChange}
-                  onCitySelect={handleCitySelect}
-                  locating={locating}
-                  onFranceMode={handleFranceMode} />
-              </div>
+            {/* Row 1: Location mode selector (full width on mobile) */}
+            <div className="w-full">
+              <LocationMode
+                mode={locationMode}
+                selectedCity={selectedCityName}
+                onModeChange={handleModeChange}
+                onCitySelect={handleCitySelect}
+                locating={locating}
+                onFranceMode={handleFranceMode} />
+            </div>
+            {/* Row 2: Notification + Filter buttons horizontally, above locate */}
+            <div className="flex items-center gap-2 mt-2">
               <button
                 onClick={() => setShowNotifications(true)}
                 className="w-10 h-10 rounded-full flex items-center justify-center border shrink-0 relative"
