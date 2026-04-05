@@ -134,11 +134,15 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     }
     markersRef.current.clear();
 
+    const isFranceZoom = (mapRef.current?.getZoom() ?? zoom) <= 8;
     const clusterGroup = L.markerClusterGroup({
-      maxClusterRadius: 30,
+      maxClusterRadius: isFranceZoom ? 60 : 30,
       disableClusteringAtZoom: 14,
       showCoverageOnHover: false,
       zoomToBoundsOnClick: true,
+      chunkedLoading: true,
+      chunkInterval: 100,
+      chunkDelay: 10,
       iconCreateFunction: (cluster) => {
         const count = cluster.getChildCount();
         const size = count > 20 ? 48 : count > 5 ? 40 : 34;
