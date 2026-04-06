@@ -168,14 +168,27 @@ async function fetchAgendaEvents(
     const rawEvents = data?.events || [];
     console.log(`[OpenAgenda] Agenda ${agendaUid} page ${page + 1}: ${rawEvents.length} events (total: ${data?.total || '?'})`);
 
+    let skippedNoTitle = 0, skippedNoTiming = 0, skippedPast = 0, skippedDist = 0, accepted = 0;
+
+    // Debug: log first raw event structure
+    if (page === 0 && rawEvents.length > 0) {
+      const sample = rawEvents[0];
+      console.log(`[OpenAgenda] Sample event keys: ${Object.keys(sample).join(', ')}`);
+      console.log(`[OpenAgenda] Sample timings: ${JSON.stringify(sample.timings?.slice?.(0, 2) || sample.nextTiming || 'none').slice(0, 300)}`);
+      console.log(`[OpenAgenda] Sample dateRange: ${JSON.stringify(sample.dateRange || 'none').slice(0, 200)}`);
+      console.log(`[OpenAgenda] Sample location: ${JSON.stringify(sample.location || 'none').slice(0, 200)}`);
+    }
+
     for (const e of rawEvents) {
       const title = e.title?.fr || e.title?.en || Object.values(e.title || {})[0] || '';
-      if (!title || title.length <= 2) continue;
+      if (!title || title.length <= 2) { skippedNoTitle++; continue; }
 
-      const timing = (e.timings || [])[0];
-      if (!timing?.begin) continue;
-      const startTime = new Date(timing.begin).toISOString();
-      const endTime = timing.end ? new Date(timing.end).toISOString() : null;
+      // Try multiple timing sources
+      const timing = (e.timings || [])[0] || e.nextTiming;
+      const beginField = timing?.begin || timing?.start;
+      if (!beginField) { skippedNoTiming++; continue; }
+      const startTime = new Date(beginField).toISOString();
+      const endTime = timing?.end ? new Date(timing.end).toISOString() : null;
 
       if (new Date(startTime).getTime() < Date.now() - 86400000) continue;
 
