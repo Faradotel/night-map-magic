@@ -160,14 +160,13 @@ async function fetchAgendaEvents(
 
     if (!res.ok) {
       const errText = await res.text().catch(() => '');
-      if (res.status !== 404) {
-        console.error(`[OpenAgenda] Agenda ${agendaUid} page ${page + 1}: ${res.status} ${errText.slice(0, 100)}`);
-      }
+      console.error(`[OpenAgenda] Agenda ${agendaUid} page ${page + 1}: ${res.status} ${errText.slice(0, 200)}`);
       break;
     }
 
     const data = await res.json();
     const rawEvents = data?.events || [];
+    console.log(`[OpenAgenda] Agenda ${agendaUid} page ${page + 1}: ${rawEvents.length} events (total: ${data?.total || '?'})`);
 
     for (const e of rawEvents) {
       const title = e.title?.fr || e.title?.en || Object.values(e.title || {})[0] || '';
