@@ -180,7 +180,7 @@ async function fetchAgendaEvents(
     }
 
     for (const e of rawEvents) {
-      const title = e.title?.fr || e.title?.en || Object.values(e.title || {})[0] || '';
+      const title = typeof e.title === 'string' ? e.title : (e.title?.fr || e.title?.en || Object.values(e.title || {})[0] || '');
       if (!title || title.length <= 2) { skippedNoTitle++; continue; }
 
       // Try multiple timing sources
