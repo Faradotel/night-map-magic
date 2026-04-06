@@ -83,7 +83,12 @@ Deno.serve(async (req) => {
       const name: string = e.name || '';
       if (id.startsWith('rt-')) return { type: 'sport', vibe: 'sport' };
       if (id.startsWith('rdf-')) return { type: 'festival', vibe: 'concert' };
-      if (id.startsWith('oa-')) return { type: 'spectacle', vibe: 'culture' };
+      if (id.startsWith('oa-')) {
+        // Use oaType from scraper if available, fallback to spectacle
+        const oaType = e.oaType || 'spectacle';
+        const vibeMap: Record<string, string> = { concert: 'concert', sport: 'sport', expo: 'chill', afterwork: 'afterwork' };
+        return { type: oaType, vibe: vibeMap[oaType] || 'culture' };
+      }
       if (id.startsWith('bb-')) {
         if (SPORT_KEYWORDS.test(name)) return { type: 'sport', vibe: 'sport' };
         return { type: 'expo', vibe: 'chill' };
