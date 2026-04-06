@@ -76,11 +76,11 @@ function detectOaType(title: string, desc: string, keywords: string[]): { type: 
   return { type: 'spectacle', subtype: 'event' };
 }
 
-/** Fetch with API key in header as per OpenAgenda docs */
+/** Fetch with API key — use query param as it's more reliable */
 async function oaFetch(url: string, apiKey: string): Promise<Response> {
-  return fetch(url, {
+  const separator = url.includes('?') ? '&' : '?';
+  return fetch(`${url}${separator}key=${apiKey}`, {
     headers: {
-      'key': apiKey,
       'Accept': 'application/json',
       'User-Agent': 'PulseMap/1.0',
     },
