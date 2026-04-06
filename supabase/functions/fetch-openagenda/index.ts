@@ -190,7 +190,7 @@ async function fetchAgendaEvents(
       const startTime = new Date(beginField).toISOString();
       const endTime = timing?.end ? new Date(timing.end).toISOString() : null;
 
-      if (new Date(startTime).getTime() < Date.now() - 86400000) continue;
+      if (new Date(startTime).getTime() < Date.now() - 86400000) { skippedPast++; continue; }
 
       const eLat = e.location?.latitude;
       const eLng = e.location?.longitude;
@@ -203,7 +203,7 @@ async function fetchAgendaEvents(
           lat = eLat;
           lng = eLng;
         } else {
-          continue;
+          skippedDist++; continue;
         }
       } else {
         lat += (Math.random() - 0.5) * 0.015;
@@ -219,6 +219,7 @@ async function fetchAgendaEvents(
 
       const { type, subtype } = detectOaType(title, description, kw);
 
+      accepted++;
       events.push({
         id: `oa-${e.uid}`,
         name: title,
@@ -237,6 +238,8 @@ async function fetchAgendaEvents(
         oaSubtype: subtype,
       });
     }
+
+    console.log(`[OpenAgenda] Agenda ${agendaUid} filter: noTitle=${skippedNoTitle} noTiming=${skippedNoTiming} past=${skippedPast} dist=${skippedDist} accepted=${accepted}`);
 
     afterParams = data?.after || null;
     if (!afterParams || rawEvents.length === 0) break;
