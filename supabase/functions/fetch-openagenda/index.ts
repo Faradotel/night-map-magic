@@ -210,8 +210,8 @@ async function fetchAgendaEvents(
         lng += (Math.random() - 0.5) * 0.015;
       }
 
-      const description = e.description?.fr || e.description?.en || Object.values(e.description || {})[0] || '';
-      const kw = e.keywords?.fr || e.keywords?.en || [];
+      const description = typeof e.description === 'string' ? e.description : (e.description?.fr || e.description?.en || Object.values(e.description || {})[0] || '');
+      const kw = Array.isArray(e.keywords) ? e.keywords : (e.keywords?.fr || e.keywords?.en || []);
       const venue = e.location?.name || '';
       const address = [e.location?.address, e.location?.postalCode, e.location?.city].filter(Boolean).join(', ');
       const eventCity = (e.location?.city || city).replace(/\s*\(\d+\)\s*$/, '').trim();
