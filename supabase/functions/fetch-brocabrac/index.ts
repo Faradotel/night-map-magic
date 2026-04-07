@@ -197,14 +197,21 @@ function parseMarkdown(md: string, dept: string): any[] {
 }
 
 async function geocodeQuery(q: string): Promise<{ lat: number; lng: number } | null> {
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&limit=1`,
-      { headers: { 'User-Agent': 'PulseMap/1.0' } }
-    );
-    const data = await res.json();
-    if (data?.[0]) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-  } catch { /* fallback */ }
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&limit=1`,
+        { headers: { 'User-Agent': 'PulseMap/1.0' } }
+      );
+      if (res.status === 429) {
+        await new Promise(r => setTimeout(r, 1500));
+        continue;
+      }
+      const data = await res.json();
+      if (data?.[0]) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+      return null;
+    } catch { /* fallback */ }
+  }
   return null;
 }
 
