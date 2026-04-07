@@ -331,14 +331,13 @@ Deno.serve(async (req) => {
 
     const events = sliced.map((e: any, i: number) => {
       const pd = pageData[i];
-      const geoKey = geoQueries[i];
-      const coords = (geoKey && geoCache.get(geoKey)) || fallbackCoords;
       const communeSlug = (() => {
         try {
           const parts = new URL(e.url).pathname.split('/').filter(Boolean);
           return parts[1] || '';
         } catch { return ''; }
       })();
+      const coords = (communeSlug && geoCache.get(communeSlug)) || fallbackCoords;
       const commune = communeSlug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
       const displayCity = pd?.city || commune || deptInfo.name;
       const displayAddress = pd?.address || `${e.postalCode || ''} ${commune || deptInfo.name}`.trim();
