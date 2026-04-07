@@ -337,7 +337,7 @@ Deno.serve(async (req) => {
       const displayAddress = pd?.address || `${e.postalCode || ''} ${commune || deptInfo.name}`.trim();
 
       return {
-        id: `bb-${dept}-${i}-${e.date}-${Date.now()}`,
+        id: `bb-${dept}-${i}-${e.date}`,
         name: e.name,
         venue: pd?.venue || '',
         address: displayAddress,
