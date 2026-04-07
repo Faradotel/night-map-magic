@@ -197,14 +197,21 @@ function parseMarkdown(md: string, dept: string): any[] {
 }
 
 async function geocodeQuery(q: string): Promise<{ lat: number; lng: number } | null> {
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&limit=1`,
-      { headers: { 'User-Agent': 'PulseMap/1.0' } }
-    );
-    const data = await res.json();
-    if (data?.[0]) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-  } catch { /* fallback */ }
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&limit=1`,
+        { headers: { 'User-Agent': 'PulseMap/1.0' } }
+      );
+      if (res.status === 429) {
+        await new Promise(r => setTimeout(r, 1500));
+        continue;
+      }
+      const data = await res.json();
+      if (data?.[0]) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+      return null;
+    } catch { /* fallback */ }
+  }
   return null;
 }
 
@@ -290,46 +297,53 @@ Deno.serve(async (req) => {
 
     const sliced = rawEvents.slice(0, 60);
 
-    // Fetch exact addresses from each event page in parallel (max 40 to avoid rate limiting)
-    const pageData = await Promise.all(sliced.slice(0, 40).map((e: any) => fetchEventAddress(e.url)));
-    // Fill remaining with null
-    while (pageData.length < sliced.length) pageData.push(null);
-    console.log(`[Brocabrac] Got ${pageData.filter(Boolean).length}/${sliced.length} exact addresses`);
-
-    // Build geocoding queries
-    const geoQueries = sliced.map((e: any, i: number) => {
-      if (pageData[i]?.address) return pageData[i]!.address;
+    // Extract commune from URL slug for geocoding (much faster than fetching each page)
+    const communeMap = new Map<string, string>(); // slug -> "commune, France"
+    sliced.forEach((e: any) => {
       try {
         const parts = new URL(e.url).pathname.split('/').filter(Boolean);
-        return parts[1] ? parts[1].replace(/-/g, ' ') + ', France' : '';
-      } catch { return ''; }
+        if (parts[1] && !communeMap.has(parts[1])) {
+          communeMap.set(parts[1], parts[1].replace(/-/g, ' ') + ', France');
+        }
+      } catch {}
     });
 
-    // Geocode unique queries in parallel
+    // Geocode unique communes in batches of 5 with small delay
     const geoCache = new Map<string, { lat: number; lng: number }>();
-    const uniqueQueries = [...new Set(geoQueries.filter(Boolean))];
-    await Promise.all(uniqueQueries.map(async (q) => {
-      const coords = await geocodeQuery(q);
-      if (coords) geoCache.set(q, coords);
-    }));
-    console.log(`[Brocabrac] Geocoded ${geoCache.size}/${uniqueQueries.length} locations`);
+    const entries = [...communeMap.entries()];
+    const GEO_BATCH = 5;
+    for (let b = 0; b < entries.length; b += GEO_BATCH) {
+      const batch = entries.slice(b, b + GEO_BATCH);
+      const results = await Promise.all(batch.map(([, q]) => geocodeQuery(q)));
+      batch.forEach(([slug], j) => { if (results[j]) geoCache.set(slug, results[j]!); });
+      if (b + GEO_BATCH < entries.length) await new Promise(r => setTimeout(r, 1100));
+    }
+    console.log(`[Brocabrac] Geocoded ${geoCache.size}/${communeMap.size} communes`);
+
+    // Fetch exact addresses only for events where we have coords (in parallel batches of 15)
+    const pageData: (Awaited<ReturnType<typeof fetchEventAddress>>)[] = new Array(sliced.length).fill(null);
+    for (let b = 0; b < Math.min(sliced.length, 30); b += 15) {
+      const batch = sliced.slice(b, b + 15);
+      const results = await Promise.all(batch.map((e: any) => fetchEventAddress(e.url)));
+      results.forEach((r, j) => { pageData[b + j] = r; });
+    }
+    console.log(`[Brocabrac] Got ${pageData.filter(Boolean).length}/${sliced.length} exact addresses`);
 
     const events = sliced.map((e: any, i: number) => {
       const pd = pageData[i];
-      const geoKey = geoQueries[i];
-      const coords = (geoKey && geoCache.get(geoKey)) || fallbackCoords;
       const communeSlug = (() => {
         try {
           const parts = new URL(e.url).pathname.split('/').filter(Boolean);
           return parts[1] || '';
         } catch { return ''; }
       })();
+      const coords = (communeSlug && geoCache.get(communeSlug)) || fallbackCoords;
       const commune = communeSlug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
       const displayCity = pd?.city || commune || deptInfo.name;
       const displayAddress = pd?.address || `${e.postalCode || ''} ${commune || deptInfo.name}`.trim();
 
       return {
-        id: `bb-${dept}-${i}-${e.date}-${Date.now()}`,
+        id: `bb-${dept}-${i}-${e.date}`,
         name: e.name,
         venue: pd?.venue || '',
         address: displayAddress,
