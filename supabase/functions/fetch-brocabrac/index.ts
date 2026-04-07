@@ -297,28 +297,33 @@ Deno.serve(async (req) => {
 
     const sliced = rawEvents.slice(0, 60);
 
-    // Fetch exact addresses from each event page in parallel (max 40 to avoid rate limiting)
-    const pageData = await Promise.all(sliced.slice(0, 40).map((e: any) => fetchEventAddress(e.url)));
-    // Fill remaining with null
+    // Fetch exact addresses from event pages in batches of 10
+    const pageData: (Awaited<ReturnType<typeof fetchEventAddress>>)[] = [];
+    for (let b = 0; b < Math.min(sliced.length, 40); b += 10) {
+      const batch = sliced.slice(b, b + 10);
+      const results = await Promise.all(batch.map((e: any) => fetchEventAddress(e.url)));
+      pageData.push(...results);
+    }
     while (pageData.length < sliced.length) pageData.push(null);
     console.log(`[Brocabrac] Got ${pageData.filter(Boolean).length}/${sliced.length} exact addresses`);
 
-    // Build geocoding queries
+    // Build geocoding queries - prefer commune name for geocoding (faster, fewer unique queries)
     const geoQueries = sliced.map((e: any, i: number) => {
-      if (pageData[i]?.address) return pageData[i]!.address;
       try {
         const parts = new URL(e.url).pathname.split('/').filter(Boolean);
         return parts[1] ? parts[1].replace(/-/g, ' ') + ', France' : '';
       } catch { return ''; }
     });
 
-    // Geocode unique queries sequentially (Nominatim: max 1 req/sec)
+    // Geocode unique commune queries in batches of 3 with delay
     const geoCache = new Map<string, { lat: number; lng: number }>();
     const uniqueQueries = [...new Set(geoQueries.filter(Boolean))];
-    for (const q of uniqueQueries) {
-      const coords = await geocodeQuery(q);
-      if (coords) geoCache.set(q, coords);
-      await new Promise(r => setTimeout(r, 1100)); // respect Nominatim rate limit
+    const GEO_BATCH = 3;
+    for (let b = 0; b < uniqueQueries.length; b += GEO_BATCH) {
+      const batch = uniqueQueries.slice(b, b + GEO_BATCH);
+      const results = await Promise.all(batch.map(q => geocodeQuery(q)));
+      batch.forEach((q, j) => { if (results[j]) geoCache.set(q, results[j]!); });
+      if (b + GEO_BATCH < uniqueQueries.length) await new Promise(r => setTimeout(r, 1200));
     }
     console.log(`[Brocabrac] Geocoded ${geoCache.size}/${uniqueQueries.length} locations`);
 
