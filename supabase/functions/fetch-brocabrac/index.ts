@@ -297,35 +297,37 @@ Deno.serve(async (req) => {
 
     const sliced = rawEvents.slice(0, 60);
 
-    // Fetch exact addresses from event pages in batches of 10
-    const pageData: (Awaited<ReturnType<typeof fetchEventAddress>>)[] = [];
-    for (let b = 0; b < Math.min(sliced.length, 40); b += 10) {
-      const batch = sliced.slice(b, b + 10);
-      const results = await Promise.all(batch.map((e: any) => fetchEventAddress(e.url)));
-      pageData.push(...results);
-    }
-    while (pageData.length < sliced.length) pageData.push(null);
-    console.log(`[Brocabrac] Got ${pageData.filter(Boolean).length}/${sliced.length} exact addresses`);
-
-    // Build geocoding queries - prefer commune name for geocoding (faster, fewer unique queries)
-    const geoQueries = sliced.map((e: any, i: number) => {
+    // Extract commune from URL slug for geocoding (much faster than fetching each page)
+    const communeMap = new Map<string, string>(); // slug -> "commune, France"
+    sliced.forEach((e: any) => {
       try {
         const parts = new URL(e.url).pathname.split('/').filter(Boolean);
-        return parts[1] ? parts[1].replace(/-/g, ' ') + ', France' : '';
-      } catch { return ''; }
+        if (parts[1] && !communeMap.has(parts[1])) {
+          communeMap.set(parts[1], parts[1].replace(/-/g, ' ') + ', France');
+        }
+      } catch {}
     });
 
-    // Geocode unique commune queries in batches of 3 with delay
+    // Geocode unique communes in batches of 5 with small delay
     const geoCache = new Map<string, { lat: number; lng: number }>();
-    const uniqueQueries = [...new Set(geoQueries.filter(Boolean))];
-    const GEO_BATCH = 3;
-    for (let b = 0; b < uniqueQueries.length; b += GEO_BATCH) {
-      const batch = uniqueQueries.slice(b, b + GEO_BATCH);
-      const results = await Promise.all(batch.map(q => geocodeQuery(q)));
-      batch.forEach((q, j) => { if (results[j]) geoCache.set(q, results[j]!); });
-      if (b + GEO_BATCH < uniqueQueries.length) await new Promise(r => setTimeout(r, 1200));
+    const entries = [...communeMap.entries()];
+    const GEO_BATCH = 5;
+    for (let b = 0; b < entries.length; b += GEO_BATCH) {
+      const batch = entries.slice(b, b + GEO_BATCH);
+      const results = await Promise.all(batch.map(([, q]) => geocodeQuery(q)));
+      batch.forEach(([slug], j) => { if (results[j]) geoCache.set(slug, results[j]!); });
+      if (b + GEO_BATCH < entries.length) await new Promise(r => setTimeout(r, 1100));
     }
-    console.log(`[Brocabrac] Geocoded ${geoCache.size}/${uniqueQueries.length} locations`);
+    console.log(`[Brocabrac] Geocoded ${geoCache.size}/${communeMap.size} communes`);
+
+    // Fetch exact addresses only for events where we have coords (in parallel batches of 15)
+    const pageData: (Awaited<ReturnType<typeof fetchEventAddress>>)[] = new Array(sliced.length).fill(null);
+    for (let b = 0; b < Math.min(sliced.length, 30); b += 15) {
+      const batch = sliced.slice(b, b + 15);
+      const results = await Promise.all(batch.map((e: any) => fetchEventAddress(e.url)));
+      results.forEach((r, j) => { pageData[b + j] = r; });
+    }
+    console.log(`[Brocabrac] Got ${pageData.filter(Boolean).length}/${sliced.length} exact addresses`);
 
     const events = sliced.map((e: any, i: number) => {
       const pd = pageData[i];
