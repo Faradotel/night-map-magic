@@ -312,13 +312,14 @@ Deno.serve(async (req) => {
       } catch { return ''; }
     });
 
-    // Geocode unique queries in parallel
+    // Geocode unique queries sequentially (Nominatim: max 1 req/sec)
     const geoCache = new Map<string, { lat: number; lng: number }>();
     const uniqueQueries = [...new Set(geoQueries.filter(Boolean))];
-    await Promise.all(uniqueQueries.map(async (q) => {
+    for (const q of uniqueQueries) {
       const coords = await geocodeQuery(q);
       if (coords) geoCache.set(q, coords);
-    }));
+      await new Promise(r => setTimeout(r, 1100)); // respect Nominatim rate limit
+    }
     console.log(`[Brocabrac] Geocoded ${geoCache.size}/${uniqueQueries.length} locations`);
 
     const events = sliced.map((e: any, i: number) => {
