@@ -53,7 +53,6 @@ Deno.serve(async (req) => {
     console.log(`Refreshing ${citiesToRefresh.length} cities...`);
 
     // Clean up truly past events (where both start_time and end_time are in the past)
-    // Use end_time if available, otherwise start_time
     const { error: cleanupError } = await supabase
       .from('cached_events')
       .delete()
@@ -64,6 +63,16 @@ Deno.serve(async (req) => {
     } else {
       console.log('Cleaned up past events');
     }
+
+    // Clean up brocabrac events with invalid city names (parsing artifacts)
+    const INVALID_CITIES = ['Img', 'Text', 'Evenements', 'Menu', 'Accueil', 'Connexion'];
+    const { error: junkError } = await supabase
+      .from('cached_events')
+      .delete()
+      .eq('source', 'brocabrac')
+      .in('city', INVALID_CITIES);
+    if (junkError) console.error('Error cleaning junk cities:', junkError.message);
+    else console.log('Cleaned up invalid brocabrac city names');
 
     let totalInserted = 0;
 
