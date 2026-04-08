@@ -166,10 +166,13 @@ function parseMarkdown(md: string, dept: string): any[] {
       continue;
     }
 
-    const eventMatch = line.match(/\[([^\]]+)\]\((https:\/\/brocabrac\.fr\/[^\)]+)\)/);
+    const eventMatch = line.match(/\[([^\]]+)\]\((https:\/\/brocabrac\.fr\/\d{2,3}\/[^\/]+\/\d+-[^\)]+)\)/);
     if (eventMatch && currentDate) {
-      const name = eventMatch[1].replace(/([a-z])([A-Z])/g, '$1 - $2').trim();
+      const rawName = eventMatch[1].trim();
       const url = eventMatch[2];
+      // Skip navigation artifacts and very short names
+      if (rawName.length < 5 || /^(img|text|evenements|accueil|menu|connexion|inscription|voir|plus)$/i.test(rawName)) continue;
+      const name = rawName.replace(/([a-z])([A-Z])/g, '$1 - $2').trim();
 
       let postalCode = '';
       let eventType = 'brocante';
