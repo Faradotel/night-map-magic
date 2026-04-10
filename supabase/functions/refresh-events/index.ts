@@ -74,6 +74,25 @@ Deno.serve(async (req) => {
     if (junkError) console.error('Error cleaning junk cities:', junkError.message);
     else console.log('Cleaned up invalid brocabrac city names');
 
+    // Fix misclassified brocabrac events (expo/chill → brocante/culture)
+    const { error: bbFixError } = await supabase
+      .from('cached_events')
+      .update({ type: 'brocante', vibe: 'culture' })
+      .eq('source', 'brocabrac')
+      .in('type', ['expo', 'soirée', 'concert'])
+      .not('type', 'eq', 'sport');
+    if (bbFixError) console.error('Error fixing brocabrac types:', bbFixError.message);
+    else console.log('Fixed brocabrac event categories');
+
+    // Fix misclassified runtrail events
+    const { error: rtFixError } = await supabase
+      .from('cached_events')
+      .update({ type: 'sport', vibe: 'sport' })
+      .eq('source', 'runtrail')
+      .neq('type', 'sport');
+    if (rtFixError) console.error('Error fixing runtrail types:', rtFixError.message);
+    else console.log('Fixed runtrail event categories');
+
     let totalInserted = 0;
 
     function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 20000): Promise<Response> {
@@ -255,11 +274,14 @@ Deno.serve(async (req) => {
           const events = data?.events || [];
           if (events.length === 0) return 0;
 
-          const batch = events.map((e: any, idx: number) => ({
+          const batch = events.map((e: any, idx: number) => {
+            const eName = e.name || '';
+            const isSport = SPORT_KEYWORDS.test(eName);
+            return {
             id: e.id || `bb-${dept}-${idx}-${Date.now()}`,
-            name: e.name || '',
-            type: 'expo',
-            vibe: 'chill',
+            name: eName,
+            type: isSport ? 'sport' : 'brocante',
+            vibe: isSport ? 'sport' : 'culture',
             genres: e.genres || [],
             lat: e.lat || 0,
             lng: e.lng || 0,
@@ -274,7 +296,7 @@ Deno.serve(async (req) => {
             source: 'brocabrac',
             updated_at: new Date().toISOString(),
             external_attendees: null,
-          }));
+          }});
 
           const { error } = await supabase.from('cached_events').upsert(batch, { onConflict: 'id' });
           if (error) { console.error(`BB dept ${dept}:`, error.message); return 0; }
