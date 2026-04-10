@@ -5,7 +5,7 @@ export type PriceRange = 'gratuit' | '€1-10' | '€10-20' | '€20+';
 export interface NightEvent {
   id: string;
   name: string;
-  type: 'soirée' | 'club' | 'bar' | 'concert' | 'afterwork' | 'sport' | 'théâtre' | 'expo' | 'festival' | 'spectacle';
+  type: 'soirée' | 'club' | 'bar' | 'concert' | 'afterwork' | 'sport' | 'théâtre' | 'expo' | 'festival' | 'spectacle' | 'brocante';
   vibe: EventVibe;
   genres: MusicGenre[];
   lat: number;
@@ -71,4 +71,5 @@ export const typeConfig: Record<string, { label: string; emoji: string }> = {
   expo: { label: 'Expo', emoji: '🎨' },
   festival: { label: 'Festival', emoji: '🎪' },
   spectacle: { label: 'Spectacle', emoji: '🎤' },
+  brocante: { label: 'Brocante', emoji: '🧺' },
 };
