@@ -340,7 +340,21 @@ Deno.serve(async (req) => {
     sliced.forEach((e: any, i: number) => {
       const pd = pageData[i];
       if (pd?.address) {
-        addrQueries.push({ idx: i, query: pd.address });
+        // Build a clean geocodable query: try "street, postalCode city" format
+        // If address contains a venue name that won't geocode, extract just postal+city
+        const parts = pd.address.split(',').map((s: string) => s.trim());
+        // Find the postal code part (5-digit) and use street + postal + city
+        const postalPart = parts.find((p: string) => /\d{5}/.test(p));
+        const streetPart = parts.find((p: string) => /\d+\s+(rue|avenue|boulevard|place|chemin|allée|cours|impasse|passage|quai|square)/i.test(p));
+        if (streetPart && postalPart) {
+          addrQueries.push({ idx: i, query: `${streetPart}, ${postalPart}, France` });
+        } else if (postalPart) {
+          // Use postal code + city for geocoding (better than venue name)
+          const cityPart = parts.find((p: string) => /^[A-ZÀ-Ÿ]/.test(p) && !/\d{5}/.test(p));
+          addrQueries.push({ idx: i, query: `${postalPart} ${cityPart || ''}, France`.trim() });
+        } else {
+          addrQueries.push({ idx: i, query: pd.address });
+        }
       }
     });
     // Deduplicate identical addresses
