@@ -332,41 +332,8 @@ Deno.serve(async (req) => {
     }
     console.log(`[Brocabrac] Got ${pageData.filter(Boolean).length}/${sliced.length} exact addresses`);
 
-    // Geocode per-event address for precise positioning (not commune-level)
-    const eventCoords: ({ lat: number; lng: number } | null)[] = new Array(sliced.length).fill(null);
-    const addressGeoCache = new Map<string, { lat: number; lng: number } | null>();
-    const ADDR_BATCH = 10;
-    const addrQueries: { idx: number; query: string }[] = [];
-    const STREET_RE = /^(\d+\s+)?(rue|avenue|boulevard|place|chemin|allée|cours|impasse|passage|quai|square|route|rond[\s-]?point|parvis|esplanade|all[ée]e)/i;
-    sliced.forEach((e: any, i: number) => {
-      const pd = pageData[i];
-      if (pd?.address) {
-        const parts = pd.address.split(',').map((s: string) => s.trim());
-        const postalPart = parts.find((p: string) => /\d{5}/.test(p));
-        const streetPart = parts.find((p: string) => STREET_RE.test(p));
-        if (streetPart && postalPart) {
-          const cityPart = parts.find((p: string) => /^[A-ZÀ-Ÿ]/.test(p) && !/\d{5}/.test(p) && !STREET_RE.test(p));
-          addrQueries.push({ idx: i, query: `${streetPart}, ${postalPart}${cityPart ? ' ' + cityPart : ''}, France` });
-        } else if (postalPart) {
-          const cityPart = parts.find((p: string) => /^[A-ZÀ-Ÿ]/.test(p) && !/\d{5}/.test(p));
-          addrQueries.push({ idx: i, query: `${postalPart} ${cityPart || ''}, France`.trim() });
-        }
-        // Skip venue-only addresses — commune geocoding will handle them
-      }
-    });
-    // Deduplicate identical addresses
-    const uniqueAddrs = [...new Set(addrQueries.map(a => a.query))];
-    for (let b = 0; b < uniqueAddrs.length; b += ADDR_BATCH) {
-      const batch = uniqueAddrs.slice(b, b + ADDR_BATCH);
-      const results = await Promise.all(batch.map(q => geocodeQuery(q)));
-      batch.forEach((q, j) => { addressGeoCache.set(q, results[j]); });
-      if (b + ADDR_BATCH < uniqueAddrs.length) await new Promise(r => setTimeout(r, 1100));
-    }
-    // Assign per-event coords
-    addrQueries.forEach(({ idx, query }) => {
-      eventCoords[idx] = addressGeoCache.get(query) || null;
-    });
-    console.log(`[Brocabrac] Geocoded ${[...addressGeoCache.values()].filter(Boolean).length}/${uniqueAddrs.length} unique addresses`);
+    // Track how many events share each commune slug to add jitter
+    const communeCount = new Map<string, number>();
 
     const events = sliced.map((e: any, i: number) => {
       const pd = pageData[i];
@@ -376,8 +343,14 @@ Deno.serve(async (req) => {
           return parts[1] || '';
         } catch { return ''; }
       })();
-      // Priority: per-event address coords > commune coords > department fallback
-      const coords = eventCoords[i] || (communeSlug && geoCache.get(communeSlug)) || fallbackCoords;
+      const baseCoords = (communeSlug && geoCache.get(communeSlug)) || fallbackCoords;
+      // Add small jitter (~200m) for events in the same commune so they don't stack
+      const idx = communeCount.get(communeSlug) || 0;
+      communeCount.set(communeSlug, idx + 1);
+      const jitterLat = (idx * 0.0012) * Math.cos(idx * 2.4);
+      const jitterLng = (idx * 0.0015) * Math.sin(idx * 2.4);
+      const coords = { lat: baseCoords.lat + jitterLat, lng: baseCoords.lng + jitterLng };
+
       const commune = communeSlug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
       const displayCity = pd?.city || commune || deptInfo.name;
       const displayAddress = pd?.address || `${e.postalCode || ''} ${commune || deptInfo.name}`.trim();
