@@ -311,10 +311,10 @@ Deno.serve(async (req) => {
       } catch {}
     });
 
-    // Geocode unique communes in batches of 5 with small delay
+    // Geocode unique communes in batches of 10 with small delay
     const geoCache = new Map<string, { lat: number; lng: number }>();
     const entries = [...communeMap.entries()];
-    const GEO_BATCH = 5;
+    const GEO_BATCH = 10;
     for (let b = 0; b < entries.length; b += GEO_BATCH) {
       const batch = entries.slice(b, b + GEO_BATCH);
       const results = await Promise.all(batch.map(([, q]) => geocodeQuery(q)));
@@ -335,7 +335,7 @@ Deno.serve(async (req) => {
     // Geocode per-event address for precise positioning (not commune-level)
     const eventCoords: ({ lat: number; lng: number } | null)[] = new Array(sliced.length).fill(null);
     const addressGeoCache = new Map<string, { lat: number; lng: number } | null>();
-    const ADDR_BATCH = 5;
+    const ADDR_BATCH = 10;
     const addrQueries: { idx: number; query: string }[] = [];
     sliced.forEach((e: any, i: number) => {
       const pd = pageData[i];
