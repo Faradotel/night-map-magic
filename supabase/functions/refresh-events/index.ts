@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
       }
       if (id.startsWith('bb-')) {
         if (SPORT_KEYWORDS.test(name)) return { type: 'sport', vibe: 'sport' };
-        return { type: 'expo', vibe: 'chill' };
+        return { type: 'brocante', vibe: 'culture' };
       }
       if (id.startsWith('mu-')) return { type: 'afterwork', vibe: 'afterwork' };
       return { type: 'concert', vibe: 'concert' };

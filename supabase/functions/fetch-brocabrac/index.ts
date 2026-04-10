@@ -311,10 +311,10 @@ Deno.serve(async (req) => {
       } catch {}
     });
 
-    // Geocode unique communes in batches of 5 with small delay
+    // Geocode unique communes in batches of 10 with small delay
     const geoCache = new Map<string, { lat: number; lng: number }>();
     const entries = [...communeMap.entries()];
-    const GEO_BATCH = 5;
+    const GEO_BATCH = 10;
     for (let b = 0; b < entries.length; b += GEO_BATCH) {
       const batch = entries.slice(b, b + GEO_BATCH);
       const results = await Promise.all(batch.map(([, q]) => geocodeQuery(q)));
@@ -323,7 +323,7 @@ Deno.serve(async (req) => {
     }
     console.log(`[Brocabrac] Geocoded ${geoCache.size}/${communeMap.size} communes`);
 
-    // Fetch exact addresses only for events where we have coords (in parallel batches of 15)
+    // Fetch exact addresses from event pages (in parallel batches of 15)
     const pageData: (Awaited<ReturnType<typeof fetchEventAddress>>)[] = new Array(sliced.length).fill(null);
     for (let b = 0; b < Math.min(sliced.length, 30); b += 15) {
       const batch = sliced.slice(b, b + 15);
@@ -331,6 +331,9 @@ Deno.serve(async (req) => {
       results.forEach((r, j) => { pageData[b + j] = r; });
     }
     console.log(`[Brocabrac] Got ${pageData.filter(Boolean).length}/${sliced.length} exact addresses`);
+
+    // Track how many events share each commune slug to add jitter
+    const communeCount = new Map<string, number>();
 
     const events = sliced.map((e: any, i: number) => {
       const pd = pageData[i];
@@ -340,7 +343,14 @@ Deno.serve(async (req) => {
           return parts[1] || '';
         } catch { return ''; }
       })();
-      const coords = (communeSlug && geoCache.get(communeSlug)) || fallbackCoords;
+      const baseCoords = (communeSlug && geoCache.get(communeSlug)) || fallbackCoords;
+      // Add small jitter (~200m) for events in the same commune so they don't stack
+      const idx = communeCount.get(communeSlug) || 0;
+      communeCount.set(communeSlug, idx + 1);
+      const jitterLat = (idx * 0.0012) * Math.cos(idx * 2.4);
+      const jitterLng = (idx * 0.0015) * Math.sin(idx * 2.4);
+      const coords = { lat: baseCoords.lat + jitterLat, lng: baseCoords.lng + jitterLng };
+
       const commune = communeSlug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
       const displayCity = pd?.city || commune || deptInfo.name;
       const displayAddress = pd?.address || `${e.postalCode || ''} ${commune || deptInfo.name}`.trim();
