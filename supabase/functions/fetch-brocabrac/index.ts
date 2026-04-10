@@ -337,24 +337,21 @@ Deno.serve(async (req) => {
     const addressGeoCache = new Map<string, { lat: number; lng: number } | null>();
     const ADDR_BATCH = 10;
     const addrQueries: { idx: number; query: string }[] = [];
+    const STREET_RE = /^(\d+\s+)?(rue|avenue|boulevard|place|chemin|allée|cours|impasse|passage|quai|square|route|rond[\s-]?point|parvis|esplanade|all[ée]e)/i;
     sliced.forEach((e: any, i: number) => {
       const pd = pageData[i];
       if (pd?.address) {
-        // Build a clean geocodable query: try "street, postalCode city" format
-        // If address contains a venue name that won't geocode, extract just postal+city
         const parts = pd.address.split(',').map((s: string) => s.trim());
-        // Find the postal code part (5-digit) and use street + postal + city
         const postalPart = parts.find((p: string) => /\d{5}/.test(p));
-        const streetPart = parts.find((p: string) => /\d+\s+(rue|avenue|boulevard|place|chemin|allée|cours|impasse|passage|quai|square)/i.test(p));
+        const streetPart = parts.find((p: string) => STREET_RE.test(p));
         if (streetPart && postalPart) {
-          addrQueries.push({ idx: i, query: `${streetPart}, ${postalPart}, France` });
+          const cityPart = parts.find((p: string) => /^[A-ZÀ-Ÿ]/.test(p) && !/\d{5}/.test(p) && !STREET_RE.test(p));
+          addrQueries.push({ idx: i, query: `${streetPart}, ${postalPart}${cityPart ? ' ' + cityPart : ''}, France` });
         } else if (postalPart) {
-          // Use postal code + city for geocoding (better than venue name)
           const cityPart = parts.find((p: string) => /^[A-ZÀ-Ÿ]/.test(p) && !/\d{5}/.test(p));
           addrQueries.push({ idx: i, query: `${postalPart} ${cityPart || ''}, France`.trim() });
-        } else {
-          addrQueries.push({ idx: i, query: pd.address });
         }
+        // Skip venue-only addresses — commune geocoding will handle them
       }
     });
     // Deduplicate identical addresses
