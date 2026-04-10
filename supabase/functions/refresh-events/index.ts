@@ -255,11 +255,14 @@ Deno.serve(async (req) => {
           const events = data?.events || [];
           if (events.length === 0) return 0;
 
-          const batch = events.map((e: any, idx: number) => ({
+          const batch = events.map((e: any, idx: number) => {
+            const eName = e.name || '';
+            const isSport = SPORT_KEYWORDS.test(eName);
+            return {
             id: e.id || `bb-${dept}-${idx}-${Date.now()}`,
-            name: e.name || '',
-            type: 'expo',
-            vibe: 'chill',
+            name: eName,
+            type: isSport ? 'sport' : 'brocante',
+            vibe: isSport ? 'sport' : 'culture',
             genres: e.genres || [],
             lat: e.lat || 0,
             lng: e.lng || 0,
