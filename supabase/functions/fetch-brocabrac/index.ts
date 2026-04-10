@@ -323,7 +323,7 @@ Deno.serve(async (req) => {
     }
     console.log(`[Brocabrac] Geocoded ${geoCache.size}/${communeMap.size} communes`);
 
-    // Fetch exact addresses only for events where we have coords (in parallel batches of 15)
+    // Fetch exact addresses from event pages (in parallel batches of 15)
     const pageData: (Awaited<ReturnType<typeof fetchEventAddress>>)[] = new Array(sliced.length).fill(null);
     for (let b = 0; b < Math.min(sliced.length, 30); b += 15) {
       const batch = sliced.slice(b, b + 15);
@@ -331,6 +331,31 @@ Deno.serve(async (req) => {
       results.forEach((r, j) => { pageData[b + j] = r; });
     }
     console.log(`[Brocabrac] Got ${pageData.filter(Boolean).length}/${sliced.length} exact addresses`);
+
+    // Geocode per-event address for precise positioning (not commune-level)
+    const eventCoords: ({ lat: number; lng: number } | null)[] = new Array(sliced.length).fill(null);
+    const addressGeoCache = new Map<string, { lat: number; lng: number } | null>();
+    const ADDR_BATCH = 5;
+    const addrQueries: { idx: number; query: string }[] = [];
+    sliced.forEach((e: any, i: number) => {
+      const pd = pageData[i];
+      if (pd?.address) {
+        addrQueries.push({ idx: i, query: pd.address });
+      }
+    });
+    // Deduplicate identical addresses
+    const uniqueAddrs = [...new Set(addrQueries.map(a => a.query))];
+    for (let b = 0; b < uniqueAddrs.length; b += ADDR_BATCH) {
+      const batch = uniqueAddrs.slice(b, b + ADDR_BATCH);
+      const results = await Promise.all(batch.map(q => geocodeQuery(q)));
+      batch.forEach((q, j) => { addressGeoCache.set(q, results[j]); });
+      if (b + ADDR_BATCH < uniqueAddrs.length) await new Promise(r => setTimeout(r, 1100));
+    }
+    // Assign per-event coords
+    addrQueries.forEach(({ idx, query }) => {
+      eventCoords[idx] = addressGeoCache.get(query) || null;
+    });
+    console.log(`[Brocabrac] Geocoded ${[...addressGeoCache.values()].filter(Boolean).length}/${uniqueAddrs.length} unique addresses`);
 
     const events = sliced.map((e: any, i: number) => {
       const pd = pageData[i];
@@ -340,7 +365,8 @@ Deno.serve(async (req) => {
           return parts[1] || '';
         } catch { return ''; }
       })();
-      const coords = (communeSlug && geoCache.get(communeSlug)) || fallbackCoords;
+      // Priority: per-event address coords > commune coords > department fallback
+      const coords = eventCoords[i] || (communeSlug && geoCache.get(communeSlug)) || fallbackCoords;
       const commune = communeSlug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
       const displayCity = pd?.city || commune || deptInfo.name;
       const displayAddress = pd?.address || `${e.postalCode || ''} ${commune || deptInfo.name}`.trim();
