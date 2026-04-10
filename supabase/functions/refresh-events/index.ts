@@ -74,6 +74,25 @@ Deno.serve(async (req) => {
     if (junkError) console.error('Error cleaning junk cities:', junkError.message);
     else console.log('Cleaned up invalid brocabrac city names');
 
+    // Fix misclassified brocabrac events (expo/chill → brocante/culture)
+    const { error: bbFixError } = await supabase
+      .from('cached_events')
+      .update({ type: 'brocante', vibe: 'culture' })
+      .eq('source', 'brocabrac')
+      .in('type', ['expo', 'soirée', 'concert'])
+      .not('type', 'eq', 'sport');
+    if (bbFixError) console.error('Error fixing brocabrac types:', bbFixError.message);
+    else console.log('Fixed brocabrac event categories');
+
+    // Fix misclassified runtrail events
+    const { error: rtFixError } = await supabase
+      .from('cached_events')
+      .update({ type: 'sport', vibe: 'sport' })
+      .eq('source', 'runtrail')
+      .neq('type', 'sport');
+    if (rtFixError) console.error('Error fixing runtrail types:', rtFixError.message);
+    else console.log('Fixed runtrail event categories');
+
     let totalInserted = 0;
 
     function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 20000): Promise<Response> {
