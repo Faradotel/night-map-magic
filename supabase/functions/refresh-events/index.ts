@@ -277,7 +277,7 @@ Deno.serve(async (req) => {
             source: 'brocabrac',
             updated_at: new Date().toISOString(),
             external_attendees: null,
-          }));
+          });});
 
           const { error } = await supabase.from('cached_events').upsert(batch, { onConflict: 'id' });
           if (error) { console.error(`BB dept ${dept}:`, error.message); return 0; }
