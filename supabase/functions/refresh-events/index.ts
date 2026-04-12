@@ -110,6 +110,7 @@ Deno.serve(async (req) => {
       const id: string = e.id || '';
       const name: string = e.name || '';
       if (id.startsWith('rt-')) return { type: 'sport', vibe: 'sport' };
+      if (id.startsWith('sf-')) return { type: 'sport', vibe: 'sport' };
       if (id.startsWith('rdf-')) return { type: 'festival', vibe: 'concert' };
       if (id.startsWith('oa-')) {
         // Use oaType from scraper if available, fallback to spectacle
