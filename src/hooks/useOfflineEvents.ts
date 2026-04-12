@@ -3,16 +3,18 @@ import { NightEvent } from '@/data/mockEvents';
 
 const CACHE_KEY = 'pulsemap_offline_events';
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
+const CACHE_VERSION = 2;
 
 interface CachedData {
   events: NightEvent[];
   timestamp: number;
+  version: number;
 }
 
 export function useOfflineEvents() {
   const cacheEvents = useCallback((events: NightEvent[]) => {
     try {
-      const data: CachedData = { events, timestamp: Date.now() };
+      const data: CachedData = { events, timestamp: Date.now(), version: CACHE_VERSION };
       localStorage.setItem(CACHE_KEY, JSON.stringify(data));
     } catch {
       // localStorage full — silently fail
@@ -24,6 +26,10 @@ export function useOfflineEvents() {
       const raw = localStorage.getItem(CACHE_KEY);
       if (!raw) return null;
       const data: CachedData = JSON.parse(raw);
+      if (data.version !== CACHE_VERSION) {
+        localStorage.removeItem(CACHE_KEY);
+        return null;
+      }
       if (Date.now() - data.timestamp > CACHE_TTL) {
         localStorage.removeItem(CACHE_KEY);
         return null;
