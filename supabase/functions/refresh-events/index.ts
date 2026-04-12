@@ -175,6 +175,7 @@ Deno.serve(async (req) => {
       if (bbRes.status === 'fulfilled' && bbRes.value?.events) events.push(...bbRes.value.events);
       if (rtRes.status === 'fulfilled' && rtRes.value?.events) events.push(...rtRes.value.events);
       if (oaRes.status === 'fulfilled' && oaRes.value?.events) events.push(...oaRes.value.events);
+      if (sfRes.status === 'fulfilled' && sfRes.value?.events) events.push(...sfRes.value.events);
 
       if (events.length === 0) return 0;
 
