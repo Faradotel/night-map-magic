@@ -2,6 +2,7 @@
 export function getSourceEmoji(eventId: string, fallbackEmoji: string, eventType = ''): string {
   if (eventId.startsWith('bb-') && eventType !== 'sport') return '🧺';
   if (eventId.startsWith('rt-')) return '🏃‍♂️';
+  if (eventId.startsWith('sf-')) return '🏅';
   if (eventId.startsWith('oa-')) {
     // Differentiate OpenAgenda by event type
     switch (eventType) {

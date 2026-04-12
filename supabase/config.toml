@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.fetch-openagenda]
 verify_jwt = false
+
+[functions.fetch-sports-federations]
+verify_jwt = false

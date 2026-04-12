@@ -110,6 +110,7 @@ Deno.serve(async (req) => {
       const id: string = e.id || '';
       const name: string = e.name || '';
       if (id.startsWith('rt-')) return { type: 'sport', vibe: 'sport' };
+      if (id.startsWith('sf-')) return { type: 'sport', vibe: 'sport' };
       if (id.startsWith('rdf-')) return { type: 'festival', vibe: 'concert' };
       if (id.startsWith('oa-')) {
         // Use oaType from scraper if available, fallback to spectacle
@@ -152,7 +153,7 @@ Deno.serve(async (req) => {
       };
       const body = JSON.stringify({ city });
 
-      const [shotgunRes, tmRes, ebRes, muRes, icRes, rdfRes, bbRes, rtRes, oaRes] = await Promise.allSettled([
+      const [shotgunRes, tmRes, ebRes, muRes, icRes, rdfRes, bbRes, rtRes, oaRes, sfRes] = await Promise.allSettled([
         fetchWithTimeout(`${supabaseUrl}/functions/v1/scrape-shotgun`, { method: 'POST', headers, body }).then(r => r.json()),
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-ticketmaster`, { method: 'POST', headers, body }).then(r => r.json()),
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-eventbrite`, { method: 'POST', headers, body }).then(r => r.json()),
@@ -162,6 +163,7 @@ Deno.serve(async (req) => {
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-brocabrac`, { method: 'POST', headers, body }, 45000).then(r => r.json()),
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-runtrail`, { method: 'POST', headers, body }).then(r => r.json()),
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-openagenda`, { method: 'POST', headers, body }).then(r => r.json()),
+        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-sports-federations`, { method: 'POST', headers, body }, 55000).then(r => r.json()),
       ]);
 
       const events: any[] = [];
@@ -174,6 +176,7 @@ Deno.serve(async (req) => {
       if (bbRes.status === 'fulfilled' && bbRes.value?.events) events.push(...bbRes.value.events);
       if (rtRes.status === 'fulfilled' && rtRes.value?.events) events.push(...rtRes.value.events);
       if (oaRes.status === 'fulfilled' && oaRes.value?.events) events.push(...oaRes.value.events);
+      if (sfRes.status === 'fulfilled' && sfRes.value?.events) events.push(...sfRes.value.events);
 
       if (events.length === 0) return 0;
 
@@ -195,7 +198,7 @@ Deno.serve(async (req) => {
           description: e.description || '',
           venue: e.venue || '',
           ticket_url: e.ticketUrl || null,
-          source: e.id?.startsWith('eb-') ? 'eventbrite' : e.id?.startsWith('tm-') ? 'ticketmaster' : e.id?.startsWith('mu-') ? 'meetup' : e.id?.startsWith('ic-') ? 'infoconcert' : e.id?.startsWith('rdf-') ? 'routedesfestivals' : e.id?.startsWith('bb-') ? 'brocabrac' : e.id?.startsWith('rt-') ? 'runtrail' : e.id?.startsWith('oa-') ? 'openagenda' : 'shotgun',
+          source: e.id?.startsWith('eb-') ? 'eventbrite' : e.id?.startsWith('tm-') ? 'ticketmaster' : e.id?.startsWith('mu-') ? 'meetup' : e.id?.startsWith('ic-') ? 'infoconcert' : e.id?.startsWith('rdf-') ? 'routedesfestivals' : e.id?.startsWith('bb-') ? 'brocabrac' : e.id?.startsWith('rt-') ? 'runtrail' : e.id?.startsWith('sf-') ? 'sports-federations' : e.id?.startsWith('oa-') ? 'openagenda' : 'shotgun',
           updated_at: new Date().toISOString(),
           external_attendees: e.externalAttendees || null,
         };
