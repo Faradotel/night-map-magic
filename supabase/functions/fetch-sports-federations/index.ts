@@ -1,5 +1,5 @@
 // Fetch sports events from French federation agendas on OpenAgenda
-// Strategy: search for sport-related agendas, then fetch their upcoming events with geo filter
+// Strategy: search for sport-related agendas, filter by title, then fetch their upcoming events with geo filter
 
 const ALLOWED_ORIGINS = [
   'https://pulse-map.live', 'https://www.pulse-map.live',
@@ -64,39 +64,26 @@ async function oaFetch(url: string, apiKey: string): Promise<Response> {
   });
 }
 
-// Sport-specific type detection for more granular categorization
-const SPORT_TYPE_MAP: Record<string, string> = {
-  football: '⚽ Football', rugby: '🏉 Rugby', tennis: '🎾 Tennis',
-  basket: '🏀 Basket', volley: '🏐 Volley', handball: '🤾 Handball',
-  natation: '🏊 Natation', athlétisme: '🏃 Athlétisme', cyclisme: '🚴 Cyclisme',
-  vélo: '🚴 Cyclisme', judo: '🥋 Judo', karaté: '🥋 Karaté',
-  escrime: '🤺 Escrime', gymnastique: '🤸 Gymnastique', ski: '⛷️ Ski',
-  randonnée: '🥾 Randonnée', randonnee: '🥾 Randonnée', escalade: '🧗 Escalade',
-  trail: '🏃 Trail', course: '🏃 Course', marathon: '🏃 Marathon',
-  triathlon: '🏊 Triathlon', boxe: '🥊 Boxe', golf: '⛳ Golf',
-  voile: '⛵ Voile', aviron: '🚣 Aviron', canoë: '🛶 Canoë',
-  pétanque: '🎯 Pétanque', tir: '🎯 Tir', équitation: '🐎 Équitation',
-  equitation: '🐎 Équitation', badminton: '🏸 Badminton', hockey: '🏒 Hockey',
-  surf: '🏄 Surf', plongée: '🤿 Plongée', lutte: '🤼 Lutte',
-  taekwondo: '🥋 Taekwondo', ping: '🏓 Tennis de table',
-};
+// Regex to validate that an agenda title is actually sport-related
+const SPORT_AGENDA_PATTERN = /\b(sport|foot|rugby|tennis|basket|volley|hand|judo|karaté|karate|escrime|gym|athlé|athle|natation|cyclisme|vélo|velo|trail|course|marathon|triathlon|boxe|golf|voile|aviron|canoë|canoe|pétanque|petanque|tir|équitation|equitation|badminton|hockey|surf|plongée|plongee|lutte|taekwondo|ping|musculation|escalade|ski|randonnée|randonnee|CDOS|CROS|FFSA|ligue|comité olympique|comite olympique|fédération française|federation francaise|district|compétition|competition|tournoi|championnat|cross|relais|semi-marathon|10km|5km)\b/i;
 
-function detectSportGenre(title: string, desc: string): string {
-  const all = `${title} ${desc}`.toLowerCase();
-  for (const [keyword, genre] of Object.entries(SPORT_TYPE_MAP)) {
-    if (all.includes(keyword)) return genre;
-  }
-  return '🏅 Sport';
-}
+// Negative pattern — skip agendas about employment, culture, etc.
+const NOT_SPORT_PATTERN = /\b(emploi|insertion|pôle emploi|pole emploi|recrutement|formation professionnelle|bibliothèque|mediatheque|médiathèque|cinéma|cinema|musée|musee|théâtre|theatre)\b/i;
 
-/** Search OpenAgenda for sport-related agendas */
-async function discoverSportAgendas(apiKey: string): Promise<number[]> {
-  const uids = new Set<number>();
+/** Search OpenAgenda for genuine sport agendas */
+async function discoverSportAgendas(apiKey: string): Promise<{ uid: number; title: string }[]> {
+  const results = new Map<number, string>();
+
   const searches = [
-    'fédération sport', 'sport département', 'sport comité',
-    'compétition sportive', 'CDOS', 'CROS',
-    'ligue sport', 'district football', 'comité rugby',
-    'club sportif événement', 'tournoi sport',
+    'fédération française sport',
+    'comité départemental sport',
+    'CDOS sport',
+    'ligue football rugby tennis',
+    'district football',
+    'comité rugby basket',
+    'club athlétisme cyclisme',
+    'tournoi championnat sportif',
+    'compétition course trail marathon',
   ];
 
   for (const term of searches) {
@@ -105,18 +92,83 @@ async function discoverSportAgendas(apiKey: string): Promise<number[]> {
       const res = await oaFetch(url, apiKey);
       if (!res.ok) { await res.text(); continue; }
       const data = await res.json();
-      for (const a of (data?.agendas || [])) {
-        if (a.uid) uids.add(a.uid);
+      const agendas = data?.agendas || [];
+      let accepted = 0;
+      for (const a of agendas) {
+        if (!a.uid || results.has(a.uid)) continue;
+        const title = a.title || '';
+        const desc = a.description || '';
+        const combined = `${title} ${desc}`;
+        // Must match sport pattern AND not match employment/culture pattern
+        if (SPORT_AGENDA_PATTERN.test(combined) && !NOT_SPORT_PATTERN.test(combined)) {
+          results.set(a.uid, title);
+          accepted++;
+        }
       }
-      console.log(`[SportsFed] "${term}": ${data?.agendas?.length || 0} agendas`);
+      console.log(`[SportsFed] "${term}": ${agendas.length} found, ${accepted} accepted`);
     } catch (err) {
       console.error(`[SportsFed] Search "${term}" failed:`, err);
     }
   }
 
-  console.log(`[SportsFed] Total unique sport agendas discovered: ${uids.size}`);
-  return [...uids];
+  console.log(`[SportsFed] Total verified sport agendas: ${results.size}`);
+  // Log first 20 titles for debugging
+  const entries = [...results.entries()].slice(0, 20);
+  for (const [uid, title] of entries) {
+    console.log(`  agenda ${uid}: ${title}`);
+  }
+
+  return [...results.entries()].map(([uid, title]) => ({ uid, title }));
 }
+
+/** Detect specific sport genre from event title/description */
+const SPORT_TYPE_MAP: [RegExp, string][] = [
+  [/\bfoot(ball)?\b/i, '⚽ Football'],
+  [/\brugby\b/i, '🏉 Rugby'],
+  [/\btennis\b(?!\s+de\s+table)/i, '🎾 Tennis'],
+  [/\bbasket/i, '🏀 Basket'],
+  [/\bvolley/i, '🏐 Volley'],
+  [/\bhand(ball)?\b/i, '🤾 Handball'],
+  [/\bnatation\b/i, '🏊 Natation'],
+  [/\bathlé|athlétisme/i, '🏃 Athlétisme'],
+  [/\b(cyclisme|vélo|velo|cyclo)/i, '🚴 Cyclisme'],
+  [/\bjudo\b/i, '🥋 Judo'],
+  [/\bkaraté|karate\b/i, '🥋 Karaté'],
+  [/\bescrime\b/i, '🤺 Escrime'],
+  [/\bgym(nastique)?\b/i, '🤸 Gymnastique'],
+  [/\bski\b/i, '⛷️ Ski'],
+  [/\brandonnée|randonnee\b/i, '🥾 Randonnée'],
+  [/\bescalade\b/i, '🧗 Escalade'],
+  [/\btrail\b/i, '🏃 Trail'],
+  [/\b(course|marathon|semi|10km|5km|cross)\b/i, '🏃 Course'],
+  [/\btriathlon\b/i, '🏊 Triathlon'],
+  [/\bboxe\b/i, '🥊 Boxe'],
+  [/\bgolf\b/i, '⛳ Golf'],
+  [/\bvoile\b/i, '⛵ Voile'],
+  [/\baviron\b/i, '🚣 Aviron'],
+  [/\b(canoë|canoe|kayak)\b/i, '🛶 Canoë-Kayak'],
+  [/\b(pétanque|petanque)\b/i, '🎯 Pétanque'],
+  [/\btir\b/i, '🎯 Tir'],
+  [/\b(équitation|equitation)\b/i, '🐎 Équitation'],
+  [/\bbadminton\b/i, '🏸 Badminton'],
+  [/\bhockey\b/i, '🏒 Hockey'],
+  [/\bsurf\b/i, '🏄 Surf'],
+  [/\b(plongée|plongee)\b/i, '🤿 Plongée'],
+  [/\blutte\b/i, '🤼 Lutte'],
+  [/\btaekwondo\b/i, '🥋 Taekwondo'],
+  [/\b(ping|tennis de table)\b/i, '🏓 Tennis de table'],
+];
+
+function detectSportGenre(title: string, desc: string): string {
+  const all = `${title} ${desc}`;
+  for (const [regex, genre] of SPORT_TYPE_MAP) {
+    if (regex.test(all)) return genre;
+  }
+  return '🏅 Sport';
+}
+
+// Also filter individual events: skip non-sport events from sport agendas
+const EVENT_SPORT_PATTERN = /\b(match|tournoi|championnat|compétition|competition|course|cross|trail|marathon|semi|relais|entraînement|entrainement|stage|camp|défi|départ|arrivée|classement|finale|quart|demi|poule|division|equipe|équipe|ligue|coupe|challenge|open|critérium|criterium|prix|trophée|trophee|meeting|interclub|gala|régionale|regionale|nationale|départemental|departemental|inscription|km|podium|sport|athlé|gym|foot|rugby|tennis|basket|volley|hand|judo|karaté|escrime|natation|cyclisme|vélo|trail|triathlon|boxe|golf|voile|aviron|canoë|kayak|pétanque|tir|équitation|badminton|hockey|surf|plongée|lutte|taekwondo|ping|escalade|ski|randonnée|musculation)\b/i;
 
 /** Fetch events from a sport agenda filtered by city */
 async function fetchSportEvents(
@@ -152,6 +204,11 @@ async function fetchSportEvents(
     const title = typeof e.title === 'string' ? e.title : (e.title?.fr || e.title?.en || Object.values(e.title || {})[0] || '');
     if (!title || title.length <= 2) continue;
 
+    const description = typeof e.description === 'string' ? e.description : (e.description?.fr || Object.values(e.description || {})[0] || '');
+
+    // Filter: event itself must look sport-related
+    if (!EVENT_SPORT_PATTERN.test(`${title} ${description}`)) continue;
+
     const timing = (e.timings || [])[0] || e.nextTiming;
     const beginField = timing?.begin || timing?.start;
     if (!beginField) continue;
@@ -171,7 +228,6 @@ async function fetchSportEvents(
       lng += (Math.random() - 0.5) * 0.015;
     }
 
-    const description = typeof e.description === 'string' ? e.description : (e.description?.fr || Object.values(e.description || {})[0] || '');
     const kw = Array.isArray(e.keywords) ? e.keywords : (e.keywords?.fr || []);
     const venue = e.location?.name || '';
     const address = [e.location?.address, e.location?.postalCode, e.location?.city].filter(Boolean).join(', ');
@@ -185,7 +241,7 @@ async function fetchSportEvents(
       venue, address: address || eventCity,
       city: eventCity,
       lat, lng, startTime, endTime,
-      description: `${sportGenre} • ${description}`.slice(0, 500) + ' • via OpenAgenda (Fédération)',
+      description: `${sportGenre} • ${description}`.slice(0, 500) + ' • via Fédération sportive',
       ticketUrl,
       price: e.conditions?.fr || 'Gratuit',
       genres: [sportGenre, ...kw.slice(0, 3)],
@@ -214,9 +270,9 @@ Deno.serve(async (req) => {
     const cityCoords = CITY_COORDS[city] || { lat: 48.8566, lng: 2.3522 };
     const MAX_DISTANCE_KM = 60;
 
-    // Step 1: Discover sport federation agendas
-    const agendaUids = await discoverSportAgendas(apiKey);
-    if (agendaUids.length === 0) {
+    // Step 1: Discover verified sport federation agendas
+    const agendas = await discoverSportAgendas(apiKey);
+    if (agendas.length === 0) {
       return new Response(JSON.stringify({ success: true, events: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
@@ -224,10 +280,13 @@ Deno.serve(async (req) => {
     const allEvents: any[] = [];
     const seenIds = new Set<string>();
 
-    for (let i = 0; i < agendaUids.length; i += 10) {
-      const batch = agendaUids.slice(i, i + 10);
+    // Cap at 80 agendas to stay within time limits
+    const cappedAgendas = agendas.slice(0, 80);
+
+    for (let i = 0; i < cappedAgendas.length; i += 10) {
+      const batch = cappedAgendas.slice(i, i + 10);
       const results = await Promise.allSettled(
-        batch.map(uid => fetchSportEvents(uid, apiKey, cityCoords, MAX_DISTANCE_KM, city))
+        batch.map(a => fetchSportEvents(a.uid, apiKey, cityCoords, MAX_DISTANCE_KM, city))
       );
       for (const r of results) {
         if (r.status === 'fulfilled') {
