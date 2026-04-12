@@ -74,11 +74,25 @@ const GENRE_MAP: Record<string, MusicGenre> = {
   'ambient': 'jazz',
 };
 
+const BROCANTE_PATTERN = /\b(vide[\s-]?grenier|vide[\s-]?dressing|brocante|braderie|puces|march[ée]\s+aux?\s+puces|march[ée]\s+du\s+livre|vinyles?)\b/i;
+
+const EVENT_VIBES = new Set<EventVibe>(['rave', 'chill', 'afterwork', 'cosy', 'concert', 'culture', 'sport']);
+const EVENT_TYPES = new Set<NightEvent['type']>(['soirée', 'club', 'bar', 'concert', 'afterwork', 'sport', 'théâtre', 'expo', 'festival', 'spectacle', 'brocante']);
+
+function isStoredEventVibe(value: string): value is EventVibe {
+  return EVENT_VIBES.has(value as EventVibe);
+}
+
+function isStoredEventType(value: string): value is NightEvent['type'] {
+  return EVENT_TYPES.has(value as NightEvent['type']);
+}
+
 // Deduce vibe from genres
 export function deduceVibe(genres: MusicGenre[], name: string): EventVibe {
   const nameLower = name.toLowerCase();
 
   // New event categories
+  if (BROCANTE_PATTERN.test(nameLower)) return 'culture';
   if (/\b(foot|rugby|basket|tennis|handball|match|stade|marathon|sport|boxe|mma)\b/i.test(nameLower)) return 'sport';
   if (/\b(théâtre|theater|theatre|comédie|one.?man.?show|humour|stand.?up|exposition|expo|vernissage|musée|galerie|spectacle|cabaret|cirque|danse|ballet|opéra|magie)\b/i.test(nameLower)) return 'culture';
 
@@ -114,8 +128,9 @@ export function mapGenres(rawGenres: string[]): MusicGenre[] {
   return mapped.size > 0 ? Array.from(mapped) : ['electro'];
 }
 
-export function deduceType(name: string): 'soirée' | 'club' | 'bar' | 'concert' | 'afterwork' | 'sport' | 'théâtre' | 'expo' | 'festival' | 'spectacle' {
+ export function deduceType(name: string): 'soirée' | 'club' | 'bar' | 'concert' | 'afterwork' | 'sport' | 'théâtre' | 'expo' | 'festival' | 'spectacle' | 'brocante' {
   const lower = name.toLowerCase();
+  if (BROCANTE_PATTERN.test(lower)) return 'brocante';
   if (/\b(foot|rugby|basket|tennis|handball|volley|match|stade|marathon|course|cyclisme|sport|natation|athlétisme|boxe|mma|judo|karaté)\b/i.test(lower)) return 'sport';
   if (/\b(théâtre|theater|theatre|comédie|tragédie|pièce de théâtre|one.?man.?show|humour|stand.?up|improvisation)\b/i.test(lower)) return 'théâtre';
   if (/\b(exposition|expo|vernissage|musée|galerie|art contemporain)\b/i.test(lower)) return 'expo';
@@ -340,8 +355,10 @@ export async function loadEventsNearby(lat: number, lng: number, radiusKm: numbe
 
 function cachedToNightEvent(e: any): NightEvent {
   const genres = mapGenres(e.genres || []);
-  const vibe = deduceVibe(genres, e.name);
-  const type = deduceType(e.name);
+  const storedVibe = typeof e.vibe === 'string' ? e.vibe.toLowerCase() : '';
+  const storedType = typeof e.type === 'string' ? e.type.toLowerCase() : '';
+  const vibe = isStoredEventVibe(storedVibe) ? storedVibe : deduceVibe(genres, e.name);
+  const type = isStoredEventType(storedType) ? storedType : deduceType(e.name);
   return {
     id: e.id,
     name: e.name.toUpperCase(),
@@ -405,31 +422,7 @@ export async function loadCachedEventsNearby(lat: number, lng: number, radiusKm:
 
   if (error || !data) return [];
 
-  return data.map((e: any): NightEvent => {
-    const genres = mapGenres(e.genres || []);
-    const vibe = deduceVibe(genres, e.name);
-    const type = deduceType(e.name);
-    return {
-      id: e.id,
-      name: e.name.toUpperCase(),
-      type,
-      vibe,
-      genres,
-      lat: e.lat,
-      lng: e.lng,
-      address: e.address,
-      city: e.city,
-      startTime: e.start_time,
-      endTime: e.end_time,
-      priceRange: parsePriceRange(e.price_range),
-      description: e.description,
-      venue: e.venue,
-      ticketUrl: e.ticket_url,
-      imageColor: e.image_color || '#1a0f2e',
-      imageUrl: e.image_url || undefined,
-      isLive: false,
-    };
-  });
+  return data.map(cachedToNightEvent);
 }
 
 export function parsePriceRange(price?: string | null): 'gratuit' | '€1-10' | '€10-20' | '€20+' {
