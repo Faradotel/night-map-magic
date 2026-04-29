@@ -87,7 +87,46 @@ async function oaFetch(url: string, apiKey: string): Promise<Response> {
   });
 }
 
-/** Discover agendas relevant to a city */
+/**
+ * Méga-agendas nationaux/régionaux à toujours inclure (slugs OpenAgenda).
+ * Ces agendas agrègent énormément d'événements culturels couvrant toute la France,
+ * filtrés ensuite par la bbox géo lors du fetch des événements.
+ */
+const NATIONAL_AGENDA_SLUGS = [
+  'culture',                      // Ministère de la Culture - événements nationaux
+  'journees-du-patrimoine',       // Journées Européennes du Patrimoine
+  'la-nuit-europeenne-des-musees',// Nuit des Musées
+  'rendez-vous-aux-jardins',      // Rendez-vous aux jardins
+  'journees-nationales-archeologie',
+  'fete-de-la-musique',
+  'fete-de-la-science',
+  'printemps-des-poetes',
+  'le-mois-du-film-documentaire',
+  'la-fete-du-court-metrage',
+];
+
+/** Cache en mémoire des UIDs résolus depuis les slugs (vit le temps de l'instance edge) */
+const slugUidCache = new Map<string, number>();
+
+async function resolveSlugUid(slug: string, apiKey: string): Promise<number | null> {
+  if (slugUidCache.has(slug)) return slugUidCache.get(slug)!;
+  try {
+    const url = `https://api.openagenda.com/v2/agendas?slug=${encodeURIComponent(slug)}`;
+    const res = await oaFetch(url, apiKey);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const uid = data?.agendas?.[0]?.uid;
+    if (typeof uid === 'number') {
+      slugUidCache.set(slug, uid);
+      return uid;
+    }
+  } catch (e) {
+    console.error(`[OpenAgenda] resolveSlugUid(${slug}) error:`, (e as Error).message);
+  }
+  return null;
+}
+
+/** Discover agendas relevant to a city + national mega-agendas */
 async function discoverAgendas(city: string, apiKey: string): Promise<number[]> {
   const uids: number[] = [];
   const searchTerms = [city];
@@ -116,12 +155,23 @@ async function discoverAgendas(city: string, apiKey: string): Promise<number[]> 
     for (const a of (data2?.agendas || [])) {
       if (a.uid && !uids.includes(a.uid)) uids.push(a.uid);
     }
-    console.log(`[OpenAgenda] Total unique agendas: ${uids.length}`);
+    console.log(`[OpenAgenda] City-only unique agendas: ${uids.length}`);
   } else {
     await res2.text();
   }
 
-  return uids.slice(0, 20); // Cap at 20 agendas to stay within time limits
+  // Cap city-discovered agendas, then ALWAYS append national mega-agendas
+  const cityUids = uids.slice(0, 18);
+  const nationalUids: number[] = [];
+  const nationalResolutions = await Promise.all(
+    NATIONAL_AGENDA_SLUGS.map(slug => resolveSlugUid(slug, apiKey)),
+  );
+  for (const u of nationalResolutions) {
+    if (u && !cityUids.includes(u) && !nationalUids.includes(u)) nationalUids.push(u);
+  }
+  console.log(`[OpenAgenda] Adding ${nationalUids.length} national mega-agendas`);
+
+  return [...cityUids, ...nationalUids];
 }
 
 /** Fetch events from a single agenda with geo filter */
