@@ -1,6 +1,5 @@
-import { ArrowLeft, QrCode, Image, Trash2, Loader2 } from 'lucide-react';
-import { useEventPass } from '@/hooks/useEventPass';
-import { useAuth } from '@/hooks/useAuth';
+import { ArrowLeft, QrCode, Image, Trash2, Loader2, CheckCircle2, ShieldX, Clock } from 'lucide-react';
+import { useEventPass, type PassValidationResult } from '@/hooks/useEventPass';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
@@ -13,8 +12,9 @@ interface PassViewerScreenProps {
 }
 
 export function PassViewerScreen({ eventId, eventName, onBack }: PassViewerScreenProps) {
-  const { pass, loading, deletePass, hasPass } = useEventPass(eventId);
+  const { pass, loading, deletePass, validatePass, hasPass } = useEventPass(eventId);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [validating, setValidating] = useState(false);
 
   useEffect(() => {
     if (pass?.image_path) {
@@ -34,6 +34,21 @@ export function PassViewerScreen({ eventId, eventName, onBack }: PassViewerScree
     toast.success('Pass supprimé');
     onBack();
   };
+
+  const handleValidate = async () => {
+    if (!window.confirm('Valider ton entrée ? Le pass ne pourra plus être réutilisé.')) return;
+    setValidating(true);
+    const res: PassValidationResult = await validatePass();
+    setValidating(false);
+    if (res.status === 'valid') toast.success('Entrée validée ✓');
+    else if (res.status === 'already_used') toast.error('Pass déjà utilisé');
+    else if (res.status === 'expired') toast.error('Pass expiré');
+    else if (res.status === 'not_found') toast.error('Pass introuvable');
+    else toast.error('Erreur lors de la validation');
+  };
+
+  const isUsed = !!pass?.used_at;
+  const isExpired = !!pass?.valid_until && new Date(pass.valid_until) < new Date();
 
   return (
     <div
