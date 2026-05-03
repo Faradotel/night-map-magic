@@ -18,11 +18,13 @@ import { AddEventSheet } from '@/components/AddEventSheet';
 import { NightEvent as NightEventType } from '@/data/mockEvents';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useOfflineEvents } from '@/hooks/useOfflineEvents';
+import { useLiveEvents } from '@/hooks/useLiveEvents';
+import { TonightsHotspotsBanner } from '@/components/TonightsHotspotsBanner';
 
 import { loadEventsForCity, loadEventsNearby, loadAllEvents, deduplicateEvents } from '@/lib/api/shotgun';
 import { mapGenres, deduceVibe, deduceType, parsePriceRange } from '@/lib/api/shotgun';
 import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
-import { MapPin, Locate, Sliders, Bell, Plus } from 'lucide-react';
+import { MapPin, Locate, Sliders, Bell, Plus, Radio } from 'lucide-react';
 import { toast } from 'sonner';
 
 type Tab = 'map' | 'search' | 'friends' | 'profile';
@@ -54,6 +56,8 @@ export default function Index() {
   const [allShotgunEvents, setAllShotgunEvents] = useState<NightEvent[]>([]);
   const [shotgunLoading, setShotgunLoading] = useState(false);
   const [showAddEvent, setShowAddEvent] = useState(false);
+  const [livePulseEnabled, setLivePulseEnabled] = useState(false);
+  const { liveMap } = useLiveEvents(6, livePulseEnabled);
   const [userEvents, setUserEvents] = useState<NightEventType[]>([]);
   const [locationMode, setLocationMode] = useState<LocationModeType>('nearby');
   const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
