@@ -241,7 +241,9 @@ export type Database = {
           id: string
           image_path: string | null
           qr_data: string | null
+          used_at: string | null
           user_id: string
+          valid_until: string | null
         }
         Insert: {
           created_at?: string
@@ -250,7 +252,9 @@ export type Database = {
           id?: string
           image_path?: string | null
           qr_data?: string | null
+          used_at?: string | null
           user_id: string
+          valid_until?: string | null
         }
         Update: {
           created_at?: string
@@ -259,7 +263,9 @@ export type Database = {
           id?: string
           image_path?: string | null
           qr_data?: string | null
+          used_at?: string | null
           user_id?: string
+          valid_until?: string | null
         }
         Relationships: []
       }
@@ -486,6 +492,37 @@ export type Database = {
         Args: { _event_id: string }
         Returns: number
       }
+      get_friend_hotspots: {
+        Args: { _limit?: number; _min_friends?: number }
+        Returns: {
+          event_city: string
+          event_date: string
+          event_id: string
+          event_name: string
+          friend_count: number
+          friend_usernames: string[]
+        }[]
+      }
+      get_live_events: {
+        Args: { _limit?: number; _since_hours?: number }
+        Returns: {
+          check_ins: number
+          event_city: string
+          event_date: string
+          event_id: string
+          event_name: string
+        }[]
+      }
+      get_tonight_hotspots: {
+        Args: { _limit?: number }
+        Returns: {
+          check_ins: number
+          event_city: string
+          event_date: string
+          event_id: string
+          event_name: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -510,6 +547,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      validate_event_pass: { Args: { _pass_id: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "pro" | "user"

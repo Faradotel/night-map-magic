@@ -9,6 +9,18 @@ interface EventPass {
   qr_data: string | null;
   image_path: string | null;
   created_at: string;
+  used_at: string | null;
+  valid_until: string | null;
+}
+
+export type PassValidationStatus = 'valid' | 'already_used' | 'expired' | 'not_found' | 'error';
+
+export interface PassValidationResult {
+  status: PassValidationStatus;
+  used_at?: string;
+  valid_until?: string;
+  event_id?: string;
+  event_name?: string;
 }
 
 export function useEventPass(eventId: string) {
@@ -80,5 +92,22 @@ export function useEventPass(eventId: string) {
     setPass(null);
   }, [user, pass, eventId]);
 
-  return { pass, loading, savePass, deletePass, hasPass: !!pass };
+  /**
+   * Validates the pass server-side (one-shot).
+   * Returns the new status; refreshes local pass state on success.
+   */
+  const validatePass = useCallback(async (): Promise<PassValidationResult> => {
+    if (!pass) return { status: 'not_found' };
+    const { data, error } = await supabase.rpc('validate_event_pass' as any, { _pass_id: pass.id });
+    if (error || !data) return { status: 'error' };
+    const result = data as PassValidationResult;
+    if (result.status === 'valid' && result.used_at) {
+      setPass(prev => (prev ? { ...prev, used_at: result.used_at! } : prev));
+    } else if (result.status === 'already_used' && result.used_at) {
+      setPass(prev => (prev ? { ...prev, used_at: result.used_at! } : prev));
+    }
+    return result;
+  }, [pass]);
+
+  return { pass, loading, savePass, deletePass, validatePass, hasPass: !!pass };
 }

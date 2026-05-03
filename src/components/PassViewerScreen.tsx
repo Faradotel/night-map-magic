@@ -1,6 +1,5 @@
-import { ArrowLeft, QrCode, Image, Trash2, Loader2 } from 'lucide-react';
-import { useEventPass } from '@/hooks/useEventPass';
-import { useAuth } from '@/hooks/useAuth';
+import { ArrowLeft, QrCode, Image, Trash2, Loader2, CheckCircle2, ShieldX, Clock } from 'lucide-react';
+import { useEventPass, type PassValidationResult } from '@/hooks/useEventPass';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
@@ -13,8 +12,9 @@ interface PassViewerScreenProps {
 }
 
 export function PassViewerScreen({ eventId, eventName, onBack }: PassViewerScreenProps) {
-  const { pass, loading, deletePass, hasPass } = useEventPass(eventId);
+  const { pass, loading, deletePass, validatePass, hasPass } = useEventPass(eventId);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [validating, setValidating] = useState(false);
 
   useEffect(() => {
     if (pass?.image_path) {
@@ -34,6 +34,21 @@ export function PassViewerScreen({ eventId, eventName, onBack }: PassViewerScree
     toast.success('Pass supprimé');
     onBack();
   };
+
+  const handleValidate = async () => {
+    if (!window.confirm('Valider ton entrée ? Le pass ne pourra plus être réutilisé.')) return;
+    setValidating(true);
+    const res: PassValidationResult = await validatePass();
+    setValidating(false);
+    if (res.status === 'valid') toast.success('Entrée validée ✓');
+    else if (res.status === 'already_used') toast.error('Pass déjà utilisé');
+    else if (res.status === 'expired') toast.error('Pass expiré');
+    else if (res.status === 'not_found') toast.error('Pass introuvable');
+    else toast.error('Erreur lors de la validation');
+  };
+
+  const isUsed = !!pass?.used_at;
+  const isExpired = !!pass?.valid_until && new Date(pass.valid_until) < new Date();
 
   return (
     <div
@@ -126,7 +141,58 @@ export function PassViewerScreen({ eventId, eventName, onBack }: PassViewerScree
                   day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
                 })}
               </p>
+              {pass.valid_until && (
+                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                  <Clock size={11} />
+                  Valable jusqu'au {new Date(pass.valid_until).toLocaleDateString('fr-FR', {
+                    day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
+                  })}
+                </p>
+              )}
             </div>
+
+            {/* Validation status / button */}
+            {isUsed ? (
+              <div
+                className="w-full py-3 rounded-xl border text-sm font-bold flex items-center justify-center gap-2"
+                style={{
+                  borderColor: 'hsl(142 71% 45% / 0.4)',
+                  color: 'hsl(142 71% 45%)',
+                  background: 'hsl(142 71% 45% / 0.08)',
+                }}
+              >
+                <CheckCircle2 size={16} />
+                Entrée validée le {new Date(pass.used_at!).toLocaleDateString('fr-FR', {
+                  day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+                })}
+              </div>
+            ) : isExpired ? (
+              <div
+                className="w-full py-3 rounded-xl border text-sm font-bold flex items-center justify-center gap-2"
+                style={{
+                  borderColor: 'hsl(0 80% 55% / 0.4)',
+                  color: 'hsl(0 80% 55%)',
+                  background: 'hsl(0 80% 55% / 0.08)',
+                }}
+              >
+                <ShieldX size={16} />
+                Pass expiré
+              </div>
+            ) : (
+              <button
+                onClick={handleValidate}
+                disabled={validating}
+                className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60"
+                style={{
+                  background: 'hsl(var(--accent))',
+                  color: 'white',
+                  boxShadow: '0 4px 16px hsl(var(--accent) / 0.4)',
+                }}
+              >
+                {validating ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                Valider mon entrée
+              </button>
+            )}
 
             {/* Delete */}
             <button

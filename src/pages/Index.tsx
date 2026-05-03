@@ -18,11 +18,13 @@ import { AddEventSheet } from '@/components/AddEventSheet';
 import { NightEvent as NightEventType } from '@/data/mockEvents';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useOfflineEvents } from '@/hooks/useOfflineEvents';
+import { useLiveEvents } from '@/hooks/useLiveEvents';
+import { TonightsHotspotsBanner } from '@/components/TonightsHotspotsBanner';
 
 import { loadEventsForCity, loadEventsNearby, loadAllEvents, deduplicateEvents } from '@/lib/api/shotgun';
 import { mapGenres, deduceVibe, deduceType, parsePriceRange } from '@/lib/api/shotgun';
 import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
-import { MapPin, Locate, Sliders, Bell, Plus } from 'lucide-react';
+import { MapPin, Locate, Sliders, Bell, Plus, Radio } from 'lucide-react';
 import { toast } from 'sonner';
 
 type Tab = 'map' | 'search' | 'friends' | 'profile';
@@ -54,6 +56,8 @@ export default function Index() {
   const [allShotgunEvents, setAllShotgunEvents] = useState<NightEvent[]>([]);
   const [shotgunLoading, setShotgunLoading] = useState(false);
   const [showAddEvent, setShowAddEvent] = useState(false);
+  const [livePulseEnabled, setLivePulseEnabled] = useState(false);
+  const { liveMap } = useLiveEvents(6, livePulseEnabled);
   const [userEvents, setUserEvents] = useState<NightEventType[]>([]);
   const [locationMode, setLocationMode] = useState<LocationModeType>('nearby');
   const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
@@ -300,7 +304,8 @@ export default function Index() {
             onEventSelect={setSelectedEvent}
             selectedEvent={selectedEvent}
             userLocation={userLocation}
-            radiusKm={filters.radiusKm} />
+            radiusKm={filters.radiusKm}
+            livePulseMap={livePulseEnabled ? liveMap : null} />
         </div>
 
         {/* ── Top Controls ── */}
@@ -348,6 +353,31 @@ export default function Index() {
               >
                 <Sliders size={16} />
               </button>
+              <button
+                onClick={() => {
+                  setLivePulseEnabled(v => {
+                    const next = !v;
+                    toast[next ? 'success' : 'info'](next ? 'Live Pulse activé' : 'Live Pulse désactivé');
+                    return next;
+                  });
+                }}
+                aria-pressed={livePulseEnabled}
+                className="h-10 px-3 rounded-full flex items-center gap-1.5 border shrink-0 text-xs font-bold transition-all"
+                style={{
+                  background: livePulseEnabled ? 'hsl(142 71% 45% / 0.18)' : 'var(--controls-bg)',
+                  backdropFilter: 'blur(12px)',
+                  borderColor: livePulseEnabled ? 'hsl(142 71% 45% / 0.5)' : 'var(--controls-border)',
+                  boxShadow: 'var(--controls-shadow)',
+                  color: livePulseEnabled ? 'hsl(142 71% 45%)' : 'hsl(var(--muted-foreground))',
+                }}
+              >
+                <Radio size={14} className={livePulseEnabled ? 'animate-pulse' : ''} />
+                Live
+              </button>
+            </div>
+            {/* Tonight's hotspots banner */}
+            <div className="mt-2">
+              <TonightsHotspotsBanner events={filteredEvents} onEventSelect={setSelectedEvent} />
             </div>
           </div>
         </div>
