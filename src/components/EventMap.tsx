@@ -54,7 +54,7 @@ function createUserIcon(): L.DivIcon {
   });
 }
 
-export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, userLocation, radiusKm }: EventMapProps) {
+export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, userLocation, radiusKm, livePulseMap }: EventMapProps) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const containerRef = useRef<HTMLDivElement>(null);
@@ -163,8 +163,9 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     });
 
     events.forEach(event => {
+      const pulse = livePulseMap?.get(event.id);
       const marker = L.marker([event.lat, event.lng], {
-        icon: createEventIcon(event, false, isDark),
+        icon: createEventIcon(event, false, isDark, pulse),
       });
       marker.on('click', () => onEventSelect(event));
       markersRef.current.set(event.id, marker);
@@ -173,7 +174,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
 
     map.addLayer(clusterGroup);
     clusterGroupRef.current = clusterGroup;
-  }, [events, onEventSelect, isDark]);
+  }, [events, onEventSelect, isDark, livePulseMap]);
 
   // Selection highlight – only update the 2 affected markers
   useEffect(() => {
@@ -187,7 +188,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       const prevMarker = markersRef.current.get(prevId);
       const prevEvent = events.find(e => e.id === prevId);
       if (prevMarker && prevEvent) {
-        prevMarker.setIcon(createEventIcon(prevEvent, false, isDark));
+        prevMarker.setIcon(createEventIcon(prevEvent, false, isDark, livePulseMap?.get(prevEvent.id)));
         prevMarker.setZIndexOffset(0);
       }
     }
@@ -196,13 +197,13 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     if (newId && selectedEvent) {
       const newMarker = markersRef.current.get(newId);
       if (newMarker) {
-        newMarker.setIcon(createEventIcon(selectedEvent, true, isDark));
+        newMarker.setIcon(createEventIcon(selectedEvent, true, isDark, livePulseMap?.get(selectedEvent.id)));
         newMarker.setZIndexOffset(500);
       }
     }
 
     prevSelectedRef.current = newId;
-  }, [selectedEvent, events]);
+  }, [selectedEvent, events, isDark, livePulseMap]);
 
   return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />;
 }
