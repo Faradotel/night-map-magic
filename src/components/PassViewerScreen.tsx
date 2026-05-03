@@ -1,4 +1,4 @@
-import { ArrowLeft, QrCode, Image, Trash2, Loader2 } from 'lucide-react';
+import { ArrowLeft, QrCode, Image, Trash2, Loader2, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { useEventPass } from '@/hooks/useEventPass';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,8 +13,9 @@ interface PassViewerScreenProps {
 }
 
 export function PassViewerScreen({ eventId, eventName, onBack }: PassViewerScreenProps) {
-  const { pass, loading, deletePass, hasPass } = useEventPass(eventId);
+  const { pass, loading, deletePass, validatePass, hasPass } = useEventPass(eventId);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [validating, setValidating] = useState(false);
 
   useEffect(() => {
     if (pass?.image_path) {
@@ -33,6 +34,39 @@ export function PassViewerScreen({ eventId, eventName, onBack }: PassViewerScree
     await deletePass();
     toast.success('Pass supprimé');
     onBack();
+  };
+
+  const handleValidate = async () => {
+    if (validating) return;
+    setValidating(true);
+    const result = await validatePass();
+    setValidating(false);
+    if (!result) {
+      toast.error('Impossible de valider le pass pour le moment');
+      return;
+    }
+    switch (result.status) {
+      case 'valid':
+        toast.success('Pass validé ✓', { description: 'Bonne soirée !' });
+        break;
+      case 'already_used':
+        toast.error('Ce pass a déjà été utilisé', {
+          description: result.used_at
+            ? `Utilisé le ${new Date(result.used_at).toLocaleString('fr-FR')}`
+            : undefined,
+        });
+        break;
+      case 'expired':
+        toast.error('Ce pass est expiré', {
+          description: result.valid_until
+            ? `Expiré le ${new Date(result.valid_until).toLocaleString('fr-FR')}`
+            : undefined,
+        });
+        break;
+      case 'not_found':
+        toast.error('Pass introuvable');
+        break;
+    }
   };
 
   return (
@@ -116,9 +150,9 @@ export function PassViewerScreen({ eventId, eventName, onBack }: PassViewerScree
               </div>
             )}
 
-            {/* Info */}
+            {/* Info + status */}
             <div
-              className="rounded-xl p-3 border"
+              className="rounded-xl p-3 border space-y-1"
               style={{ background: 'var(--profile-card-bg)', borderColor: 'hsl(var(--border))' }}
             >
               <p className="text-xs text-muted-foreground">
@@ -126,7 +160,34 @@ export function PassViewerScreen({ eventId, eventName, onBack }: PassViewerScree
                   day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
                 })}
               </p>
+              {pass.used_at && (
+                <p className="text-xs font-bold flex items-center gap-1.5" style={{ color: 'hsl(142, 71%, 45%)' }}>
+                  <CheckCircle2 size={12} /> Utilisé le {new Date(pass.used_at).toLocaleString('fr-FR')}
+                </p>
+              )}
+              {pass.valid_until && !pass.used_at && (
+                <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                  <Clock size={11} /> Valide jusqu'au {new Date(pass.valid_until).toLocaleString('fr-FR')}
+                </p>
+              )}
             </div>
+
+            {/* Validate entry */}
+            {!pass.used_at && (
+              <button
+                onClick={handleValidate}
+                disabled={validating}
+                className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+                style={{
+                  background: 'hsl(142, 71%, 45%)',
+                  color: 'white',
+                  boxShadow: '0 4px 20px hsl(142, 71%, 45%, 0.4)',
+                }}
+              >
+                {validating ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                {validating ? 'Validation...' : 'Valider mon entrée'}
+              </button>
+            )}
 
             {/* Delete */}
             <button

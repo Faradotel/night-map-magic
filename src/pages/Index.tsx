@@ -22,8 +22,10 @@ import { useOfflineEvents } from '@/hooks/useOfflineEvents';
 import { loadEventsForCity, loadEventsNearby, loadAllEvents, deduplicateEvents } from '@/lib/api/shotgun';
 import { mapGenres, deduceVibe, deduceType, parsePriceRange } from '@/lib/api/shotgun';
 import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
-import { MapPin, Locate, Sliders, Bell, Plus } from 'lucide-react';
+import { MapPin, Locate, Sliders, Bell, Plus, Zap } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLiveEvents } from '@/hooks/useLiveEvents';
+import { TonightsHotspotsBanner } from '@/components/TonightsHotspotsBanner';
 
 type Tab = 'map' | 'search' | 'friends' | 'profile';
 
@@ -60,6 +62,13 @@ export default function Index() {
   const [filterCenter, setFilterCenter] = useState<[number, number] | null>(null);
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const loadIdRef = useRef(0);
+  const [showLivePulse, setShowLivePulse] = useState(false);
+  const { liveCountById: liveCountByIdRaw, events: liveEvents } = useLiveEvents({
+    enabled: showLivePulse,
+    sinceHours: 6,
+    limit: 60,
+  });
+  const livePulseMap = showLivePulse ? liveCountByIdRaw : undefined;
   const [filters, setFilters] = useState<Filters>({
     date: 'all',
     price: 'all',
@@ -300,8 +309,16 @@ export default function Index() {
             onEventSelect={setSelectedEvent}
             selectedEvent={selectedEvent}
             userLocation={userLocation}
-            radiusKm={filters.radiusKm} />
+            radiusKm={filters.radiusKm}
+            livePulseMap={livePulseMap} />
         </div>
+
+        {/* Hotspots banner (top of map, scrollable) */}
+        <TonightsHotspotsBanner
+          allEvents={allEvents}
+          onSelect={handleEventSelect}
+          visible={!selectedEvent && !showDetail}
+        />
 
         {/* ── Top Controls ── */}
         <div className="absolute top-0 left-0 right-0 z-[500] pointer-events-none"
@@ -347,6 +364,31 @@ export default function Index() {
                 }}
               >
                 <Sliders size={16} />
+              </button>
+              <button
+                onClick={() => {
+                  setShowLivePulse(v => {
+                    const next = !v;
+                    if (next) toast.success('Mode Live activé 🔥', { description: 'Les events qui bougent en temps réel.' });
+                    return next;
+                  });
+                }}
+                aria-label="Activer le mode Live"
+                className="h-10 px-3 rounded-full flex items-center gap-1.5 border shrink-0 transition-all"
+                style={{
+                  background: showLivePulse ? 'hsl(142, 71%, 45%)' : 'var(--controls-bg)',
+                  backdropFilter: 'blur(12px)',
+                  borderColor: showLivePulse ? 'hsl(142, 71%, 45%)' : 'var(--controls-border)',
+                  boxShadow: showLivePulse
+                    ? '0 0 0 3px hsl(142, 71%, 45%, 0.25), 0 4px 20px hsl(142, 71%, 45%, 0.4)'
+                    : 'var(--controls-shadow)',
+                  color: showLivePulse ? 'white' : 'hsl(var(--foreground))',
+                }}
+              >
+                <Zap size={14} className={showLivePulse ? 'animate-pulse' : ''} fill={showLivePulse ? 'white' : 'none'} />
+                <span className="text-[11px] font-bold">
+                  {showLivePulse ? `Live · ${liveEvents.length}` : 'Live'}
+                </span>
               </button>
             </div>
           </div>

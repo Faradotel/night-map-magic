@@ -9,6 +9,18 @@ interface EventPass {
   qr_data: string | null;
   image_path: string | null;
   created_at: string;
+  used_at?: string | null;
+  valid_until?: string | null;
+}
+
+export type PassValidationStatus = 'valid' | 'expired' | 'already_used' | 'not_found';
+
+export interface PassValidationResult {
+  status: PassValidationStatus;
+  event_id?: string;
+  event_name?: string;
+  used_at?: string;
+  valid_until?: string;
 }
 
 export function useEventPass(eventId: string) {
@@ -80,5 +92,16 @@ export function useEventPass(eventId: string) {
     setPass(null);
   }, [user, pass, eventId]);
 
-  return { pass, loading, savePass, deletePass, hasPass: !!pass };
+  const validatePass = useCallback(async (): Promise<PassValidationResult | null> => {
+    if (!user || !pass) return null;
+    const { data, error } = await supabase.rpc('validate_event_pass' as any, { _pass_id: pass.id });
+    if (error || !data) return null;
+    const result = data as PassValidationResult;
+    if (result.status === 'valid') {
+      setPass(prev => prev ? { ...prev, used_at: result.used_at ?? new Date().toISOString() } : prev);
+    }
+    return result;
+  }, [user, pass]);
+
+  return { pass, loading, savePass, deletePass, validatePass, hasPass: !!pass };
 }
