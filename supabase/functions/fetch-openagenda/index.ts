@@ -105,6 +105,22 @@ const NATIONAL_AGENDA_SLUGS = [
   'la-fete-du-court-metrage',
 ];
 
+/**
+ * Agendas thématiques/associatifs à toujours inclure en plus.
+ * Couvre des agendas non-officiels mais à fort volume (patrimoine, asso, militants).
+ * La bbox géo + filtrage par distance rejettent les events hors zone.
+ */
+const THEMATIC_AGENDA_SLUGS = [
+  'agenda-monumentaire',  // Centre des Monuments Nationaux
+  'palestine',            // Asso Palestine
+  'agenda-jep',           // JEP — variante
+  'evenements-bnf',       // Bibliothèque nationale de France
+  'agenda-mnhn',          // Muséum national d'histoire naturelle
+  'agenda-quaibranly',    // Musée du Quai Branly
+  'cite-de-larchitecture',
+  'parc-naturel-regional',
+];
+
 /** Cache en mémoire des UIDs résolus depuis les slugs (vit le temps de l'instance edge) */
 const slugUidCache = new Map<string, number>();
 
@@ -160,18 +176,19 @@ async function discoverAgendas(city: string, apiKey: string): Promise<number[]> 
     await res2.text();
   }
 
-  // Cap city-discovered agendas, then ALWAYS append national mega-agendas
+  // Cap city-discovered agendas, then ALWAYS append national + thematic mega-agendas
   const cityUids = uids.slice(0, 18);
-  const nationalUids: number[] = [];
-  const nationalResolutions = await Promise.all(
-    NATIONAL_AGENDA_SLUGS.map(slug => resolveSlugUid(slug, apiKey)),
+  const extraUids: number[] = [];
+  const allSlugs = [...NATIONAL_AGENDA_SLUGS, ...THEMATIC_AGENDA_SLUGS];
+  const slugResolutions = await Promise.all(
+    allSlugs.map(slug => resolveSlugUid(slug, apiKey)),
   );
-  for (const u of nationalResolutions) {
-    if (u && !cityUids.includes(u) && !nationalUids.includes(u)) nationalUids.push(u);
+  for (const u of slugResolutions) {
+    if (u && !cityUids.includes(u) && !extraUids.includes(u)) extraUids.push(u);
   }
-  console.log(`[OpenAgenda] Adding ${nationalUids.length} national mega-agendas`);
+  console.log(`[OpenAgenda] Adding ${extraUids.length} national+thematic agendas`);
 
-  return [...cityUids, ...nationalUids];
+  return [...cityUids, ...extraUids];
 }
 
 /** Fetch events from a single agenda with geo filter */

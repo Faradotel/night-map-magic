@@ -137,11 +137,12 @@ Deno.serve(async (req) => {
     const MAX_DISTANCE_KM = 30;
 
     // InfoConcert URL pattern: https://www.infoconcert.com/ville/grenoble-1842
-    // Pagination not yet confirmed — scrape main page which shows all upcoming concerts
+    // Stratégie : scrape exhaustif en batches de 5 pages parallèles, on stoppe
+    // dès qu'un batch entier renvoie 0 events. Cap dur à MAX_PAGES par sécurité.
     const baseUrl = `https://www.infoconcert.com/ville/${slug}`;
-    const pagesToScrape = [
-      baseUrl,
-    ];
+    const MAX_PAGES = 30;
+    const PAGE_BATCH_SIZE = 5;
+    const pageUrl = (n: number) => (n === 1 ? baseUrl : `${baseUrl}?page=${n}`);
 
     const extractSchema = {
       type: 'object',
@@ -171,44 +172,57 @@ Deno.serve(async (req) => {
 
     let rawEvents: any[] = [];
 
-    // Scrape pages in parallel
-    const pageResults = await Promise.allSettled(
-      pagesToScrape.map(async (url) => {
-        console.log(`Scraping InfoConcert: ${url}`);
-        const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${firecrawlKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            url,
-            formats: ['extract'],
+    async function scrapePage(url: string): Promise<any[]> {
+      console.log(`Scraping InfoConcert: ${url}`);
+      const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${firecrawlKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url,
+          formats: ['extract'],
           actions: [
-              { type: 'wait', milliseconds: 2000 },
-              { type: 'scroll', direction: 'down', amount: 3000 },
-              { type: 'wait', milliseconds: 1500 },
-              { type: 'scroll', direction: 'down', amount: 3000 },
-              { type: 'wait', milliseconds: 1500 },
-              { type: 'scroll', direction: 'down', amount: 3000 },
-              { type: 'wait', milliseconds: 1000 },
-            ],
-            extract: { schema: extractSchema, prompt: extractPrompt },
-            waitFor: 6000,
-            location: { country: 'FR', languages: ['fr'] },
-          }),
-        });
-        if (!scrapeResponse.ok) return [];
-        const scrapeData = await scrapeResponse.json();
-        const extractedData = scrapeData?.data?.extract || scrapeData?.extract || {};
-        return extractedData?.events || [];
-      })
-    );
+            { type: 'wait', milliseconds: 2000 },
+            { type: 'scroll', direction: 'down', amount: 3000 },
+            { type: 'wait', milliseconds: 1500 },
+            { type: 'scroll', direction: 'down', amount: 3000 },
+            { type: 'wait', milliseconds: 1500 },
+            { type: 'scroll', direction: 'down', amount: 3000 },
+            { type: 'wait', milliseconds: 1000 },
+          ],
+          extract: { schema: extractSchema, prompt: extractPrompt },
+          waitFor: 6000,
+          location: { country: 'FR', languages: ['fr'] },
+        }),
+      });
+      if (!scrapeResponse.ok) return [];
+      const scrapeData = await scrapeResponse.json();
+      const extractedData = scrapeData?.data?.extract || scrapeData?.extract || {};
+      return extractedData?.events || [];
+    }
 
-    for (const result of pageResults) {
-      if (result.status === 'fulfilled') {
-        rawEvents.push(...result.value);
+    // Exhaustive crawl by batches of PAGE_BATCH_SIZE — stop on first empty batch
+    let nextPage = 1;
+    while (nextPage <= MAX_PAGES) {
+      const batchEnd = Math.min(nextPage + PAGE_BATCH_SIZE - 1, MAX_PAGES);
+      const batchUrls = [];
+      for (let p = nextPage; p <= batchEnd; p++) batchUrls.push(pageUrl(p));
+
+      const batchResults = await Promise.allSettled(batchUrls.map(scrapePage));
+      let batchTotal = 0;
+      for (const r of batchResults) {
+        if (r.status === 'fulfilled') {
+          rawEvents.push(...r.value);
+          batchTotal += r.value.length;
+        }
       }
+      console.log(`[InfoConcert] Pages ${nextPage}-${batchEnd}: ${batchTotal} raw events`);
+
+      // Si le batch entier ne ramène rien on arrête (fin de la pagination)
+      if (batchTotal === 0) break;
+      nextPage = batchEnd + 1;
     }
 
     // Deduplicate by name+date before processing
@@ -220,7 +234,7 @@ Deno.serve(async (req) => {
       return true;
     });
 
-    console.log(`Extracted ${rawEvents.length} raw InfoConcert events for ${city} (${pagesToScrape.length} pages)`);
+    console.log(`Extracted ${rawEvents.length} raw InfoConcert events for ${city} (up to ${nextPage - 1} pages crawled)`);
 
     const events: any[] = [];
     for (let i = 0; i < rawEvents.length; i++) {

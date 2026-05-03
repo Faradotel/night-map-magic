@@ -272,33 +272,62 @@ Deno.serve(async (req) => {
     const deptInfo = DEPT_COORDS[dept] || { lat: 46.6, lng: 2.2, name: dept };
     const fallbackCoords = { lat: deptInfo.lat, lng: deptInfo.lng };
 
-    const url = `https://brocabrac.fr/${dept}/`;
-    console.log(`[Brocabrac] Scraping dept ${dept} (${deptInfo.name}): ${url}`);
+    // Scrape both the department index AND, if a city is provided, the city-level page
+    // (e.g. /06/ + /06/nice/) so on récupère plus d'events locaux qui n'apparaissent pas
+    // sur l'index dept.
+    const baseUrl = `https://brocabrac.fr/${dept}/`;
+    const citySlug = city
+      ? city.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '-')
+      : null;
+    const cityUrl = citySlug ? `https://brocabrac.fr/${dept}/${citySlug}/` : null;
+    const urlsToScrape = cityUrl ? [baseUrl, cityUrl] : [baseUrl];
 
-    const scrapeRes = await fetch('https://api.firecrawl.dev/v1/scrape', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${firecrawlKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        url,
-        formats: ['markdown'],
-        waitFor: 2000,
-        location: { country: 'FR', languages: ['fr'] },
-      }),
-    });
+    console.log(`[Brocabrac] Scraping dept ${dept} (${deptInfo.name}): ${urlsToScrape.join(', ')}`);
 
-    if (!scrapeRes.ok) {
-      console.error(`[Brocabrac] Scrape failed: ${scrapeRes.status}`);
+    const scrapeResults = await Promise.allSettled(
+      urlsToScrape.map(u => fetch('https://api.firecrawl.dev/v1/scrape', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${firecrawlKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: u,
+          formats: ['markdown'],
+          waitFor: 2000,
+          location: { country: 'FR', languages: ['fr'] },
+        }),
+      }).then(async r => {
+        if (!r.ok) {
+          console.error(`[Brocabrac] Scrape ${u} failed: ${r.status}`);
+          return '';
+        }
+        const data = await r.json();
+        return (data?.data?.markdown || data?.markdown || '') as string;
+      })),
+    );
+
+    const markdowns: string[] = [];
+    for (const r of scrapeResults) {
+      if (r.status === 'fulfilled' && r.value) markdowns.push(r.value);
+    }
+
+    if (markdowns.length === 0) {
+      console.error(`[Brocabrac] No markdown returned for any URL`);
       return new Response(JSON.stringify({ success: true, events: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const scrapeData = await scrapeRes.json();
-    const markdown = scrapeData?.data?.markdown || scrapeData?.markdown || '';
-    console.log(`[Brocabrac] Got ${markdown.length} chars of markdown for dept ${dept}`);
+    // Parse + dédupe across pages (same URL appears in both dept+ville)
+    const seenUrls = new Set<string>();
+    const rawEvents: any[] = [];
+    for (const md of markdowns) {
+      console.log(`[Brocabrac] Got ${md.length} chars of markdown`);
+      for (const e of parseMarkdown(md, dept)) {
+        if (seenUrls.has(e.url)) continue;
+        seenUrls.add(e.url);
+        rawEvents.push(e);
+      }
+    }
+    console.log(`[Brocabrac] Parsed ${rawEvents.length} unique events for dept ${dept} (city=${city || 'none'})`);
 
-    const rawEvents = parseMarkdown(markdown, dept);
-    console.log(`[Brocabrac] Parsed ${rawEvents.length} events for dept ${dept}`);
-
-    const sliced = rawEvents.slice(0, 60);
+    const sliced = rawEvents.slice(0, 100);
 
     // Extract commune from URL slug for geocoding (much faster than fetching each page)
     const communeMap = new Map<string, string>(); // slug -> "commune, France"
@@ -366,7 +395,7 @@ Deno.serve(async (req) => {
         startTime: new Date(e.date).toISOString(),
         endTime: null,
         description: `[${e.type}] ${e.name} • via Brocabrac`,
-        ticketUrl: e.url || url,
+        ticketUrl: e.url || baseUrl,
         price: 'Gratuit',
         genres: [e.type],
         externalAttendees: null,

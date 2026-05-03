@@ -200,6 +200,11 @@ pris dans le build :
 - `index.html` — `<link rel="icon">` 192 + 512 + apple-touch
 - `README.md` — documentation complète (stack, setup, archi, features, backend, deploy)
 
+### Edge functions étendues (couverture events)
+- `supabase/functions/fetch-openagenda/index.ts` — ajout d'une liste `THEMATIC_AGENDA_SLUGS` (agenda-monumentaire, palestine, BNF, Quai Branly, MNHN, etc.) toujours interrogée en plus des agendas nationaux
+- `supabase/functions/fetch-infoconcert/index.ts` — scrape **exhaustif** : crawl par batches de 5 pages parallèles, on continue tant qu'un batch ramène des events (cap dur à 30 pages)
+- `supabase/functions/fetch-brocabrac/index.ts` — scrape combiné de la page département + page ville (`/06/` + `/06/nice/`), cap relevé à 100 events
+
 ---
 
 ## ✅ CHECKS POST-DÉPLOIEMENT
