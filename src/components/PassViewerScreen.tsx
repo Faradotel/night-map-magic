@@ -141,7 +141,58 @@ export function PassViewerScreen({ eventId, eventName, onBack }: PassViewerScree
                   day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
                 })}
               </p>
+              {pass.valid_until && (
+                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                  <Clock size={11} />
+                  Valable jusqu'au {new Date(pass.valid_until).toLocaleDateString('fr-FR', {
+                    day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
+                  })}
+                </p>
+              )}
             </div>
+
+            {/* Validation status / button */}
+            {isUsed ? (
+              <div
+                className="w-full py-3 rounded-xl border text-sm font-bold flex items-center justify-center gap-2"
+                style={{
+                  borderColor: 'hsl(142 71% 45% / 0.4)',
+                  color: 'hsl(142 71% 45%)',
+                  background: 'hsl(142 71% 45% / 0.08)',
+                }}
+              >
+                <CheckCircle2 size={16} />
+                Entrée validée le {new Date(pass.used_at!).toLocaleDateString('fr-FR', {
+                  day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+                })}
+              </div>
+            ) : isExpired ? (
+              <div
+                className="w-full py-3 rounded-xl border text-sm font-bold flex items-center justify-center gap-2"
+                style={{
+                  borderColor: 'hsl(0 80% 55% / 0.4)',
+                  color: 'hsl(0 80% 55%)',
+                  background: 'hsl(0 80% 55% / 0.08)',
+                }}
+              >
+                <ShieldX size={16} />
+                Pass expiré
+              </div>
+            ) : (
+              <button
+                onClick={handleValidate}
+                disabled={validating}
+                className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60"
+                style={{
+                  background: 'hsl(var(--accent))',
+                  color: 'white',
+                  boxShadow: '0 4px 16px hsl(var(--accent) / 0.4)',
+                }}
+              >
+                {validating ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                Valider mon entrée
+              </button>
+            )}
 
             {/* Delete */}
             <button
