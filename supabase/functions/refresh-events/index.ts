@@ -106,6 +106,45 @@ Deno.serve(async (req) => {
 
     const SPORT_KEYWORDS = /football|rugby|tennis|basket|volley|vélo|velo|cyclisme|athlétisme|natation|ski|pétanque|handball|judo|karaté|escrime|tir|course|trail|run|sport|gym|fitness|escalade|équitation|equitation|pucier/i;
 
+    // Curated venue → coords overrides (applied across ALL sources to fix bad/centroid coords).
+    // Match by normalized substring of either `venue` or `address`.
+    const VENUE_OVERRIDES: Array<{ match: string; lat: number; lng: number }> = [
+      // Grenoble
+      { match: 'belle electrique', lat: 45.1871714, lng: 5.7041520 },
+      { match: 'palais des sports', lat: 45.1856594, lng: 5.7407455 },
+      { match: 'alpexpo', lat: 45.1553320, lng: 5.7363426 },
+      { match: 'alpes congres', lat: 45.1561279, lng: 5.7342690 },
+      { match: 'summum', lat: 45.1553643, lng: 5.7372962 },
+      { match: 'mc2', lat: 45.1722309, lng: 5.7337104 },
+      { match: 'le ciel', lat: 45.1894474, lng: 5.7314408 },
+      // Paris national venues
+      { match: 'accor arena', lat: 48.8386, lng: 2.3789 },
+      { match: 'bercy', lat: 48.8386, lng: 2.3789 },
+      { match: 'olympia', lat: 48.8702, lng: 2.3286 },
+      { match: 'zénith de paris', lat: 48.8946, lng: 2.3933 },
+      { match: 'zenith de paris', lat: 48.8946, lng: 2.3933 },
+      { match: 'stade de france', lat: 48.9244, lng: 2.3601 },
+      { match: 'la défense arena', lat: 48.8956, lng: 2.2294 },
+      { match: 'la defense arena', lat: 48.8956, lng: 2.2294 },
+    ];
+
+    function normalizeForMatch(s: string): string {
+      return (s || '').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9 ]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function applyVenueOverride(venue: string, address: string): { lat: number; lng: number } | null {
+      const haystack = `${normalizeForMatch(venue)} ${normalizeForMatch(address)}`;
+      for (const o of VENUE_OVERRIDES) {
+        if (haystack.includes(o.match)) return { lat: o.lat, lng: o.lng };
+      }
+      return null;
+    }
+
+
     function getTypeVibe(e: any): { type: string; vibe: string } {
       const id: string = e.id || '';
       const name: string = e.name || '';
