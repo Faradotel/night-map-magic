@@ -150,6 +150,19 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     }
     markersRef.current.clear();
 
+    // Count events sharing the (approximately) same location → drives stack badge
+    const stackCounts = new Map<string, number>();
+    const positionGroups = new Map<string, number>();
+    for (const e of events) {
+      const key = `${e.lat.toFixed(4)},${e.lng.toFixed(4)}`;
+      positionGroups.set(key, (positionGroups.get(key) || 0) + 1);
+    }
+    for (const e of events) {
+      const key = `${e.lat.toFixed(4)},${e.lng.toFixed(4)}`;
+      stackCounts.set(e.id, positionGroups.get(key) || 1);
+    }
+    stackCountsRef.current = stackCounts;
+
     const isFranceZoom = (mapRef.current?.getZoom() ?? zoom) <= 8;
     const clusterGroup = L.markerClusterGroup({
       maxClusterRadius: isFranceZoom ? 60 : 30,
@@ -174,9 +187,10 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
 
     events.forEach(event => {
       const liveCount = livePulseMap?.[event.id] ?? 0;
+      const stack = stackCounts.get(event.id) ?? 1;
       const marker = L.marker([event.lat, event.lng], {
-        icon: createEventIcon(event, false, isDark, liveCount),
-        zIndexOffset: liveCount > 0 ? 250 : 0,
+        icon: createEventIcon(event, false, isDark, liveCount, stack),
+        zIndexOffset: liveCount > 0 ? 250 : (stack > 1 ? 100 : 0),
       });
       marker.on('click', () => onEventSelect(event));
       markersRef.current.set(event.id, marker);
@@ -199,8 +213,9 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       const prevMarker = markersRef.current.get(prevId);
       const prevEvent = events.find(e => e.id === prevId);
       if (prevMarker && prevEvent) {
-        prevMarker.setIcon(createEventIcon(prevEvent, false, isDark, livePulseMap?.[prevId] ?? 0));
-        prevMarker.setZIndexOffset((livePulseMap?.[prevId] ?? 0) > 0 ? 250 : 0);
+        const stack = stackCountsRef.current.get(prevId) ?? 1;
+        prevMarker.setIcon(createEventIcon(prevEvent, false, isDark, livePulseMap?.[prevId] ?? 0, stack));
+        prevMarker.setZIndexOffset((livePulseMap?.[prevId] ?? 0) > 0 ? 250 : (stack > 1 ? 100 : 0));
       }
     }
 
@@ -208,7 +223,8 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     if (newId && selectedEvent) {
       const newMarker = markersRef.current.get(newId);
       if (newMarker) {
-        newMarker.setIcon(createEventIcon(selectedEvent, true, isDark, livePulseMap?.[newId] ?? 0));
+        const stack = stackCountsRef.current.get(newId) ?? 1;
+        newMarker.setIcon(createEventIcon(selectedEvent, true, isDark, livePulseMap?.[newId] ?? 0, stack));
         newMarker.setZIndexOffset(500);
       }
     }
