@@ -101,7 +101,7 @@ function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): num
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-async function geocode(q: string): Promise<{ lat: number; lng: number } | null> {
+async function geocodeOnce(q: string): Promise<{ lat: number; lng: number } | null> {
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&limit=1`,
@@ -111,6 +111,69 @@ async function geocode(q: string): Promise<{ lat: number; lng: number } | null> 
     const data = await res.json();
     if (data?.[0]) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
   } catch { /* ignore */ }
+  return null;
+}
+
+// Build a "venue key" by normalizing variant names of the same place into one.
+// e.g. "Alpes Congres (alpexpo) - Salle Dauphine A Grenoble" and
+// "Auditorium Alpexpo Grenoble" should both collapse to "alpexpo grenoble".
+function venueKey(v: string, city: string): string {
+  let s = v.toLowerCase();
+  // If there's a parenthetical, prefer it (often the popular name)
+  const paren = s.match(/\(([^)]+)\)/);
+  if (paren) s = paren[1];
+  s = s
+    .replace(/\(.*?\)/g, ' ')
+    .replace(/\s*-\s*salle\s+[^-]+$/i, ' ')
+    .replace(/^salle\s+[^-]+-\s*/i, ' ')
+    .replace(/\bauditorium\b/g, ' ')
+    .replace(/\bsalle\s+\w+\b/g, ' ')
+    .replace(/\ba\s+/g, ' ')
+    .replace(/\bde\s+/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  // Ensure city is in the key for disambiguation
+  const cityLow = city.toLowerCase();
+  if (!s.includes(cityLow)) s = `${s} ${cityLow}`;
+  return s.trim();
+}
+
+// Generate ordered geocoding candidates from most to least specific.
+function geocodeCandidates(v: string, city: string): string[] {
+  const out: string[] = [];
+  const orig = v.replace(/\s+/g, ' ').trim();
+  const paren = orig.match(/\(([^)]+)\)/);
+  if (paren) out.push(`${paren[1].trim()}, ${city}, France`);
+  // Strip parenthetical content
+  const noParen = orig.replace(/\(.*?\)/g, ' ').replace(/\s+/g, ' ').trim();
+  if (noParen) out.push(`${noParen}, ${city}, France`);
+  // Strip " A <City>" suffix and "Salle X -" prefix
+  const cleaned = noParen
+    .replace(/\s+a\s+[a-zà-ÿ-]+$/i, '')
+    .replace(/^salle\s+[^-]+-\s*/i, '')
+    .trim();
+  if (cleaned && !out.includes(`${cleaned}, ${city}, France`)) {
+    out.push(`${cleaned}, ${city}, France`);
+  }
+  // Drop common prefixes (Auditorium, Salle, Théâtre, Palais, etc.) — keeps proper name
+  const noPrefix = cleaned
+    .replace(/^(auditorium|salle|théâtre|theatre|palais|complexe|centre|center|stade|arena|hall|espace|maison)\s+/i, '')
+    .replace(/\bsalle\s+\w+\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (noPrefix && noPrefix !== cleaned) out.push(`${noPrefix}, ${city}, France`);
+  // Also try without the trailing city word (in case it duplicates the city we append)
+  const noCity = noPrefix.replace(new RegExp(`\\s+${city.toLowerCase()}\\s*$`, 'i'), '').trim();
+  if (noCity && noCity !== noPrefix) out.push(`${noCity}, ${city}, France`);
+  return [...new Set(out)].filter(Boolean);
+}
+
+async function geocodeVenue(v: string, city: string): Promise<{ lat: number; lng: number } | null> {
+  for (const q of geocodeCandidates(v, city)) {
+    const hit = await geocodeOnce(q);
+    if (hit) return hit;
+  }
   return null;
 }
 
@@ -223,19 +286,31 @@ Deno.serve(async (req) => {
 
     console.log(`[InfoConcert] ${city} – ${allCards.length} unique cards`);
 
-    // Geocode UNIQUE venues only (parallel, 10 concurrent)
-    const uniqueVenues = [...new Set(allCards.map(c => c.venue).filter(Boolean))];
-    console.log(`[InfoConcert] ${city} – geocoding ${uniqueVenues.length} unique venues`);
-    const GEOCODE_CONCURRENCY = 10;
-    const geoMap = new Map<string, { lat: number; lng: number } | null>();
-    for (let i = 0; i < uniqueVenues.length; i += GEOCODE_CONCURRENCY) {
-      const chunk = uniqueVenues.slice(i, i + GEOCODE_CONCURRENCY);
-      const results = await Promise.all(chunk.map(v => geocode(`${v}, ${city}, France`)));
-      chunk.forEach((v, j) => geoMap.set(v, results[j]));
+    // Geocode unique venue KEYS (collapses variants like "Alpexpo - Salle X" + "Auditorium Alpexpo")
+    const venueToKey = new Map<string, string>();
+    for (const c of allCards) {
+      if (c.venue && !venueToKey.has(c.venue)) venueToKey.set(c.venue, venueKey(c.venue, city));
+    }
+    const uniqueKeys = [...new Set(venueToKey.values())];
+    // Pick a representative original venue string per key for candidate generation
+    const keyToVenue = new Map<string, string>();
+    for (const [v, k] of venueToKey) if (!keyToVenue.has(k)) keyToVenue.set(k, v);
+
+    console.log(`[InfoConcert] ${city} – geocoding ${uniqueKeys.length} unique venue keys (from ${venueToKey.size} variants)`);
+    const GEOCODE_CONCURRENCY = 8;
+    const keyCoords = new Map<string, { lat: number; lng: number } | null>();
+    for (let i = 0; i < uniqueKeys.length; i += GEOCODE_CONCURRENCY) {
+      const chunk = uniqueKeys.slice(i, i + GEOCODE_CONCURRENCY);
+      const results = await Promise.all(chunk.map(k => geocodeVenue(keyToVenue.get(k)!, city)));
+      chunk.forEach((k, j) => keyCoords.set(k, results[j]));
     }
 
     const events: any[] = [];
     const nowTs = Date.now();
+    // For venues that fail to geocode: cluster all events of the SAME venue at one
+    // consistent point (city center + small deterministic offset per venue key).
+    let unknownIdx = 0;
+    const unknownKey = new Map<string, number>();
     for (const c of allCards) {
       const startTime = parseFrenchDate(c.date);
       if (!startTime) continue;
@@ -243,21 +318,20 @@ Deno.serve(async (req) => {
 
       let lat = cityCoords.lat;
       let lng = cityCoords.lng;
-      let geocoded = false;
-      const coords = c.venue ? geoMap.get(c.venue) : null;
+      const k = c.venue ? venueToKey.get(c.venue) : undefined;
+      const coords = k ? keyCoords.get(k) : null;
       if (coords) {
         const dist = distanceKm(coords.lat, coords.lng, cityCoords.lat, cityCoords.lng);
-        if (dist <= MAX_DISTANCE_KM) {
-          lat = coords.lat;
-          lng = coords.lng;
-          geocoded = true;
-        } else {
-          continue; // outside city radius
-        }
-      }
-      if (!geocoded) {
-        lat += (Math.random() - 0.5) * 0.012;
-        lng += (Math.random() - 0.5) * 0.012;
+        if (dist > MAX_DISTANCE_KM) continue; // outside city radius
+        lat = coords.lat;
+        lng = coords.lng;
+      } else if (k) {
+        if (!unknownKey.has(k)) unknownKey.set(k, unknownIdx++);
+        const idx = unknownKey.get(k)!;
+        const angle = idx * 2.39996; // golden-angle spread
+        const r = 0.004;
+        lat += Math.cos(angle) * r;
+        lng += Math.sin(angle) * r;
       }
 
       events.push({
