@@ -156,9 +156,16 @@ function geocodeCandidates(v: string, city: string): string[] {
   if (cleaned && !out.includes(`${cleaned}, ${city}, France`)) {
     out.push(`${cleaned}, ${city}, France`);
   }
-  // Last resort: drop "Salle X" words
-  const minimal = cleaned.replace(/\bsalle\s+\w+\b/gi, '').replace(/\s+/g, ' ').trim();
-  if (minimal && minimal !== cleaned) out.push(`${minimal}, ${city}, France`);
+  // Drop common prefixes (Auditorium, Salle, Théâtre, Palais, etc.) — keeps proper name
+  const noPrefix = cleaned
+    .replace(/^(auditorium|salle|théâtre|theatre|palais|complexe|centre|center|stade|arena|hall|espace|maison)\s+/i, '')
+    .replace(/\bsalle\s+\w+\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (noPrefix && noPrefix !== cleaned) out.push(`${noPrefix}, ${city}, France`);
+  // Also try without the trailing city word (in case it duplicates the city we append)
+  const noCity = noPrefix.replace(new RegExp(`\\s+${city.toLowerCase()}\\s*$`, 'i'), '').trim();
+  if (noCity && noCity !== noPrefix) out.push(`${noCity}, ${city}, France`);
   return [...new Set(out)].filter(Boolean);
 }
 
