@@ -1,4 +1,5 @@
-// Scrape InfoConcert listings for a city using Firecrawl
+// InfoConcert HTML scraper — direct parsing (no Firecrawl) for maximum speed.
+// La page /ville/<slug>-<id> est entièrement server-rendered : on parse en regex.
 
 const ALLOWED_ORIGINS = [
   'https://pulse-map.live',
@@ -17,7 +18,6 @@ function getCorsHeaders(req: Request) {
   };
 }
 
-// InfoConcert uses slug-ID format: https://www.infoconcert.com/ville/grenoble-1842
 const CITY_SLUGS: Record<string, string> = {
   'Paris': 'paris-1938', 'Marseille': 'marseille-1900', 'Lyon': 'lyon-1893',
   'Toulouse': 'toulouse-2086', 'Nice': 'nice-1921', 'Nantes': 'nantes-1915',
@@ -57,6 +57,42 @@ const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
   'Aix-en-Provence': { lat: 43.5297, lng: 5.4474 },
 };
 
+const MONTHS_FR: Record<string, number> = {
+  'janvier': 0, 'février': 1, 'fevrier': 1, 'mars': 2, 'avril': 3, 'mai': 4,
+  'juin': 5, 'juillet': 6, 'août': 7, 'aout': 7, 'septembre': 8,
+  'octobre': 9, 'novembre': 10, 'décembre': 11, 'decembre': 11,
+};
+
+function parseFrenchDate(s: string): string {
+  // e.g. "Lundi 11 mai 2026 à 20h00" or "Du 11 mai 2026 au 15 mai 2026"
+  if (!s) return '';
+  const m = s.match(/(\d{1,2})\s+(janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|septembre|octobre|novembre|décembre|decembre)\s+(\d{4})(?:[^0-9]+(\d{1,2})h(\d{2})?)?/i);
+  if (!m) return '';
+  const day = parseInt(m[1], 10);
+  const month = MONTHS_FR[m[2].toLowerCase()];
+  const year = parseInt(m[3], 10);
+  const hour = m[4] ? parseInt(m[4], 10) : 20;
+  const min = m[5] ? parseInt(m[5], 10) : 0;
+  if (month === undefined) return '';
+  const d = new Date(Date.UTC(year, month, day, hour, min, 0));
+  if (isNaN(d.getTime())) return '';
+  return d.toISOString();
+}
+
+function decodeHtml(s: string): string {
+  return s
+    .replace(/&#x27;/g, "'").replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&').replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, ' ').replace(/&eacute;/g, 'é')
+    .replace(/&egrave;/g, 'è').replace(/&agrave;/g, 'à')
+    .replace(/&ccedil;/g, 'ç').replace(/&ecirc;/g, 'ê');
+}
+
+function stripTags(s: string): string {
+  return decodeHtml(s.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim());
+}
+
 function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -65,209 +101,154 @@ function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): num
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-async function geocode(address: string, city: string): Promise<{ lat: number; lng: number } | null> {
+async function geocode(q: string): Promise<{ lat: number; lng: number } | null> {
   try {
-    const q = `${address}, ${city}, France`;
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&limit=1`,
-      { headers: { 'User-Agent': 'PulseMap/1.0' } }
+      { headers: { 'User-Agent': 'PulseMap/1.0 (pulse-map.live)' } }
     );
+    if (!res.ok) return null;
     const data = await res.json();
-    if (data?.[0]) {
-      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-    }
-  } catch { /* fallback */ }
+    if (data?.[0]) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  } catch { /* ignore */ }
   return null;
 }
 
-function fixEventDate(dateStr: string): string {
-  if (!dateStr) return new Date().toISOString();
-  try {
-    const parsed = new Date(dateStr);
-    if (!isNaN(parsed.getTime())) {
-      const now = new Date();
-      if (parsed.getFullYear() < now.getFullYear()) {
-        const fixed = new Date(parsed);
-        fixed.setFullYear(now.getFullYear());
-        if (fixed.getTime() < now.getTime() - 86400000) {
-          fixed.setFullYear(now.getFullYear() + 1);
-        }
-        return fixed.toISOString();
-      }
-      if (parsed.getTime() < now.getTime() - 86400000) {
-        return '';
-      }
-      return parsed.toISOString();
-    }
-  } catch { /* fallback */ }
-  return '';
+interface RawCard {
+  name: string;
+  url: string;
+  date: string;
+  venue: string;
+  ville: string;
+  id: string;
 }
 
-const FOREIGN_KEYWORDS = [
-  'genève', 'geneva', 'zürich', 'zurich', 'bern', 'lausanne', 'basel', 'lancy',
-  'cumiana', 'torino', 'milano', 'barcelona', 'london', 'bruxelles', 'brussels',
-  'deutschland', 'germany', 'schweiz', 'switzerland', 'italia', 'italy', 'españa',
-];
+function parsePage(html: string, citySlug: string): RawCard[] {
+  const cards: RawCard[] = [];
+  // Split on concert URLs. Each card starts before its first <a href="/artiste/...">.
+  // Strategy: find all `/concerts/concert-...-NNN` ids, then for each grab the surrounding ~3000 chars.
+  const seen = new Set<string>();
+  const urlRe = /href="(\/concerts\/concert-[a-z0-9-]+-(\d+))"/gi;
+  let m: RegExpExecArray | null;
+  while ((m = urlRe.exec(html)) !== null) {
+    const path = m[1];
+    const id = m[2];
+    if (seen.has(id)) continue;
+    seen.add(id);
+
+    // Look back up to 3500 chars to find the artist name and date
+    const start = Math.max(0, m.index - 3500);
+    const block = html.slice(start, m.index + 200);
+
+    const artistM = block.match(/<a\s+href="\/artiste\/[^"]+">([^<]+)<\/a>/i);
+    const name = artistM ? stripTags(artistM[1]) : '';
+
+    const dateM = block.match(/(Lundi|Mardi|Mercredi|Jeudi|Vendredi|Samedi|Dimanche|Du)\s+[^<]*?\d{4}[^<]*/i);
+    const date = dateM ? stripTags(dateM[0]) : '';
+
+    const venueM = block.match(/<a\s+href="\/salle\/[^"]+">([^<]+)<\/a>/i);
+    const venue = venueM ? stripTags(venueM[1]) : '';
+
+    const villeM = block.match(/<a\s+href="\/ville\/([a-z0-9-]+)"/i);
+    const ville = villeM ? villeM[1] : citySlug;
+
+    if (!name) continue;
+    cards.push({ name, url: `https://www.infoconcert.com${path}`, date, venue, ville, id });
+  }
+  return cards;
+}
+
+async function fetchPage(url: string): Promise<string> {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'fr-FR,fr;q=0.9',
+      },
+    });
+    if (!res.ok) return '';
+    return await res.text();
+  } catch {
+    return '';
+  }
+}
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
     const { city } = await req.json();
     if (!city) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Missing city parameter' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY');
-    if (!firecrawlKey) {
-      return new Response(
-        JSON.stringify({ success: true, events: [] }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ success: false, error: 'Missing city' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     const slug = CITY_SLUGS[city] || city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
     const cityCoords = CITY_COORDS[city] || { lat: 48.8566, lng: 2.3522 };
-    const MAX_DISTANCE_KM = 30;
-
-    // InfoConcert URL pattern: https://www.infoconcert.com/ville/grenoble-1842
-    // Stratégie : scrape exhaustif en batches de 5 pages parallèles, on stoppe
-    // dès qu'un batch entier renvoie 0 events. Cap dur à MAX_PAGES par sécurité.
+    const MAX_DISTANCE_KM = 35;
     const baseUrl = `https://www.infoconcert.com/ville/${slug}`;
-    const MAX_PAGES = 10;
-    const PAGE_BATCH_SIZE = 10;
-    const pageUrl = (n: number) => (n === 1 ? baseUrl : `${baseUrl}?page=${n}`);
 
-    const extractSchema = {
-      type: 'object',
-      properties: {
-        events: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              name: { type: 'string', description: 'Artist or event name/title' },
-              venue: { type: 'string', description: 'Venue/salle name (e.g. "La Belle Electrique", "Palais des Sports")' },
-              address: { type: 'string', description: 'Full street address with street number, street name, postal code and city (e.g. "12 Rue de la République, 38000 Grenoble"). Do NOT just put the city name.' },
-              date: { type: 'string', description: 'Concert date and time in ISO 8601 format (YYYY-MM-DDTHH:mm:ss). Use the CURRENT YEAR (2026) unless explicitly stated otherwise.' },
-              price: { type: 'string', description: 'Price range or "Gratuit" if free' },
-              url: { type: 'string', description: 'Event URL on InfoConcert (full URL starting with https://www.infoconcert.com/)' },
-              description: { type: 'string', description: 'Genre, style or short description of the concert' },
-              genre: { type: 'string', description: 'Music genre: rock, pop, rap, electro, jazz, classique, metal, reggae, chanson, variete, world, folk, blues, hip-hop, rnb, soul, funk, or other' },
-            },
-            required: ['name'],
-          },
-        },
-      },
-      required: ['events'],
-    };
-
-    const extractPrompt = `Extract ALL concerts/events listed on this InfoConcert page. The current date is ${new Date().toISOString().slice(0, 10)}. The current year is ${new Date().getFullYear()}. For dates, use ISO 8601 format with the CURRENT YEAR. IMPORTANT: For the address field, extract the FULL STREET ADDRESS (street number, street name, postal code, city) — do NOT just write the city name. If you see a venue/salle name, put it in the venue field separately. Get artist/event name, venue, address, date/time, price, URL (full infoconcert.com URL), description/genre, and music genre tag. Extract EVERY SINGLE event on the page without exception, including multi-date events. Do not stop early. Even events with only a name and date should be extracted.`;
-
-    let rawEvents: any[] = [];
-
-    async function scrapePage(url: string): Promise<any[]> {
-      console.log(`Scraping InfoConcert: ${url}`);
-      const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${firecrawlKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          url,
-          formats: ['extract'],
-          actions: [
-            { type: 'wait', milliseconds: 800 },
-            { type: 'scroll', direction: 'down', amount: 4000 },
-            { type: 'wait', milliseconds: 500 },
-            { type: 'scroll', direction: 'down', amount: 4000 },
-            { type: 'wait', milliseconds: 400 },
-          ],
-          extract: { schema: extractSchema, prompt: extractPrompt },
-          waitFor: 2500,
-          timeout: 25000,
-          location: { country: 'FR', languages: ['fr'] },
-        }),
-      });
-      if (!scrapeResponse.ok) return [];
-      const scrapeData = await scrapeResponse.json();
-      const extractedData = scrapeData?.data?.extract || scrapeData?.extract || {};
-      return extractedData?.events || [];
+    // Page 1 first to discover total pages from the pagination
+    const firstHtml = await fetchPage(baseUrl);
+    if (!firstHtml) {
+      return new Response(JSON.stringify({ success: true, events: [] }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // Exhaustive crawl by batches of PAGE_BATCH_SIZE — stop on first empty batch
-    let nextPage = 1;
-    while (nextPage <= MAX_PAGES) {
-      const batchEnd = Math.min(nextPage + PAGE_BATCH_SIZE - 1, MAX_PAGES);
-      const batchUrls = [];
-      for (let p = nextPage; p <= batchEnd; p++) batchUrls.push(pageUrl(p));
+    // Detect max page from `?page=NN` links
+    const pageNums = [...firstHtml.matchAll(/\?page=(\d+)/g)].map(m => parseInt(m[1], 10));
+    const maxPage = pageNums.length ? Math.min(Math.max(...pageNums), 25) : 1;
+    console.log(`[InfoConcert] ${city} – detected ${maxPage} pages`);
 
-      const batchResults = await Promise.allSettled(batchUrls.map(scrapePage));
-      let batchTotal = 0;
-      for (const r of batchResults) {
-        if (r.status === 'fulfilled') {
-          rawEvents.push(...r.value);
-          batchTotal += r.value.length;
-        }
+    let allCards: RawCard[] = parsePage(firstHtml, slug);
+
+    if (maxPage > 1) {
+      const urls: string[] = [];
+      for (let p = 2; p <= maxPage; p++) urls.push(`${baseUrl}?page=${p}`);
+      // Parallel fetch (8 concurrent)
+      const CONCURRENCY = 8;
+      for (let i = 0; i < urls.length; i += CONCURRENCY) {
+        const chunk = urls.slice(i, i + CONCURRENCY);
+        const htmls = await Promise.all(chunk.map(fetchPage));
+        htmls.forEach(h => h && allCards.push(...parsePage(h, slug)));
       }
-      console.log(`[InfoConcert] Pages ${nextPage}-${batchEnd}: ${batchTotal} raw events`);
-
-      // Si le batch entier ne ramène rien on arrête (fin de la pagination)
-      if (batchTotal === 0) break;
-      nextPage = batchEnd + 1;
     }
 
-    // Deduplicate by name+date before processing
-    const seen = new Set<string>();
-    rawEvents = rawEvents.filter(e => {
-      const key = `${(e.name || '').toLowerCase().slice(0, 40)}-${e.date || ''}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+    // Dedup by id
+    const byId = new Map<string, RawCard>();
+    for (const c of allCards) if (!byId.has(c.id)) byId.set(c.id, c);
+    allCards = [...byId.values()];
 
-    console.log(`Extracted ${rawEvents.length} raw InfoConcert events for ${city} (up to ${nextPage - 1} pages crawled)`);
+    console.log(`[InfoConcert] ${city} – ${allCards.length} unique cards`);
 
-    // Step 1: pre-filter (no network calls)
-    type Candidate = { e: any; idx: number; startTime: string };
-    const candidates: Candidate[] = [];
-    for (let i = 0; i < rawEvents.length; i++) {
-      const e = rawEvents[i];
-      if (!e.name || e.name.length <= 2) continue;
-      const addrLower = (e.address || '').toLowerCase();
-      const venueLower = (e.venue || '').toLowerCase();
-      if (FOREIGN_KEYWORDS.some(kw => addrLower.includes(kw) || venueLower.includes(kw))) continue;
-      const startTime = fixEventDate(e.date || '');
-      if (!startTime) continue;
-      candidates.push({ e, idx: i, startTime });
-    }
-
-    // Step 2: parallel geocoding in chunks (cap at first 80 with address)
-    const GEOCODE_CAP = 80;
-    const GEOCODE_CONCURRENCY = 8;
-    const geocodeResults = new Map<number, { lat: number; lng: number } | null>();
-    const toGeocode = candidates.filter(c => c.e.address).slice(0, GEOCODE_CAP);
+    // Geocode by venue name (parallel, cap 100)
+    const GEOCODE_CAP = 100;
+    const GEOCODE_CONCURRENCY = 6;
+    const toGeocode = allCards.filter(c => c.venue).slice(0, GEOCODE_CAP);
+    const geoMap = new Map<string, { lat: number; lng: number } | null>();
     for (let i = 0; i < toGeocode.length; i += GEOCODE_CONCURRENCY) {
       const chunk = toGeocode.slice(i, i + GEOCODE_CONCURRENCY);
-      const results = await Promise.all(chunk.map(c => geocode(c.e.address, city).catch(() => null)));
-      chunk.forEach((c, j) => geocodeResults.set(c.idx, results[j]));
+      const results = await Promise.all(chunk.map(c => {
+        const cached = geoMap.get(c.venue);
+        if (cached !== undefined) return Promise.resolve(cached);
+        return geocode(`${c.venue}, ${city}, France`);
+      }));
+      chunk.forEach((c, j) => { if (!geoMap.has(c.venue)) geoMap.set(c.venue, results[j]); });
     }
 
-    // Step 3: build final events
     const events: any[] = [];
-    for (const { e, idx, startTime } of candidates) {
+    const nowTs = Date.now();
+    for (const c of allCards) {
+      const startTime = parseFrenchDate(c.date);
+      if (!startTime) continue;
+      if (new Date(startTime).getTime() < nowTs - 86400000) continue; // skip past
+
       let lat = cityCoords.lat;
       let lng = cityCoords.lng;
       let geocoded = false;
-
-      const coords = geocodeResults.get(idx);
+      const coords = c.venue ? geoMap.get(c.venue) : null;
       if (coords) {
         const dist = distanceKm(coords.lat, coords.lng, cityCoords.lat, cityCoords.lng);
         if (dist <= MAX_DISTANCE_KM) {
@@ -275,48 +256,38 @@ Deno.serve(async (req) => {
           lng = coords.lng;
           geocoded = true;
         } else {
-          continue; // too far
+          continue; // outside city radius
         }
       }
-
       if (!geocoded) {
-        lat += (Math.random() - 0.5) * 0.015;
-        lng += (Math.random() - 0.5) * 0.015;
+        lat += (Math.random() - 0.5) * 0.012;
+        lng += (Math.random() - 0.5) * 0.012;
       }
 
-      const id = `ic-${slug}-${idx}-${Date.now()}`;
-      const genres: string[] = [];
-      if (e.genre && e.genre !== 'other') genres.push(e.genre.toLowerCase());
-
       events.push({
-        id,
-        name: e.name,
-        venue: e.venue || '',
-        address: e.address || '',
+        id: `ic-${c.id}`,
+        name: c.name,
+        venue: c.venue,
+        address: c.venue ? `${c.venue}, ${city}` : '',
         city,
         lat,
         lng,
         startTime,
         endTime: null,
-        description: (e.genre ? `[${e.genre}] ` : '') + (e.description || '') + ' • via InfoConcert',
-        ticketUrl: e.url || '',
-        price: e.price || null,
-        genres,
+        description: `Concert ${c.name}${c.venue ? ' à ' + c.venue : ''} • via InfoConcert`,
+        ticketUrl: c.url,
+        price: null,
+        genres: [],
         externalAttendees: null,
       });
     }
 
-    console.log(`Returning ${events.length} valid InfoConcert events for ${city}`);
-
-    return new Response(
-      JSON.stringify({ success: true, events }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    console.log(`[InfoConcert] ${city} – returning ${events.length} events`);
+    return new Response(JSON.stringify({ success: true, events }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
     console.error('InfoConcert scrape error:', error);
-    return new Response(
-      JSON.stringify({ success: true, events: [] }),
-      { status: 200, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ success: true, events: [] }),
+      { status: 200, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
   }
 });
