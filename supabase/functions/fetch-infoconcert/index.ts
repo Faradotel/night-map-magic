@@ -101,7 +101,7 @@ function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): num
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-async function geocode(q: string): Promise<{ lat: number; lng: number } | null> {
+async function geocodeOnce(q: string): Promise<{ lat: number; lng: number } | null> {
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&limit=1`,
@@ -111,6 +111,62 @@ async function geocode(q: string): Promise<{ lat: number; lng: number } | null> 
     const data = await res.json();
     if (data?.[0]) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
   } catch { /* ignore */ }
+  return null;
+}
+
+// Build a "venue key" by normalizing variant names of the same place into one.
+// e.g. "Alpes Congres (alpexpo) - Salle Dauphine A Grenoble" and
+// "Auditorium Alpexpo Grenoble" should both collapse to "alpexpo grenoble".
+function venueKey(v: string, city: string): string {
+  let s = v.toLowerCase();
+  // If there's a parenthetical, prefer it (often the popular name)
+  const paren = s.match(/\(([^)]+)\)/);
+  if (paren) s = paren[1];
+  s = s
+    .replace(/\(.*?\)/g, ' ')
+    .replace(/\s*-\s*salle\s+[^-]+$/i, ' ')
+    .replace(/^salle\s+[^-]+-\s*/i, ' ')
+    .replace(/\bauditorium\b/g, ' ')
+    .replace(/\bsalle\s+\w+\b/g, ' ')
+    .replace(/\ba\s+/g, ' ')
+    .replace(/\bde\s+/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  // Ensure city is in the key for disambiguation
+  const cityLow = city.toLowerCase();
+  if (!s.includes(cityLow)) s = `${s} ${cityLow}`;
+  return s.trim();
+}
+
+// Generate ordered geocoding candidates from most to least specific.
+function geocodeCandidates(v: string, city: string): string[] {
+  const out: string[] = [];
+  const orig = v.replace(/\s+/g, ' ').trim();
+  const paren = orig.match(/\(([^)]+)\)/);
+  if (paren) out.push(`${paren[1].trim()}, ${city}, France`);
+  // Strip parenthetical content
+  const noParen = orig.replace(/\(.*?\)/g, ' ').replace(/\s+/g, ' ').trim();
+  if (noParen) out.push(`${noParen}, ${city}, France`);
+  // Strip " A <City>" suffix and "Salle X -" prefix
+  const cleaned = noParen
+    .replace(/\s+a\s+[a-zà-ÿ-]+$/i, '')
+    .replace(/^salle\s+[^-]+-\s*/i, '')
+    .trim();
+  if (cleaned && !out.includes(`${cleaned}, ${city}, France`)) {
+    out.push(`${cleaned}, ${city}, France`);
+  }
+  // Last resort: drop "Salle X" words
+  const minimal = cleaned.replace(/\bsalle\s+\w+\b/gi, '').replace(/\s+/g, ' ').trim();
+  if (minimal && minimal !== cleaned) out.push(`${minimal}, ${city}, France`);
+  return [...new Set(out)].filter(Boolean);
+}
+
+async function geocodeVenue(v: string, city: string): Promise<{ lat: number; lng: number } | null> {
+  for (const q of geocodeCandidates(v, city)) {
+    const hit = await geocodeOnce(q);
+    if (hit) return hit;
+  }
   return null;
 }
 
