@@ -75,6 +75,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
   const prevSelectedRef = useRef<string | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
   const radiusCircleRef = useRef<L.Circle | null>(null);
+  const stackCountsRef = useRef<Map<string, number>>(new Map());
 
   // Initialize map
   useEffect(() => {
