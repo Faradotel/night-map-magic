@@ -223,19 +223,15 @@ Deno.serve(async (req) => {
 
     console.log(`[InfoConcert] ${city} – ${allCards.length} unique cards`);
 
-    // Geocode by venue name (parallel, cap 100)
-    const GEOCODE_CAP = 100;
-    const GEOCODE_CONCURRENCY = 6;
-    const toGeocode = allCards.filter(c => c.venue).slice(0, GEOCODE_CAP);
+    // Geocode UNIQUE venues only (parallel, 10 concurrent)
+    const uniqueVenues = [...new Set(allCards.map(c => c.venue).filter(Boolean))];
+    console.log(`[InfoConcert] ${city} – geocoding ${uniqueVenues.length} unique venues`);
+    const GEOCODE_CONCURRENCY = 10;
     const geoMap = new Map<string, { lat: number; lng: number } | null>();
-    for (let i = 0; i < toGeocode.length; i += GEOCODE_CONCURRENCY) {
-      const chunk = toGeocode.slice(i, i + GEOCODE_CONCURRENCY);
-      const results = await Promise.all(chunk.map(c => {
-        const cached = geoMap.get(c.venue);
-        if (cached !== undefined) return Promise.resolve(cached);
-        return geocode(`${c.venue}, ${city}, France`);
-      }));
-      chunk.forEach((c, j) => { if (!geoMap.has(c.venue)) geoMap.set(c.venue, results[j]); });
+    for (let i = 0; i < uniqueVenues.length; i += GEOCODE_CONCURRENCY) {
+      const chunk = uniqueVenues.slice(i, i + GEOCODE_CONCURRENCY);
+      const results = await Promise.all(chunk.map(v => geocode(`${v}, ${city}, France`)));
+      chunk.forEach((v, j) => geoMap.set(v, results[j]));
     }
 
     const events: any[] = [];
