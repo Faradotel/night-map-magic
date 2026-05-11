@@ -279,19 +279,31 @@ Deno.serve(async (req) => {
 
     console.log(`[InfoConcert] ${city} – ${allCards.length} unique cards`);
 
-    // Geocode UNIQUE venues only (parallel, 10 concurrent)
-    const uniqueVenues = [...new Set(allCards.map(c => c.venue).filter(Boolean))];
-    console.log(`[InfoConcert] ${city} – geocoding ${uniqueVenues.length} unique venues`);
-    const GEOCODE_CONCURRENCY = 10;
-    const geoMap = new Map<string, { lat: number; lng: number } | null>();
-    for (let i = 0; i < uniqueVenues.length; i += GEOCODE_CONCURRENCY) {
-      const chunk = uniqueVenues.slice(i, i + GEOCODE_CONCURRENCY);
-      const results = await Promise.all(chunk.map(v => geocode(`${v}, ${city}, France`)));
-      chunk.forEach((v, j) => geoMap.set(v, results[j]));
+    // Geocode unique venue KEYS (collapses variants like "Alpexpo - Salle X" + "Auditorium Alpexpo")
+    const venueToKey = new Map<string, string>();
+    for (const c of allCards) {
+      if (c.venue && !venueToKey.has(c.venue)) venueToKey.set(c.venue, venueKey(c.venue, city));
+    }
+    const uniqueKeys = [...new Set(venueToKey.values())];
+    // Pick a representative original venue string per key for candidate generation
+    const keyToVenue = new Map<string, string>();
+    for (const [v, k] of venueToKey) if (!keyToVenue.has(k)) keyToVenue.set(k, v);
+
+    console.log(`[InfoConcert] ${city} – geocoding ${uniqueKeys.length} unique venue keys (from ${venueToKey.size} variants)`);
+    const GEOCODE_CONCURRENCY = 8;
+    const keyCoords = new Map<string, { lat: number; lng: number } | null>();
+    for (let i = 0; i < uniqueKeys.length; i += GEOCODE_CONCURRENCY) {
+      const chunk = uniqueKeys.slice(i, i + GEOCODE_CONCURRENCY);
+      const results = await Promise.all(chunk.map(k => geocodeVenue(keyToVenue.get(k)!, city)));
+      chunk.forEach((k, j) => keyCoords.set(k, results[j]));
     }
 
     const events: any[] = [];
     const nowTs = Date.now();
+    // For venues that fail to geocode: cluster all events of the SAME venue at one
+    // consistent point (city center + small deterministic offset per venue key).
+    let unknownIdx = 0;
+    const unknownKey = new Map<string, number>();
     for (const c of allCards) {
       const startTime = parseFrenchDate(c.date);
       if (!startTime) continue;
@@ -299,21 +311,20 @@ Deno.serve(async (req) => {
 
       let lat = cityCoords.lat;
       let lng = cityCoords.lng;
-      let geocoded = false;
-      const coords = c.venue ? geoMap.get(c.venue) : null;
+      const k = c.venue ? venueToKey.get(c.venue) : undefined;
+      const coords = k ? keyCoords.get(k) : null;
       if (coords) {
         const dist = distanceKm(coords.lat, coords.lng, cityCoords.lat, cityCoords.lng);
-        if (dist <= MAX_DISTANCE_KM) {
-          lat = coords.lat;
-          lng = coords.lng;
-          geocoded = true;
-        } else {
-          continue; // outside city radius
-        }
-      }
-      if (!geocoded) {
-        lat += (Math.random() - 0.5) * 0.012;
-        lng += (Math.random() - 0.5) * 0.012;
+        if (dist > MAX_DISTANCE_KM) continue; // outside city radius
+        lat = coords.lat;
+        lng = coords.lng;
+      } else if (k) {
+        if (!unknownKey.has(k)) unknownKey.set(k, unknownIdx++);
+        const idx = unknownKey.get(k)!;
+        const angle = idx * 2.39996; // golden-angle spread
+        const r = 0.004;
+        lat += Math.cos(angle) * r;
+        lng += Math.sin(angle) * r;
       }
 
       events.push({
