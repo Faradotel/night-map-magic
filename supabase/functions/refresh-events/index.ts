@@ -182,14 +182,15 @@ Deno.serve(async (req) => {
 
       const batch = events.map((e: any) => {
         const { type, vibe } = getTypeVibe(e);
+        const override = applyVenueOverride(e.venue || '', e.address || '');
         return {
           id: e.id,
           name: e.name || '',
           type,
           vibe,
           genres: e.genres || [],
-          lat: e.lat || 0,
-          lng: e.lng || 0,
+          lat: override?.lat ?? e.lat ?? 0,
+          lng: override?.lng ?? e.lng ?? 0,
           address: e.address || '',
           city: (e.city || city).replace(/\s*\(\d+\)\s*$/, '').trim(),
           start_time: e.startTime || new Date().toISOString(),
