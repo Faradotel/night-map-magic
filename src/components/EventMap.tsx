@@ -151,16 +151,19 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     }
     markersRef.current.clear();
 
-    // Count events sharing the (approximately) same location → drives stack badge
+    // Count events sharing the (approximately) same location → drives stack badge.
+    // Must match the co-located threshold used by MapEventCard (~50m, 0.0005°).
     const stackCounts = new Map<string, number>();
+    const STEP = 0.0005;
+    const posKey = (lat: number, lng: number) =>
+      `${Math.round(lat / STEP)},${Math.round(lng / STEP)}`;
     const positionGroups = new Map<string, number>();
     for (const e of events) {
-      const key = `${e.lat.toFixed(4)},${e.lng.toFixed(4)}`;
+      const key = posKey(e.lat, e.lng);
       positionGroups.set(key, (positionGroups.get(key) || 0) + 1);
     }
     for (const e of events) {
-      const key = `${e.lat.toFixed(4)},${e.lng.toFixed(4)}`;
-      stackCounts.set(e.id, positionGroups.get(key) || 1);
+      stackCounts.set(e.id, positionGroups.get(posKey(e.lat, e.lng)) || 1);
     }
     stackCountsRef.current = stackCounts;
 
