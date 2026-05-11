@@ -235,40 +235,47 @@ Deno.serve(async (req) => {
 
     console.log(`Extracted ${rawEvents.length} raw InfoConcert events for ${city} (up to ${nextPage - 1} pages crawled)`);
 
-    const events: any[] = [];
+    // Step 1: pre-filter (no network calls)
+    type Candidate = { e: any; idx: number; startTime: string };
+    const candidates: Candidate[] = [];
     for (let i = 0; i < rawEvents.length; i++) {
       const e = rawEvents[i];
       if (!e.name || e.name.length <= 2) continue;
-
       const addrLower = (e.address || '').toLowerCase();
       const venueLower = (e.venue || '').toLowerCase();
-      if (FOREIGN_KEYWORDS.some(kw => addrLower.includes(kw) || venueLower.includes(kw))) {
-        console.log(`Rejected foreign: "${e.name}" (${e.address})`);
-        continue;
-      }
-
+      if (FOREIGN_KEYWORDS.some(kw => addrLower.includes(kw) || venueLower.includes(kw))) continue;
       const startTime = fixEventDate(e.date || '');
-      if (!startTime) {
-        console.log(`Rejected bad date: "${e.name}" (${e.date})`);
-        continue;
-      }
+      if (!startTime) continue;
+      candidates.push({ e, idx: i, startTime });
+    }
 
+    // Step 2: parallel geocoding in chunks (cap at first 80 with address)
+    const GEOCODE_CAP = 80;
+    const GEOCODE_CONCURRENCY = 8;
+    const geocodeResults = new Map<number, { lat: number; lng: number } | null>();
+    const toGeocode = candidates.filter(c => c.e.address).slice(0, GEOCODE_CAP);
+    for (let i = 0; i < toGeocode.length; i += GEOCODE_CONCURRENCY) {
+      const chunk = toGeocode.slice(i, i + GEOCODE_CONCURRENCY);
+      const results = await Promise.all(chunk.map(c => geocode(c.e.address, city).catch(() => null)));
+      chunk.forEach((c, j) => geocodeResults.set(c.idx, results[j]));
+    }
+
+    // Step 3: build final events
+    const events: any[] = [];
+    for (const { e, idx, startTime } of candidates) {
       let lat = cityCoords.lat;
       let lng = cityCoords.lng;
       let geocoded = false;
 
-      if (e.address && i < 40) {
-        const coords = await geocode(e.address, city);
-        if (coords) {
-          const dist = distanceKm(coords.lat, coords.lng, cityCoords.lat, cityCoords.lng);
-          if (dist <= MAX_DISTANCE_KM) {
-            lat = coords.lat;
-            lng = coords.lng;
-            geocoded = true;
-          } else {
-            console.log(`Rejected too far (${dist.toFixed(0)}km): "${e.name}" (${e.address})`);
-            continue;
-          }
+      const coords = geocodeResults.get(idx);
+      if (coords) {
+        const dist = distanceKm(coords.lat, coords.lng, cityCoords.lat, cityCoords.lng);
+        if (dist <= MAX_DISTANCE_KM) {
+          lat = coords.lat;
+          lng = coords.lng;
+          geocoded = true;
+        } else {
+          continue; // too far
         }
       }
 
@@ -277,12 +284,9 @@ Deno.serve(async (req) => {
         lng += (Math.random() - 0.5) * 0.015;
       }
 
-      const id = `ic-${slug}-${i}-${Date.now()}`;
-
+      const id = `ic-${slug}-${idx}-${Date.now()}`;
       const genres: string[] = [];
-      if (e.genre && e.genre !== 'other') {
-        genres.push(e.genre.toLowerCase());
-      }
+      if (e.genre && e.genre !== 'other') genres.push(e.genre.toLowerCase());
 
       events.push({
         id,
