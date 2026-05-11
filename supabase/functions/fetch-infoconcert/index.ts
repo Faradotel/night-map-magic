@@ -140,8 +140,8 @@ Deno.serve(async (req) => {
     // Stratégie : scrape exhaustif en batches de 5 pages parallèles, on stoppe
     // dès qu'un batch entier renvoie 0 events. Cap dur à MAX_PAGES par sécurité.
     const baseUrl = `https://www.infoconcert.com/ville/${slug}`;
-    const MAX_PAGES = 30;
-    const PAGE_BATCH_SIZE = 5;
+    const MAX_PAGES = 10;
+    const PAGE_BATCH_SIZE = 10;
     const pageUrl = (n: number) => (n === 1 ? baseUrl : `${baseUrl}?page=${n}`);
 
     const extractSchema = {
