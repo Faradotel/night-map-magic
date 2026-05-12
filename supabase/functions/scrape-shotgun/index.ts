@@ -223,6 +223,24 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Auth: accept service-role bearer (internal) OR a valid user JWT
+  {
+    const _serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    const _auth = req.headers.get("authorization") || "";
+    let _ok = _auth === `Bearer ${_serviceKey}`;
+    if (!_ok && _auth.startsWith("Bearer ")) {
+      try {
+        const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+        const _sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!);
+        const { data, error } = await _sb.auth.getClaims(_auth.replace("Bearer ", ""));
+        _ok = !error && !!data?.claims?.sub;
+      } catch { _ok = false; }
+    }
+    if (!_ok) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+  }
+
   try {
     const { city } = await req.json();
 
