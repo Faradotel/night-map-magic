@@ -290,7 +290,11 @@ async function fetchAgendaEvents(
       const venue = e.location?.name || '';
       const address = [e.location?.address, e.location?.postalCode, e.location?.city].filter(Boolean).join(', ');
       const eventCity = (e.location?.city || city).replace(/\s*\(\d+\)\s*$/, '').trim();
-      const ticketUrl = e.registration?.[0]?.value || e.links?.[0]?.link || e.originalUrl || `https://openagenda.com`;
+      const eventSlug = typeof e.slug === 'string' ? e.slug : '';
+      const canonicalUrl = agendaSlug && eventSlug
+        ? `https://openagenda.com/fr/${agendaSlug}/events/${eventSlug}`
+        : null;
+      const ticketUrl = e.registration?.[0]?.value || e.links?.[0]?.link || canonicalUrl || e.originalUrl || `https://openagenda.com`;
 
       const { type, subtype } = detectOaType(title, description, kw);
 
