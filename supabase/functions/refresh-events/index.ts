@@ -38,8 +38,19 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+    // Require service-role bearer token (cron job or trusted server only)
+    const authHeader = req.headers.get('authorization') || '';
+    const expected = `Bearer ${supabaseKey}`;
+    if (authHeader !== expected) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const anonKey = supabaseKey; // internal scraper calls authenticate via service role
 
     // Accept optional "city" param to refresh a single city
     let citiesToRefresh = CITIES;
