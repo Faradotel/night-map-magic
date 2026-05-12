@@ -34,20 +34,36 @@ const DEFAULT_ZOOM = 12;
 const NEARBY_RADIUS_DEFAULT = 30;
 const CITY_RADIUS_DEFAULT = 80;
 
+const FRANCE_CENTER: [number, number] = [46.2276, 2.2137];
+const FRANCE_ZOOM = 6;
+const NEARBY_CITY_MAX_KM = 30;
+
+function findNearestCity(lat: number, lng: number): City | null {
+  let best: City | null = null;
+  let bestDist = Infinity;
+  for (const c of CITIES) {
+    const d = getDistance(lat, lng, c.lat, c.lng);
+    if (d < bestDist) { bestDist = d; best = c; }
+  }
+  return best && bestDist <= NEARBY_CITY_MAX_KM ? best : null;
+}
+
 export default function Index() {
   const { user, loading: authLoading } = useAuth();
   const { isPro } = useUserRole();
   const { preferredCity, setPreferredCity } = usePreferredCity();
-  const savedCity = CITIES.find(c => c.name === preferredCity);
-  const defaultCity = savedCity || CITIES.find(c => c.name === 'Paris')!;
-  const initCenter: [number, number] = [defaultCity.lat, defaultCity.lng];
+  const savedCity = preferredCity ? CITIES.find(c => c.name === preferredCity) : null;
+  // Default mode: city if saved, otherwise France
+  const initMode: LocationModeType = savedCity ? 'city' : 'france';
+  const initCenter: [number, number] = savedCity ? [savedCity.lat, savedCity.lng] : FRANCE_CENTER;
+  const initZoom = savedCity ? DEFAULT_ZOOM : FRANCE_ZOOM;
 
   const [activeTab, setActiveTab] = useState<Tab>('map');
   const [selectedEvent, setSelectedEvent] = useState<NightEvent | null>(null);
   const [showDetail, setShowDetail] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>(initCenter);
-  const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
+  const [mapZoom, setMapZoom] = useState(initZoom);
   const [locating, setLocating] = useState(false);
   const attendance = useAttendance();
   const favorites = useFavorites();
