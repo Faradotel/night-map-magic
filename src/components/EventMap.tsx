@@ -115,7 +115,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     if (tileLayerRef.current) map.removeLayer(tileLayerRef.current);
     const tileUrl = theme === 'dark'
       ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png?language=fr'
-      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png?language=fr';
+      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png?language=fr';
     tileLayerRef.current = L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(map);
   }, [theme]);
 
