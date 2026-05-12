@@ -27,6 +27,7 @@ function createEventIcon(
   isDark: boolean,
   liveCount: number = 0,
   stackCount: number = 1,
+  liveMode: boolean = false,
 ): L.DivIcon {
   const vibe = vibeConfig[event.vibe];
   const typeEmoji = getSourceEmoji(event.id, typeConfig[event.type]?.emoji ?? '📍', event.type);
