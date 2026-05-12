@@ -293,8 +293,8 @@ async function fetchAgendaEvents(
       const eventSlug = typeof e.slug === 'string' ? e.slug : '';
       const canonicalUrl = agendaSlug && eventSlug
         ? `https://openagenda.com/fr/${agendaSlug}/events/${eventSlug}`
-        : null;
-      const ticketUrl = e.registration?.[0]?.value || e.links?.[0]?.link || canonicalUrl || e.originalUrl || `https://openagenda.com`;
+        : '';
+      const ticketUrl = canonicalUrl || e.registration?.[0]?.value || e.links?.[0]?.link || e.originalUrl || `https://openagenda.com`;
 
       const { type, subtype } = detectOaType(title, description, kw);
 
