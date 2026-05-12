@@ -245,23 +245,27 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
 
     if (prevId === newId) return;
 
-    // Deselect previous
-    if (prevId) {
-      const prevMarker = markersRef.current.get(prevId);
-      const prevEvent = events.find(e => e.id === prevId);
+    // Resolve each id to its group leader (the actual marker owner)
+    const prevLeader = prevId ? leaderByIdRef.current.get(prevId) ?? prevId : null;
+    const newLeader = newId ? leaderByIdRef.current.get(newId) ?? newId : null;
+
+    // Deselect previous (only if not the same marker as the new one)
+    if (prevLeader && prevLeader !== newLeader) {
+      const prevMarker = markersRef.current.get(prevLeader);
+      const prevEvent = events.find(e => e.id === prevLeader);
       if (prevMarker && prevEvent) {
-        const stack = stackCountsRef.current.get(prevId) ?? 1;
-        prevMarker.setIcon(createEventIcon(prevEvent, false, isDark, livePulseMap?.[prevId] ?? 0, stack, !!liveMode));
-        prevMarker.setZIndexOffset((livePulseMap?.[prevId] ?? 0) > 0 ? 250 : (stack > 1 ? 100 : 0));
+        const stack = stackCountsRef.current.get(prevLeader) ?? 1;
+        prevMarker.setIcon(createEventIcon(prevEvent, false, isDark, livePulseMap?.[prevLeader] ?? 0, stack, !!liveMode));
+        prevMarker.setZIndexOffset((livePulseMap?.[prevLeader] ?? 0) > 0 ? 250 : (stack > 1 ? 100 : 0));
       }
     }
 
-    // Select new
-    if (newId && selectedEvent) {
-      const newMarker = markersRef.current.get(newId);
+    // Select new (highlight the leader marker, but show the selected event's vibe colour)
+    if (newLeader && selectedEvent) {
+      const newMarker = markersRef.current.get(newLeader);
       if (newMarker) {
-        const stack = stackCountsRef.current.get(newId) ?? 1;
-        newMarker.setIcon(createEventIcon(selectedEvent, true, isDark, livePulseMap?.[newId] ?? 0, stack, !!liveMode));
+        const stack = stackCountsRef.current.get(newLeader) ?? 1;
+        newMarker.setIcon(createEventIcon(selectedEvent, true, isDark, livePulseMap?.[newLeader] ?? 0, stack, !!liveMode));
         newMarker.setZIndexOffset(500);
       }
     }
