@@ -201,6 +201,7 @@ async function discoverAgendas(city: string, apiKey: string): Promise<AgendaRef[
 /** Fetch events from a single agenda with geo filter */
 async function fetchAgendaEvents(
   agendaUid: number,
+  agendaSlug: string,
   apiKey: string,
   cityCoords: { lat: number; lng: number },
   maxDistKm: number,
