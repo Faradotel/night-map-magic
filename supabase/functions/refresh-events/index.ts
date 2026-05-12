@@ -280,20 +280,9 @@ Deno.serve(async (req) => {
         venue: 'Palais des Sports',
         ticket_url: 'https://www.seetickets.com/fr/d/event/festival-magic-bus-2026-pass-2-jours-ven-sam/palais-des-sports-de-grenoble/11587107',
         source: 'routedesfestivals',
-        updated_at: new Date().toISOString(),
         external_attendees: null,
       },
     ];
-    const curatedForCities = CURATED_EVENTS.filter(e =>
-      citiesToRefresh.length > 5 || citiesToRefresh.includes(e.city)
-    );
-    if (curatedForCities.length > 0) {
-      const { error: curatedErr } = await supabase
-        .from('cached_events')
-        .upsert(curatedForCities, { onConflict: 'id' });
-      if (curatedErr) console.error('Curated upsert error:', curatedErr.message);
-      else console.log(`Curated: ${curatedForCities.length} events upserted`);
-    }
 
     // Process cities in parallel batches of 3 (~3x faster than sequential)
     const BATCH_SIZE = 3;
@@ -303,6 +292,18 @@ Deno.serve(async (req) => {
       for (const r of results) {
         if (r.status === 'fulfilled') totalInserted += r.value;
       }
+    }
+
+    // Upsert curated AFTER city refresh so the stale-events cleanup doesn't drop them
+    const curatedForCities = CURATED_EVENTS
+      .filter(e => citiesToRefresh.length > 5 || citiesToRefresh.includes(e.city))
+      .map(e => ({ ...e, updated_at: new Date().toISOString() }));
+    if (curatedForCities.length > 0) {
+      const { error: curatedErr } = await supabase
+        .from('cached_events')
+        .upsert(curatedForCities, { onConflict: 'id' });
+      if (curatedErr) console.error('Curated upsert error:', curatedErr.message);
+      else console.log(`Curated: ${curatedForCities.length} events upserted`);
     }
 
     // ── Brocabrac: scrape ALL French departments not already covered by city loop ──
