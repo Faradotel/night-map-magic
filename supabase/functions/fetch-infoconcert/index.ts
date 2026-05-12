@@ -66,8 +66,13 @@ const MONTHS_FR: Record<string, number> = {
 };
 
 function parseFrenchDate(s: string): string {
-  // e.g. "Lundi 11 mai 2026 à 20h00" or "Du 11 mai 2026 au 15 mai 2026"
+  // e.g. "Lundi 11 mai 2026 à 20h00" or "Du 11 mai 2026 au 15 mai 2026" — or already ISO
   if (!s) return '';
+  // ISO passthrough (RSC payload already gives us "2026-07-04T19:00:00.000Z")
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s)) {
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? '' : d.toISOString();
+  }
   const m = s.match(/(\d{1,2})\s+(janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|septembre|octobre|novembre|décembre|decembre)\s+(\d{4})(?:[^0-9]+(\d{1,2})h(\d{2})?)?/i);
   if (!m) return '';
   const day = parseInt(m[1], 10);
