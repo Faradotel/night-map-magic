@@ -188,10 +188,77 @@ interface RawCard {
   id: string;
 }
 
-function parsePage(html: string, citySlug: string): RawCard[] {
+// New: parse concerts directly from the React-Server-Components payload
+// embedded in `self.__next_f.push([..., "<json-string>"])` chunks.
+// This is the authoritative data source — works for ALL cities (including
+// the big ones where the static HTML only shows skeletons).
+function parseRscPayload(html: string, expectedCity: string): RawCard[] {
   const cards: RawCard[] = [];
-  // Split on concert URLs. Each card starts before its first <a href="/artiste/...">.
-  // Strategy: find all `/concerts/concert-...-NNN` ids, then for each grab the surrounding ~3000 chars.
+  // Unescape the JS-string-encoded JSON
+  const unesc = html
+    .replace(/\\"/g, '"')
+    .replace(/\\\//g, '/')
+    .replace(/\\u0026/g, '&')
+    .replace(/\\n/g, '\n');
+
+  const expected = expectedCity.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const seen = new Set<string>();
+  const idRe = /\{"id":"(\d{6,8})","iri":"\/api\/concerts\/\1","status"/g;
+  let mm: RegExpExecArray | null;
+  while ((mm = idRe.exec(unesc)) !== null) {
+    const cid = mm[1];
+    if (seen.has(cid)) continue;
+
+    // Brace-match to find the full concert object
+    let depth = 0, i = mm.index, inStr = false;
+    for (; i < unesc.length; i++) {
+      const ch = unesc[i];
+      if (inStr) {
+        if (ch === '\\') { i++; continue; }
+        if (ch === '"') inStr = false;
+        continue;
+      }
+      if (ch === '"') inStr = true;
+      else if (ch === '{') depth++;
+      else if (ch === '}') { depth--; if (depth === 0) break; }
+    }
+    if (depth !== 0) continue;
+    const block = unesc.slice(mm.index, i + 1);
+
+    let obj: any;
+    try { obj = JSON.parse(block); } catch { continue; }
+    const lineUp = obj.lineUp?.[0]?.name || obj.firstPart?.[0]?.name;
+    if (!lineUp) continue;
+    const venueName = obj.venue?.name || '';
+    const cityName = obj.venue?.city?.name || '';
+    if (!cityName) continue;
+    // Only keep events whose venue city matches the requested city
+    const cn = cityName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (cn !== expected) continue;
+    const rawDate: string | undefined = obj.dates?.[0]?.date;
+    if (!rawDate) continue;
+    const isoDate = rawDate.replace(/^\$D/, ''); // already ISO
+
+    seen.add(cid);
+    cards.push({
+      name: lineUp,
+      url: `https://www.infoconcert.com/concerts/${cid}`,
+      date: isoDate,        // pre-parsed ISO — parseFrenchDate will detect and return as-is
+      venue: venueName,
+      ville: cityName,
+      id: cid,
+    });
+  }
+  return cards;
+}
+
+function parsePage(html: string, citySlug: string, expectedCity?: string): RawCard[] {
+  // Prefer the structured RSC payload (works on modern InfoConcert pages)
+  if (expectedCity) {
+    const rsc = parseRscPayload(html, expectedCity);
+    if (rsc.length) return rsc;
+  }
+  const cards: RawCard[] = [];
   const seen = new Set<string>();
   const urlRe = /href="(\/concerts\/concert-[a-z0-9-]+-(\d+))"/gi;
   let m: RegExpExecArray | null;
@@ -201,7 +268,6 @@ function parsePage(html: string, citySlug: string): RawCard[] {
     if (seen.has(id)) continue;
     seen.add(id);
 
-    // Look back up to 3500 chars to find the artist name and date
     const start = Math.max(0, m.index - 3500);
     const block = html.slice(start, m.index + 200);
 
@@ -222,6 +288,7 @@ function parsePage(html: string, citySlug: string): RawCard[] {
   }
   return cards;
 }
+
 
 async function fetchPage(url: string): Promise<string> {
   try {
