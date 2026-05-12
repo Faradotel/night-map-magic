@@ -346,10 +346,10 @@ Deno.serve(async (req) => {
     const MAX_DISTANCE_KM = 50;
 
     // Step 1: Discover relevant agendas
-    const agendaUids = await discoverAgendas(city, apiKey);
-    console.log(`[OpenAgenda] Will query ${agendaUids.length} agendas for "${city}"`);
+    const agendaRefs = await discoverAgendas(city, apiKey);
+    console.log(`[OpenAgenda] Will query ${agendaRefs.length} agendas for "${city}"`);
 
-    if (agendaUids.length === 0) {
+    if (agendaRefs.length === 0) {
       return new Response(JSON.stringify({ success: true, events: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
@@ -357,11 +357,11 @@ Deno.serve(async (req) => {
     const allEvents: any[] = [];
     const seenIds = new Set<string>();
 
-    for (let i = 0; i < agendaUids.length; i += 5) {
-      const batch = agendaUids.slice(i, i + 5);
+    for (let i = 0; i < agendaRefs.length; i += 5) {
+      const batch = agendaRefs.slice(i, i + 5);
       const results = await Promise.all(
-        batch.map(uid => fetchAgendaEvents(uid, apiKey, cityCoords, MAX_DISTANCE_KM, city).catch(err => {
-          console.error(`[OpenAgenda] Error on agenda ${uid}:`, err.message);
+        batch.map(ref => fetchAgendaEvents(ref.uid, ref.slug, apiKey, cityCoords, MAX_DISTANCE_KM, city).catch(err => {
+          console.error(`[OpenAgenda] Error on agenda ${ref.uid}:`, err.message);
           return [];
         }))
       );
