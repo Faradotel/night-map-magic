@@ -103,6 +103,7 @@ const NATIONAL_AGENDA_SLUGS = [
   'printemps-des-poetes',
   'le-mois-du-film-documentaire',
   'la-fete-du-court-metrage',
+  'maiavelo',                     // Mai à Vélo - événements vélo nationaux
 ];
 
 /**
