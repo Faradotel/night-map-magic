@@ -91,7 +91,7 @@ export default function Index() {
     genres: [],
     vibes: [],
     sources: [],
-    radiusKm: NEARBY_RADIUS_DEFAULT
+    radiusKm: savedCity ? CITY_RADIUS_DEFAULT : initMode === 'france' ? 9999 : NEARBY_RADIUS_DEFAULT
   });
 
   // Compute a loading key based on mode + city/location
