@@ -173,21 +173,33 @@ export default function Index() {
 
   // Request geolocation on load
   useEffect(() => {
-    if ('geolocation' in navigator) {
-      setLocating(true);
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const loc: [number, number] = [pos.coords.latitude, pos.coords.longitude];
-          setUserLocation(loc);
-          setFilterCenter(loc);
-          setLocating(false);
-          setMapCenter(loc);
-          setMapZoom(13);
-        },
-        () => { setLocating(false); },
-        { enableHighAccuracy: true, timeout: 8000 }
-      );
-    }
+    if (!('geolocation' in navigator)) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc: [number, number] = [pos.coords.latitude, pos.coords.longitude];
+        setUserLocation(loc);
+        setLocating(false);
+
+        // If no city was previously saved, try to detect a nearby French city
+        // and use it as the default — otherwise keep France-wide view.
+        if (!savedCity) {
+          const nearest = findNearestCity(loc[0], loc[1]);
+          if (nearest) {
+            setSelectedCityName(nearest.name);
+            setPreferredCity(nearest.name);
+            setLocationMode('city');
+            setFilterCenter([nearest.lat, nearest.lng]);
+            setMapCenter([nearest.lat, nearest.lng]);
+            setMapZoom(DEFAULT_ZOOM);
+            setFilters((prev) => ({ ...prev, radiusKm: CITY_RADIUS_DEFAULT }));
+          }
+        }
+      },
+      () => { setLocating(false); },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Filter events using filterCenter (user location or city center)
