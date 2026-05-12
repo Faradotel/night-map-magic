@@ -143,11 +143,13 @@ async function resolveSlugUid(slug: string, apiKey: string): Promise<number | nu
   return null;
 }
 
+type AgendaRef = { uid: number; slug: string };
+
 /** Discover agendas relevant to a city + national mega-agendas */
-async function discoverAgendas(city: string, apiKey: string): Promise<number[]> {
-  const uids: number[] = [];
+async function discoverAgendas(city: string, apiKey: string): Promise<AgendaRef[]> {
+  const byUid = new Map<number, string>();
   const searchTerms = [city];
-  
+
   for (const term of searchTerms) {
     const url = `https://api.openagenda.com/v2/agendas?search=${encodeURIComponent(term)}&size=50&official=1`;
     const res = await oaFetch(url, apiKey);
@@ -160,7 +162,7 @@ async function discoverAgendas(city: string, apiKey: string): Promise<number[]> 
     const agendas = data?.agendas || [];
     console.log(`[OpenAgenda] Found ${agendas.length} official agendas for "${term}"`);
     for (const a of agendas) {
-      if (a.uid && !uids.includes(a.uid)) uids.push(a.uid);
+      if (a.uid && !byUid.has(a.uid)) byUid.set(a.uid, a.slug || '');
     }
   }
 
@@ -170,26 +172,30 @@ async function discoverAgendas(city: string, apiKey: string): Promise<number[]> 
   if (res2.ok) {
     const data2 = await res2.json();
     for (const a of (data2?.agendas || [])) {
-      if (a.uid && !uids.includes(a.uid)) uids.push(a.uid);
+      if (a.uid && !byUid.has(a.uid)) byUid.set(a.uid, a.slug || '');
     }
-    console.log(`[OpenAgenda] City-only unique agendas: ${uids.length}`);
+    console.log(`[OpenAgenda] City-only unique agendas: ${byUid.size}`);
   } else {
     await res2.text();
   }
 
   // Cap city-discovered agendas, then ALWAYS append national + thematic mega-agendas
-  const cityUids = uids.slice(0, 18);
-  const extraUids: number[] = [];
+  const cityRefs: AgendaRef[] = Array.from(byUid.entries()).slice(0, 18).map(([uid, slug]) => ({ uid, slug }));
+  const seenUids = new Set(cityRefs.map(r => r.uid));
+  const extraRefs: AgendaRef[] = [];
   const allSlugs = [...NATIONAL_AGENDA_SLUGS, ...THEMATIC_AGENDA_SLUGS];
   const slugResolutions = await Promise.all(
-    allSlugs.map(slug => resolveSlugUid(slug, apiKey)),
+    allSlugs.map(async slug => ({ slug, uid: await resolveSlugUid(slug, apiKey) })),
   );
-  for (const u of slugResolutions) {
-    if (u && !cityUids.includes(u) && !extraUids.includes(u)) extraUids.push(u);
+  for (const r of slugResolutions) {
+    if (r.uid && !seenUids.has(r.uid)) {
+      extraRefs.push({ uid: r.uid, slug: r.slug });
+      seenUids.add(r.uid);
+    }
   }
-  console.log(`[OpenAgenda] Adding ${extraUids.length} national+thematic agendas`);
+  console.log(`[OpenAgenda] Adding ${extraRefs.length} national+thematic agendas`);
 
-  return [...cityUids, ...extraUids];
+  return [...cityRefs, ...extraRefs];
 }
 
 /** Fetch events from a single agenda with geo filter */
