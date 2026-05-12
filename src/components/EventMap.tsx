@@ -79,7 +79,7 @@ function createUserIcon(): L.DivIcon {
   });
 }
 
-export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, userLocation, radiusKm, livePulseMap }: EventMapProps) {
+export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, userLocation, radiusKm, livePulseMap, liveMode }: EventMapProps) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const containerRef = useRef<HTMLDivElement>(null);
