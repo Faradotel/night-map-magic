@@ -29,13 +29,18 @@ function createEventIcon(
   const vibe = vibeConfig[event.vibe];
   const typeEmoji = getSourceEmoji(event.id, typeConfig[event.type]?.emoji ?? '📍', event.type);
   const color = vibe.color;
-  const size = isSelected ? 52 : 42;
-  const bg = isDark ? 'rgba(26,13,21,0.85)' : 'rgba(255,255,255,0.92)';
-  const liveDotBorder = isDark ? 'rgba(26,13,21,0.9)' : 'rgba(255,255,255,0.9)';
+  // +15% larger markers for stronger map presence
+  const size = isSelected ? 60 : 48;
+  const bg = isDark ? 'rgba(26,13,21,0.85)' : 'rgba(255,255,255,0.96)';
+  const liveDotBorder = isDark ? 'rgba(26,13,21,0.9)' : 'rgba(255,255,255,0.95)';
   const pulse = liveCount > 0;
   const pulseColor = 'hsl(142,71%,45%)';
-  const stackAccent = 'hsl(320,100%,50%)';
+  const stackAccent = 'hsl(325,95%,54%)';
   const showStack = stackCount > 1;
+  // Stronger glow in light mode so neon identity survives daylight
+  const glowAlpha = isDark ? '55' : '88';
+  const glowAlpha2 = isDark ? '22' : '44';
+  const dropShadow = isDark ? '0 4px 12px rgba(0,0,0,.5)' : '0 6px 16px rgba(40,10,60,.18), 0 2px 4px rgba(40,10,60,.12)';
 
   return L.divIcon({
     className: '',
@@ -43,12 +48,13 @@ function createEventIcon(
       <div style="position:relative;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;">
         ${pulse ? `<div style="position:absolute;inset:-6px;border-radius:50%;border:2px solid ${pulseColor};animation:ping-slow 1.8s ease-out infinite;opacity:0.55;pointer-events:none;"></div>` : ''}
         ${pulse ? `<div style="position:absolute;inset:-2px;border-radius:50%;background:${pulseColor}22;animation:ping-slow 1.8s ease-out infinite;pointer-events:none;"></div>` : ''}
-        ${isSelected && !pulse ? `<div style="position:absolute;inset:-4px;border-radius:50%;border:2px solid ${color};animation:ping-slow 1.5s ease-out infinite;opacity:0.3;pointer-events:none;"></div>` : ''}
+        ${!pulse && !isSelected ? `<div style="position:absolute;inset:-3px;border-radius:50%;background:radial-gradient(circle, ${color}${glowAlpha2} 0%, transparent 70%);pointer-events:none;"></div>` : ''}
+        ${isSelected && !pulse ? `<div style="position:absolute;inset:-4px;border-radius:50%;border:2px solid ${color};animation:ping-slow 1.5s ease-out infinite;opacity:0.4;pointer-events:none;"></div>` : ''}
         ${isSelected && event.isLive ? `<div style="position:absolute;inset:0;border-radius:50%;background:${color}22;animation:ping-slow 1.5s ease-out infinite;pointer-events:none;"></div>` : ''}
-        <div style="width:${size - 6}px;height:${size - 6}px;border-radius:50%;background:${bg};backdrop-filter:blur(8px);border:2px solid ${color};display:flex;align-items:center;justify-content:center;font-size:${isSelected ? 22 : 18}px;box-shadow:0 0 ${isSelected ? 24 : 14}px ${color}55,0 4px 12px rgba(0,0,0,${isDark ? '.5' : '.15'});cursor:pointer;position:relative;z-index:1;">${typeEmoji}</div>
-        ${showStack ? `<div style="position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:${stackAccent};color:white;font-size:11px;font-weight:800;line-height:20px;text-align:center;box-shadow:0 0 10px ${stackAccent}88,0 2px 6px rgba(0,0,0,0.3);border:1.5px solid ${liveDotBorder};z-index:4;white-space:nowrap;">${stackCount}</div>` : ''}
+        <div style="width:${size - 6}px;height:${size - 6}px;border-radius:50%;background:${bg};backdrop-filter:blur(8px);border:2.5px solid ${color};display:flex;align-items:center;justify-content:center;font-size:${isSelected ? 24 : 20}px;box-shadow:0 0 ${isSelected ? 28 : 18}px ${color}${glowAlpha}, 0 0 ${isSelected ? 48 : 32}px ${color}${glowAlpha2}, ${dropShadow};cursor:pointer;position:relative;z-index:1;">${typeEmoji}</div>
+        ${showStack ? `<div style="position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:${stackAccent};color:white;font-size:11px;font-weight:800;line-height:22px;text-align:center;box-shadow:0 0 12px ${stackAccent}aa,0 2px 6px rgba(0,0,0,0.25);border:2px solid ${liveDotBorder};z-index:4;white-space:nowrap;">${stackCount}</div>` : ''}
         ${pulse ? `<div style="position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);padding:1px 6px;border-radius:999px;background:${pulseColor};color:white;font-size:9px;font-weight:800;line-height:1.3;box-shadow:0 2px 6px ${pulseColor}55;border:1.5px solid ${liveDotBorder};z-index:3;white-space:nowrap;">+${liveCount}</div>` : ''}
-        ${event.isLive && !pulse && !showStack ? `<div style="position:absolute;top:0;right:0;width:10px;height:10px;border-radius:50%;background:hsl(142,71%,45%);border:2px solid ${liveDotBorder};z-index:2;box-shadow:0 0 8px hsl(142,71%,45%,0.6);pointer-events:none;"></div>` : ''}
+        ${event.isLive && !pulse && !showStack ? `<div style="position:absolute;top:0;right:0;width:11px;height:11px;border-radius:50%;background:hsl(142,71%,45%);border:2px solid ${liveDotBorder};z-index:2;box-shadow:0 0 10px hsl(142,71%,45%,0.7);pointer-events:none;"></div>` : ''}
       </div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
@@ -90,7 +96,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
 
     const tileUrl = theme === 'dark'
       ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png?language=fr'
-      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png?language=fr';
+      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png?language=fr';
 
     tileLayerRef.current = L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(map);
 
@@ -109,7 +115,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     if (tileLayerRef.current) map.removeLayer(tileLayerRef.current);
     const tileUrl = theme === 'dark'
       ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png?language=fr'
-      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png?language=fr';
+      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png?language=fr';
     tileLayerRef.current = L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(map);
   }, [theme]);
 
@@ -177,11 +183,13 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       chunkDelay: 10,
       iconCreateFunction: (cluster) => {
         const count = cluster.getChildCount();
-        const size = count > 20 ? 48 : count > 5 ? 40 : 34;
-        const accent = 'hsl(320,100%,50%)';
+        const size = count > 20 ? 52 : count > 5 ? 44 : 38;
         return L.divIcon({
           className: '',
-          html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${accent}e6;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:${count > 20 ? 15 : 13}px;box-shadow:0 0 20px ${accent}55,0 0 40px ${accent}22;border:1.5px solid ${accent}88;">${count}</div>`,
+          html: `<div style="position:relative;width:${size}px;height:${size}px;">
+            <div style="position:absolute;inset:-4px;border-radius:50%;background:radial-gradient(circle, hsl(325,95%,54%,0.35) 0%, transparent 70%);animation:ping-slow 2.4s ease-out infinite;pointer-events:none;"></div>
+            <div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,hsl(325,95%,54%),hsl(285,80%,58%));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:${count > 20 ? 15 : 13}px;box-shadow:0 0 22px hsl(325,95%,54%,0.55),0 0 44px hsl(325,95%,54%,0.25),0 4px 12px rgba(40,10,60,0.25);border:2px solid rgba(255,255,255,0.85);">${count}</div>
+          </div>`,
           iconSize: [size, size],
           iconAnchor: [size / 2, size / 2],
         });

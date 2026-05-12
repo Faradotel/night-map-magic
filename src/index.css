@@ -82,77 +82,81 @@
   }
 
   .light {
-    /* PulseMap Light — White & warm beige */
-    --background: 40 30% 96%;
-    --foreground: 240 10% 10%;
+    /* PulseMap Light — Daytime nightlife: warm cream + vivid neon accents */
+    --background: 32 40% 95%;
+    --foreground: 260 30% 12%;
 
-    --card: 40 25% 92%;
-    --card-foreground: 240 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 260 30% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 10%;
+    --popover-foreground: 260 30% 12%;
 
-    --primary: 182 80% 38%;
+    /* Primary stays vivid like dark mode but tuned for white bg */
+    --primary: 188 95% 42%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 40 20% 88%;
-    --secondary-foreground: 240 10% 20%;
+    --secondary: 30 25% 90%;
+    --secondary-foreground: 260 25% 20%;
 
-    --muted: 40 15% 90%;
-    --muted-foreground: 240 8% 45%;
+    --muted: 30 20% 92%;
+    --muted-foreground: 260 12% 40%;
 
-    --accent: 320 70% 45%;
+    /* Pink/magenta accent — keeps Pulse nightlife identity */
+    --accent: 325 95% 54%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 80% 55%;
+    --destructive: 0 84% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 40 15% 82%;
-    --input: 40 15% 88%;
-    --ring: 182 80% 38%;
+    --border: 30 20% 84%;
+    --input: 30 20% 90%;
+    --ring: 325 95% 54%;
 
     --radius: 1rem;
 
-    --neon-cyan: 182 80% 38%;
-    --neon-pink: 320 70% 45%;
-    --neon-purple: 271 50% 50%;
-    --neon-green: 150 60% 38%;
-    --surface-1: 40 30% 96%;
-    --surface-2: 40 25% 92%;
-    --surface-3: 40 20% 88%;
-    --surface-4: 40 15% 82%;
+    --neon-cyan: 188 95% 42%;
+    --neon-pink: 325 95% 54%;
+    --neon-purple: 275 80% 55%;
+    --neon-green: 142 71% 42%;
+    --surface-1: 32 40% 95%;
+    --surface-2: 0 0% 100%;
+    --surface-3: 30 25% 90%;
+    --surface-4: 30 20% 84%;
 
-    --gradient-card: linear-gradient(135deg, hsl(40 25% 92%), hsl(40 20% 88%));
-    --gradient-hero: linear-gradient(180deg, transparent 0%, hsl(40 30% 96% / 0.95) 100%);
-    --gradient-neon-pink: linear-gradient(135deg, hsl(320 70% 45%), hsl(340 65% 50%));
-    --gradient-neon-cyan: linear-gradient(135deg, hsl(182 80% 38%), hsl(195 70% 40%));
-    --gradient-badge: linear-gradient(135deg, hsl(271 40% 80%), hsl(320 40% 85%));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(30 30% 96%));
+    --gradient-hero: linear-gradient(180deg, transparent 0%, hsl(32 40% 95% / 0.95) 100%);
+    --gradient-neon-pink: linear-gradient(135deg, hsl(325 95% 54%), hsl(285 80% 58%));
+    --gradient-neon-cyan: linear-gradient(135deg, hsl(188 95% 42%), hsl(205 90% 50%));
+    --gradient-badge: linear-gradient(135deg, hsl(275 80% 55%), hsl(325 95% 54%));
 
-    --glow-cyan: 0 0 10px hsl(182 80% 38% / 0.2);
-    --glow-pink: 0 0 10px hsl(320 70% 45% / 0.2);
-    --glow-purple: 0 0 10px hsl(271 50% 50% / 0.15);
-    --glow-green: 0 0 10px hsl(150 60% 38% / 0.2);
+    /* Stronger neon glows so identity survives in daylight */
+    --glow-cyan: 0 0 18px hsl(188 95% 42% / 0.35), 0 0 36px hsl(188 95% 42% / 0.18);
+    --glow-pink: 0 0 18px hsl(325 95% 54% / 0.4), 0 0 36px hsl(325 95% 54% / 0.2);
+    --glow-purple: 0 0 18px hsl(275 80% 55% / 0.3);
+    --glow-green: 0 0 18px hsl(142 71% 42% / 0.35), 0 0 36px hsl(142 71% 42% / 0.18);
 
-    --sidebar-background: 40 30% 96%;
-    --sidebar-foreground: 240 10% 10%;
-    --sidebar-primary: 182 80% 38%;
+    --sidebar-background: 32 40% 95%;
+    --sidebar-foreground: 260 30% 12%;
+    --sidebar-primary: 325 95% 54%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 40 20% 88%;
-    --sidebar-accent-foreground: 240 10% 10%;
-    --sidebar-border: 40 15% 82%;
-    --sidebar-ring: 182 80% 38%;
+    --sidebar-accent: 30 25% 90%;
+    --sidebar-accent-foreground: 260 30% 12%;
+    --sidebar-border: 30 20% 84%;
+    --sidebar-ring: 325 95% 54%;
 
-    --nav-bg: rgba(255, 252, 245, 0.92);
-    --nav-border: hsl(40 15% 82% / 0.6);
-    --nav-active: hsl(320 70% 45%);
-    --nav-inactive: hsl(240 8% 55%);
-    --controls-bg: rgba(255, 252, 245, 0.9);
-    --controls-border: hsl(40 15% 82% / 0.6);
-    --controls-shadow: 0 4px 20px hsl(40 20% 50% / 0.15);
-    --map-bg: hsl(40 30% 96%);
-    --top-gradient: linear-gradient(to bottom, hsl(40 30% 96% / 0.85) 0%, transparent 100%);
-    --profile-card-bg: hsl(40 25% 92%);
-    --profile-divider: hsl(40 15% 85%);
+    /* Premium glass controls with warm tint and crisper shadows */
+    --nav-bg: rgba(255, 253, 250, 0.78);
+    --nav-border: hsl(30 30% 80% / 0.55);
+    --nav-active: hsl(325 95% 54%);
+    --nav-inactive: hsl(260 12% 48%);
+    --controls-bg: rgba(255, 253, 250, 0.82);
+    --controls-border: hsl(30 30% 80% / 0.55);
+    --controls-shadow: 0 8px 28px hsl(280 30% 20% / 0.12), 0 2px 6px hsl(280 30% 20% / 0.06);
+    --map-bg: hsl(32 40% 95%);
+    --top-gradient: linear-gradient(to bottom, hsl(32 40% 95% / 0.6) 0%, transparent 100%);
+    --profile-card-bg: hsl(0 0% 100%);
+    --profile-divider: hsl(30 20% 88%);
   }
 }
 
@@ -237,30 +241,33 @@
 }
 
 .leaflet-control-zoom {
-  border: 1px solid hsl(262 25% 18%) !important;
+  border: 1px solid hsl(var(--border)) !important;
   border-radius: 16px !important;
   overflow: hidden;
+  box-shadow: var(--controls-shadow);
 }
 
 .leaflet-control-zoom a {
-  background: hsl(262 33% 12%) !important;
-  color: hsl(182 100% 50%) !important;
-  border-color: hsl(262 25% 18%) !important;
+  background: var(--controls-bg) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: hsl(var(--accent)) !important;
+  border-color: hsl(var(--border)) !important;
   font-weight: 700;
 }
 
 .leaflet-control-zoom a:hover {
-  background: hsl(262 28% 16%) !important;
+  background: hsl(var(--secondary)) !important;
 }
 
 .leaflet-control-attribution {
-  background: hsl(260 38% 7% / 0.7) !important;
-  color: hsl(262 15% 45%) !important;
+  background: var(--controls-bg) !important;
+  color: hsl(var(--muted-foreground)) !important;
   font-size: 10px;
 }
 
 .leaflet-control-attribution a {
-  color: hsl(182 100% 50%) !important;
+  color: hsl(var(--accent)) !important;
 }
 
 /* Custom event marker - kept as nightmap-marker for Leaflet compatibility */

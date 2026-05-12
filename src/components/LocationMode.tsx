@@ -107,56 +107,82 @@ export function LocationMode({ mode, selectedCity, onModeChange, onCitySelect, l
     setSearchQuery('');
   }
 
+  const secondaryBg = isLight ? 'rgba(255,253,250,0.82)' : 'rgba(26, 13, 21, 0.8)';
+  const secondaryBorder = isLight ? '1px solid hsl(30 30% 80% / 0.6)' : '1px solid hsl(325 89% 50% / 0.1)';
+  const secondaryColor = isLight ? 'hsl(260 20% 30%)' : 'hsl(225 15% 70%)';
+  const secondaryShadow = isLight
+    ? '0 4px 14px hsl(280 30% 20% / 0.08), 0 1px 3px hsl(280 30% 20% / 0.05)'
+    : '0 2px 8px rgba(0,0,0,0.3)';
+
   return (
     <div className="flex items-center gap-1.5" ref={ref}>
-      {/* Near me pill */}
+      {/* Near me pill — secondary */}
       <button
         onClick={handleSwitchToNearby}
-        className="flex items-center gap-1.5 h-9 px-3.5 rounded-full text-xs font-semibold transition-all shrink-0"
+        className="flex items-center gap-1.5 h-9 px-3 rounded-full text-[11px] font-semibold transition-all shrink-0 active:scale-95"
         style={{
-          background: mode === 'nearby' ? 'hsl(325 89% 50%)' : isLight ? 'rgba(255,255,255,0.9)' : 'rgba(26, 13, 21, 0.8)',
-          backdropFilter: 'blur(12px)',
-          border: mode === 'nearby' ? 'none' : isLight ? '1px solid hsl(230 15% 82%)' : '1px solid hsl(325 89% 50% / 0.1)',
-          color: mode === 'nearby' ? 'white' : isLight ? 'hsl(230 20% 30%)' : 'hsl(225 15% 70%)',
-          boxShadow: mode === 'nearby' ? '0 0 16px hsl(325 89% 50% / 0.3)' : isLight ? '0 2px 8px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.3)',
+          background: mode === 'nearby' ? 'hsl(325 95% 54%)' : secondaryBg,
+          backdropFilter: 'blur(14px)',
+          WebkitBackdropFilter: 'blur(14px)',
+          border: mode === 'nearby' ? 'none' : secondaryBorder,
+          color: mode === 'nearby' ? 'white' : secondaryColor,
+          boxShadow: mode === 'nearby'
+            ? '0 0 18px hsl(325 95% 54% / 0.45), 0 4px 12px hsl(325 95% 54% / 0.25)'
+            : secondaryShadow,
         }}
       >
         <Navigation size={11} className={locating && mode === 'nearby' ? 'animate-spin' : ''} />
         <span>Près de moi</span>
       </button>
 
-      {/* France pill */}
+      {/* France pill — tertiary */}
       <button
         onClick={onFranceMode}
-        className="flex items-center gap-1.5 h-9 px-3.5 rounded-full text-xs font-semibold transition-all shrink-0"
+        className="flex items-center gap-1.5 h-9 px-3 rounded-full text-[11px] font-semibold transition-all shrink-0 active:scale-95"
         style={{
-          background: mode === 'france' ? 'hsl(210 80% 50%)' : isLight ? 'rgba(255,255,255,0.9)' : 'rgba(26, 13, 21, 0.8)',
-          backdropFilter: 'blur(12px)',
-          border: mode === 'france' ? 'none' : isLight ? '1px solid hsl(230 15% 82%)' : '1px solid hsl(325 89% 50% / 0.1)',
-          color: mode === 'france' ? 'white' : isLight ? 'hsl(230 20% 30%)' : 'hsl(225 15% 70%)',
-          boxShadow: mode === 'france' ? '0 0 16px hsl(210 80% 50% / 0.3)' : isLight ? '0 2px 8px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.3)',
+          background: mode === 'france' ? 'hsl(210 85% 52%)' : secondaryBg,
+          backdropFilter: 'blur(14px)',
+          WebkitBackdropFilter: 'blur(14px)',
+          border: mode === 'france' ? 'none' : secondaryBorder,
+          color: mode === 'france' ? 'white' : secondaryColor,
+          boxShadow: mode === 'france'
+            ? '0 0 18px hsl(210 85% 52% / 0.45), 0 4px 12px hsl(210 85% 52% / 0.25)'
+            : secondaryShadow,
         }}
       >
         <Globe size={11} />
         <span>France</span>
       </button>
 
-      {/* City dropdown trigger */}
+      {/* City dropdown trigger — PRIMARY (visually dominant) */}
       <div className="relative">
         <button
           onClick={() => setShowDropdown(!showDropdown)}
-          className="flex items-center gap-1.5 h-9 px-3.5 rounded-full text-xs font-semibold transition-all shrink-0"
+          className="flex items-center gap-1.5 h-10 px-4 rounded-full text-xs font-bold transition-all shrink-0 active:scale-95"
           style={{
-            background: mode === 'city' ? 'hsl(275 71% 58%)' : isLight ? 'rgba(255,255,255,0.9)' : 'rgba(26, 13, 21, 0.8)',
-            backdropFilter: 'blur(12px)',
-            border: mode === 'city' ? 'none' : isLight ? '1px solid hsl(230 15% 82%)' : '1px solid hsl(325 89% 50% / 0.1)',
-            color: mode === 'city' ? 'white' : isLight ? 'hsl(230 20% 30%)' : 'hsl(225 15% 70%)',
-            boxShadow: mode === 'city' ? '0 0 16px hsl(275 71% 58% / 0.3)' : isLight ? '0 2px 8px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.3)',
+            background: mode === 'city'
+              ? 'linear-gradient(135deg, hsl(325 95% 54%), hsl(285 80% 58%))'
+              : isLight
+                ? 'linear-gradient(135deg, hsl(325 95% 54% / 0.12), hsl(285 80% 58% / 0.12))'
+                : 'rgba(26, 13, 21, 0.85)',
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
+            border: mode === 'city'
+              ? 'none'
+              : isLight
+                ? '1.5px solid hsl(325 95% 54% / 0.35)'
+                : '1.5px solid hsl(325 89% 50% / 0.25)',
+            color: mode === 'city' ? 'white' : isLight ? 'hsl(325 95% 40%)' : 'hsl(325 89% 70%)',
+            boxShadow: mode === 'city'
+              ? '0 0 24px hsl(325 95% 54% / 0.55), 0 6px 20px hsl(285 80% 58% / 0.35)'
+              : isLight
+                ? '0 4px 14px hsl(325 95% 54% / 0.18), 0 1px 3px hsl(280 30% 20% / 0.06)'
+                : '0 2px 10px rgba(0,0,0,0.35)',
           }}
         >
-          <MapPin size={11} />
+          <MapPin size={12} strokeWidth={2.5} />
           <span>{mode === 'city' && selectedCity ? selectedCity : 'Choisir une ville'}</span>
-          <ChevronDown size={10} className={`transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
+          <ChevronDown size={11} className={`transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
         </button>
 
         {/* Dropdown menu */}

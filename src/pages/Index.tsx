@@ -374,19 +374,34 @@ export default function Index() {
                   });
                 }}
                 aria-label="Activer le mode Live"
-                className="h-10 px-3 rounded-full flex items-center gap-1.5 border shrink-0 transition-all"
+                className="h-10 px-3 rounded-full flex items-center gap-1.5 border shrink-0 transition-all active:scale-95 relative overflow-hidden"
                 style={{
-                  background: showLivePulse ? 'hsl(142, 71%, 45%)' : 'var(--controls-bg)',
-                  backdropFilter: 'blur(12px)',
-                  borderColor: showLivePulse ? 'hsl(142, 71%, 45%)' : 'var(--controls-border)',
+                  background: showLivePulse
+                    ? 'linear-gradient(135deg, hsl(142 71% 45%), hsl(160 71% 42%))'
+                    : 'var(--controls-bg)',
+                  backdropFilter: 'blur(14px)',
+                  WebkitBackdropFilter: 'blur(14px)',
+                  borderColor: showLivePulse ? 'hsl(142, 71%, 45%)' : 'hsl(142 71% 45% / 0.35)',
                   boxShadow: showLivePulse
-                    ? '0 0 0 3px hsl(142, 71%, 45%, 0.25), 0 4px 20px hsl(142, 71%, 45%, 0.4)'
-                    : 'var(--controls-shadow)',
-                  color: showLivePulse ? 'white' : 'hsl(var(--foreground))',
+                    ? '0 0 0 3px hsl(142, 71%, 45%, 0.25), 0 6px 24px hsl(142, 71%, 45%, 0.5)'
+                    : '0 4px 14px hsl(142 71% 45% / 0.2), var(--controls-shadow)',
+                  color: showLivePulse ? 'white' : 'hsl(142 71% 38%)',
                 }}
               >
-                <Zap size={14} className={showLivePulse ? 'animate-pulse' : ''} fill={showLivePulse ? 'white' : 'none'} />
-                <span className="text-[11px] font-bold">
+                <span
+                  className="w-2 h-2 rounded-full relative"
+                  style={{
+                    background: showLivePulse ? 'white' : 'hsl(142 71% 45%)',
+                    boxShadow: showLivePulse ? '0 0 8px white' : '0 0 8px hsl(142 71% 45%)',
+                  }}
+                >
+                  <span
+                    className="absolute inset-0 rounded-full animate-ping"
+                    style={{ background: showLivePulse ? 'white' : 'hsl(142 71% 45%)', opacity: 0.6 }}
+                  />
+                </span>
+                <Zap size={13} strokeWidth={2.5} fill={showLivePulse ? 'white' : 'none'} />
+                <span className="text-[11px] font-extrabold tracking-wide">
                   {showLivePulse ? `Live · ${liveEvents.length}` : 'Live'}
                 </span>
               </button>
