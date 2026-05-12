@@ -154,7 +154,11 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     }
   }, [userLocation, radiusKm]);
 
-  // Event markers – clustered
+  // Map every event id → its group "leader" id (the representative marker on map).
+  // Co-located events (≤ ~50m) share a single bubble with a stacked badge.
+  const leaderByIdRef = useRef<Map<string, string>>(new Map());
+
+  // Event markers – clustered, with co-location deduplication
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -166,18 +170,29 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     }
     markersRef.current.clear();
 
-    // Count events co-located within ~50m (0.0005°). Direct neighbour scan to
-    // avoid bucket-boundary artefacts where two close events fall in adjacent cells.
-    const stackCounts = new Map<string, number>();
-    const THRESHOLD = 0.0005;
+    // ── Build proximity groups (≤ ~50m). One marker per group. ──
+    const THRESHOLD = 0.0005; // ≈ 50m
+    const leaderById = new Map<string, string>(); // eventId → leaderId
+    const groupByLeader = new Map<string, NightEvent[]>(); // leaderId → events
     for (const e of events) {
-      let count = 0;
+      if (leaderById.has(e.id)) continue;
+      // This event becomes a new leader; collect every still-unassigned neighbour.
+      const members: NightEvent[] = [e];
+      leaderById.set(e.id, e.id);
       for (const other of events) {
+        if (other.id === e.id || leaderById.has(other.id)) continue;
         if (Math.abs(e.lat - other.lat) <= THRESHOLD && Math.abs(e.lng - other.lng) <= THRESHOLD) {
-          count++;
+          leaderById.set(other.id, e.id);
+          members.push(other);
         }
       }
-      stackCounts.set(e.id, count);
+      groupByLeader.set(e.id, members);
+    }
+    leaderByIdRef.current = leaderById;
+    // Stack count = size of group (for the leader; neighbours share the leader marker)
+    const stackCounts = new Map<string, number>();
+    for (const [leaderId, members] of groupByLeader) {
+      stackCounts.set(leaderId, members.length);
     }
     stackCountsRef.current = stackCounts;
 
@@ -205,17 +220,19 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       },
     });
 
-    events.forEach(event => {
-      const liveCount = livePulseMap?.[event.id] ?? 0;
-      const stack = stackCounts.get(event.id) ?? 1;
-      const marker = L.marker([event.lat, event.lng], {
-        icon: createEventIcon(event, false, isDark, liveCount, stack, !!liveMode),
+    // One marker per group, anchored on the leader's lat/lng.
+    for (const [leaderId, members] of groupByLeader) {
+      const leader = members[0];
+      const liveCount = livePulseMap?.[leaderId] ?? 0;
+      const stack = members.length;
+      const marker = L.marker([leader.lat, leader.lng], {
+        icon: createEventIcon(leader, false, isDark, liveCount, stack, !!liveMode),
         zIndexOffset: liveCount > 0 ? 250 : (stack > 1 ? 100 : 0),
       });
-      marker.on('click', () => onEventSelect(event));
-      markersRef.current.set(event.id, marker);
+      marker.on('click', () => onEventSelect(leader));
+      markersRef.current.set(leaderId, marker);
       clusterGroup.addLayer(marker);
-    });
+    }
 
     map.addLayer(clusterGroup);
     clusterGroupRef.current = clusterGroup;
@@ -228,23 +245,27 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
 
     if (prevId === newId) return;
 
-    // Deselect previous
-    if (prevId) {
-      const prevMarker = markersRef.current.get(prevId);
-      const prevEvent = events.find(e => e.id === prevId);
+    // Resolve each id to its group leader (the actual marker owner)
+    const prevLeader = prevId ? leaderByIdRef.current.get(prevId) ?? prevId : null;
+    const newLeader = newId ? leaderByIdRef.current.get(newId) ?? newId : null;
+
+    // Deselect previous (only if not the same marker as the new one)
+    if (prevLeader && prevLeader !== newLeader) {
+      const prevMarker = markersRef.current.get(prevLeader);
+      const prevEvent = events.find(e => e.id === prevLeader);
       if (prevMarker && prevEvent) {
-        const stack = stackCountsRef.current.get(prevId) ?? 1;
-        prevMarker.setIcon(createEventIcon(prevEvent, false, isDark, livePulseMap?.[prevId] ?? 0, stack, !!liveMode));
-        prevMarker.setZIndexOffset((livePulseMap?.[prevId] ?? 0) > 0 ? 250 : (stack > 1 ? 100 : 0));
+        const stack = stackCountsRef.current.get(prevLeader) ?? 1;
+        prevMarker.setIcon(createEventIcon(prevEvent, false, isDark, livePulseMap?.[prevLeader] ?? 0, stack, !!liveMode));
+        prevMarker.setZIndexOffset((livePulseMap?.[prevLeader] ?? 0) > 0 ? 250 : (stack > 1 ? 100 : 0));
       }
     }
 
-    // Select new
-    if (newId && selectedEvent) {
-      const newMarker = markersRef.current.get(newId);
+    // Select new (highlight the leader marker, but show the selected event's vibe colour)
+    if (newLeader && selectedEvent) {
+      const newMarker = markersRef.current.get(newLeader);
       if (newMarker) {
-        const stack = stackCountsRef.current.get(newId) ?? 1;
-        newMarker.setIcon(createEventIcon(selectedEvent, true, isDark, livePulseMap?.[newId] ?? 0, stack, !!liveMode));
+        const stack = stackCountsRef.current.get(newLeader) ?? 1;
+        newMarker.setIcon(createEventIcon(selectedEvent, true, isDark, livePulseMap?.[newLeader] ?? 0, stack, !!liveMode));
         newMarker.setZIndexOffset(500);
       }
     }
