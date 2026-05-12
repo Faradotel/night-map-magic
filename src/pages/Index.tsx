@@ -178,6 +178,19 @@ export default function Index() {
   const allEvents = useMemo(() => [...mockEvents, ...allShotgunEvents, ...userEvents], [allShotgunEvents, userEvents]);
 
   const filteredEvents = useMemo(() => allEvents.filter((event) => {
+    // ── LIVE MODE: only events happening now or starting within 3h ──
+    if (showLivePulse) {
+      const parisNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
+      const eventStart = new Date(new Date(event.startTime).toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
+      const eventEnd = event.endTime
+        ? new Date(new Date(event.endTime).toLocaleString('en-US', { timeZone: 'Europe/Paris' }))
+        : new Date(eventStart.getTime() + 4 * 60 * 60 * 1000);
+      const startsSoon = eventStart.getTime() - parisNow.getTime() <= 3 * 60 * 60 * 1000 && eventStart >= parisNow;
+      const isOngoing = eventStart <= parisNow && eventEnd >= parisNow;
+      const hasCheckIns = (liveCountByIdRaw?.[event.id] ?? 0) > 0;
+      if (!isOngoing && !startsSoon && !hasCheckIns) return false;
+    }
+
     if (filters.price === 'free' && event.priceRange !== 'gratuit') return false;
     if (filters.price === 'paid' && event.priceRange === 'gratuit') return false;
 
@@ -221,7 +234,7 @@ export default function Index() {
     }
 
     return true;
-  }), [allEvents, filters, filterCenter]);
+  }), [allEvents, filters, filterCenter, showLivePulse, liveCountByIdRaw]);
 
   // Switch to "nearby" mode
   const handleModeChange = useCallback((mode: LocationModeType) => {
