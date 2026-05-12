@@ -265,17 +265,11 @@ export async function fetchTicketmasterEvents(city: string): Promise<NightEvent[
  */
 export function deduplicateEvents(events: NightEvent[]): NightEvent[] {
   const kept: NightEvent[] = [];
-  const seenNames = new Map<string, number>(); // normalized name -> index in kept
 
   const normalize = (s: string) => s.toLowerCase().replace(/[^a-zà-ÿ0-9]/g, '').slice(0, 60);
 
   for (const event of events) {
     const normName = normalize(event.name);
-    
-    // Check exact name match (anywhere in France)
-    if (normName.length > 5 && seenNames.has(normName)) {
-      continue; // skip duplicate
-    }
 
     const isDuplicate = kept.some(existing => {
       const dist = getDistance(existing.lat, existing.lng, event.lat, event.lng);
@@ -288,7 +282,7 @@ export function deduplicateEvents(events: NightEvent[]): NightEvent[] {
         if (n1.length > 8 && n2.length > 8 && (n1.includes(n2) || n2.includes(n1))) return true;
       }
 
-      // Same venue within 500m = duplicate  
+      // Same venue within 500m = duplicate
       if (dist < 0.5 && existing.venue && event.venue) {
         const v1 = normalize(existing.venue);
         const v2 = normalize(event.venue);
@@ -300,9 +294,6 @@ export function deduplicateEvents(events: NightEvent[]): NightEvent[] {
 
     if (!isDuplicate) {
       kept.push(event);
-      if (normName.length > 5) {
-        seenNames.set(normName, kept.length - 1);
-      }
     }
   }
 
@@ -387,19 +378,27 @@ function cachedToNightEvent(e: any): NightEvent {
  */
 export async function loadAllEvents(): Promise<NightEvent[]> {
   const now = new Date().toISOString();
-  const { data, error } = await supabase
-    .from('cached_events')
-    .select('*')
-    .or(`start_time.gte.${now},end_time.gte.${now}`)
-    .order('start_time', { ascending: true })
-    .limit(2000);
-
-  if (error) {
-    console.error('Error loading all events:', error);
-    return [];
+  const PAGE = 1000;
+  const MAX_PAGES = 8; // up to 8000 events
+  const all: any[] = [];
+  for (let i = 0; i < MAX_PAGES; i++) {
+    const from = i * PAGE;
+    const to = from + PAGE - 1;
+    const { data, error } = await supabase
+      .from('cached_events')
+      .select('*')
+      .or(`start_time.gte.${now},end_time.gte.${now}`)
+      .order('start_time', { ascending: true })
+      .range(from, to);
+    if (error) {
+      console.error('Error loading all events:', error);
+      break;
+    }
+    if (!data || data.length === 0) break;
+    all.push(...data);
+    if (data.length < PAGE) break;
   }
-
-  return (data || []).map(cachedToNightEvent);
+  return all.map(cachedToNightEvent);
 }
 
 /**
