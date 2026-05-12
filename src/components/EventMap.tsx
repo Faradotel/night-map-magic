@@ -234,7 +234,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       const prevEvent = events.find(e => e.id === prevId);
       if (prevMarker && prevEvent) {
         const stack = stackCountsRef.current.get(prevId) ?? 1;
-        prevMarker.setIcon(createEventIcon(prevEvent, false, isDark, livePulseMap?.[prevId] ?? 0, stack));
+        prevMarker.setIcon(createEventIcon(prevEvent, false, isDark, livePulseMap?.[prevId] ?? 0, stack, !!liveMode));
         prevMarker.setZIndexOffset((livePulseMap?.[prevId] ?? 0) > 0 ? 250 : (stack > 1 ? 100 : 0));
       }
     }
