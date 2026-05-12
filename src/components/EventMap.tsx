@@ -183,11 +183,13 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       chunkDelay: 10,
       iconCreateFunction: (cluster) => {
         const count = cluster.getChildCount();
-        const size = count > 20 ? 48 : count > 5 ? 40 : 34;
-        const accent = 'hsl(320,100%,50%)';
+        const size = count > 20 ? 52 : count > 5 ? 44 : 38;
         return L.divIcon({
           className: '',
-          html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${accent}e6;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:${count > 20 ? 15 : 13}px;box-shadow:0 0 20px ${accent}55,0 0 40px ${accent}22;border:1.5px solid ${accent}88;">${count}</div>`,
+          html: `<div style="position:relative;width:${size}px;height:${size}px;">
+            <div style="position:absolute;inset:-4px;border-radius:50%;background:radial-gradient(circle, hsl(325,95%,54%,0.35) 0%, transparent 70%);animation:ping-slow 2.4s ease-out infinite;pointer-events:none;"></div>
+            <div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,hsl(325,95%,54%),hsl(285,80%,58%));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:${count > 20 ? 15 : 13}px;box-shadow:0 0 22px hsl(325,95%,54%,0.55),0 0 44px hsl(325,95%,54%,0.25),0 4px 12px rgba(40,10,60,0.25);border:2px solid rgba(255,255,255,0.85);">${count}</div>
+          </div>`,
           iconSize: [size, size],
           iconAnchor: [size / 2, size / 2],
         });
