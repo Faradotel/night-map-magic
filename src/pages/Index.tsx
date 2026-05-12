@@ -178,17 +178,25 @@ export default function Index() {
   const allEvents = useMemo(() => [...mockEvents, ...allShotgunEvents, ...userEvents], [allShotgunEvents, userEvents]);
 
   const filteredEvents = useMemo(() => allEvents.filter((event) => {
-    // ── LIVE MODE: only events happening now or starting within 3h ──
+    // ── LIVE MODE: en cours, à venir aujourd'hui/cette nuit, ou avec check-ins ──
     if (showLivePulse) {
       const parisNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
       const eventStart = new Date(new Date(event.startTime).toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
       const eventEnd = event.endTime
         ? new Date(new Date(event.endTime).toLocaleString('en-US', { timeZone: 'Europe/Paris' }))
         : new Date(eventStart.getTime() + 4 * 60 * 60 * 1000);
-      const startsSoon = eventStart.getTime() - parisNow.getTime() <= 3 * 60 * 60 * 1000 && eventStart >= parisNow;
+      // Fenêtre "ce soir" : jusqu'à 6h du matin le lendemain (heure de Paris)
+      const tonightEnd = new Date(parisNow);
+      if (parisNow.getHours() < 6) {
+        tonightEnd.setHours(6, 0, 0, 0);
+      } else {
+        tonightEnd.setDate(parisNow.getDate() + 1);
+        tonightEnd.setHours(6, 0, 0, 0);
+      }
+      const startsTonight = eventStart >= parisNow && eventStart <= tonightEnd;
       const isOngoing = eventStart <= parisNow && eventEnd >= parisNow;
       const hasCheckIns = (liveCountByIdRaw?.[event.id] ?? 0) > 0;
-      if (!isOngoing && !startsSoon && !hasCheckIns) return false;
+      if (!isOngoing && !startsTonight && !hasCheckIns) return false;
     }
 
     if (filters.price === 'free' && event.priceRange !== 'gratuit') return false;
