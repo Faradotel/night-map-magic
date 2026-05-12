@@ -265,17 +265,11 @@ export async function fetchTicketmasterEvents(city: string): Promise<NightEvent[
  */
 export function deduplicateEvents(events: NightEvent[]): NightEvent[] {
   const kept: NightEvent[] = [];
-  const seenNames = new Map<string, number>(); // normalized name -> index in kept
 
   const normalize = (s: string) => s.toLowerCase().replace(/[^a-zà-ÿ0-9]/g, '').slice(0, 60);
 
   for (const event of events) {
     const normName = normalize(event.name);
-    
-    // Check exact name match (anywhere in France)
-    if (normName.length > 5 && seenNames.has(normName)) {
-      continue; // skip duplicate
-    }
 
     const isDuplicate = kept.some(existing => {
       const dist = getDistance(existing.lat, existing.lng, event.lat, event.lng);
@@ -288,7 +282,7 @@ export function deduplicateEvents(events: NightEvent[]): NightEvent[] {
         if (n1.length > 8 && n2.length > 8 && (n1.includes(n2) || n2.includes(n1))) return true;
       }
 
-      // Same venue within 500m = duplicate  
+      // Same venue within 500m = duplicate
       if (dist < 0.5 && existing.venue && event.venue) {
         const v1 = normalize(existing.venue);
         const v2 = normalize(event.venue);
@@ -300,9 +294,6 @@ export function deduplicateEvents(events: NightEvent[]): NightEvent[] {
 
     if (!isDuplicate) {
       kept.push(event);
-      if (normName.length > 5) {
-        seenNames.set(normName, kept.length - 1);
-      }
     }
   }
 
