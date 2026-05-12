@@ -387,19 +387,27 @@ function cachedToNightEvent(e: any): NightEvent {
  */
 export async function loadAllEvents(): Promise<NightEvent[]> {
   const now = new Date().toISOString();
-  const { data, error } = await supabase
-    .from('cached_events')
-    .select('*')
-    .or(`start_time.gte.${now},end_time.gte.${now}`)
-    .order('start_time', { ascending: true })
-    .limit(2000);
-
-  if (error) {
-    console.error('Error loading all events:', error);
-    return [];
+  const PAGE = 1000;
+  const MAX_PAGES = 8; // up to 8000 events
+  const all: any[] = [];
+  for (let i = 0; i < MAX_PAGES; i++) {
+    const from = i * PAGE;
+    const to = from + PAGE - 1;
+    const { data, error } = await supabase
+      .from('cached_events')
+      .select('*')
+      .or(`start_time.gte.${now},end_time.gte.${now}`)
+      .order('start_time', { ascending: true })
+      .range(from, to);
+    if (error) {
+      console.error('Error loading all events:', error);
+      break;
+    }
+    if (!data || data.length === 0) break;
+    all.push(...data);
+    if (data.length < PAGE) break;
   }
-
-  return (data || []).map(cachedToNightEvent);
+  return all.map(cachedToNightEvent);
 }
 
 /**
