@@ -339,7 +339,7 @@ Deno.serve(async (req) => {
     const maxPage = pageNums.length ? Math.min(Math.max(...pageNums), 25) : 1;
     console.log(`[InfoConcert] ${city} – detected ${maxPage} pages`);
 
-    let allCards: RawCard[] = parsePage(firstHtml, slug);
+    let allCards: RawCard[] = parsePage(firstHtml, slug, city);
 
     if (maxPage > 1) {
       const urls: string[] = [];
@@ -349,7 +349,7 @@ Deno.serve(async (req) => {
       for (let i = 0; i < urls.length; i += CONCURRENCY) {
         const chunk = urls.slice(i, i + CONCURRENCY);
         const htmls = await Promise.all(chunk.map(fetchPage));
-        htmls.forEach(h => h && allCards.push(...parsePage(h, slug)));
+        htmls.forEach(h => h && allCards.push(...parsePage(h, slug, city)));
       }
     }
 
