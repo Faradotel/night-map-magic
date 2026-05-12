@@ -117,6 +117,12 @@ Deno.serve(async (req) => {
       { match: 'summum', lat: 45.1553643, lng: 5.7372962 },
       { match: 'mc2', lat: 45.1722309, lng: 5.7337104 },
       { match: 'le ciel', lat: 45.1894474, lng: 5.7314408 },
+      { match: 'amperage', lat: 45.1851000, lng: 5.7147800 },
+      { match: 'adaep', lat: 45.1851000, lng: 5.7147800 },
+      { match: 'auditorium du musee de grenoble', lat: 45.1957700, lng: 5.7314200 },
+      { match: 'musee de grenoble', lat: 45.1957700, lng: 5.7314200 },
+      { match: 'musee dauphinois', lat: 45.1954300, lng: 5.7220500 },
+      { match: 'la source', lat: 45.1483000, lng: 5.7508000 },
       // Paris national venues
       { match: 'accor arena', lat: 48.8386, lng: 2.3789 },
       { match: 'bercy', lat: 48.8386, lng: 2.3789 },
