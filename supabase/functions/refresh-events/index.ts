@@ -261,6 +261,29 @@ Deno.serve(async (req) => {
       return batch.length;
     }
 
+    // Curated events that 3rd-party scrapers miss/get wrong — always upserted.
+    const CURATED_EVENTS: any[] = [
+      {
+        id: 'curated-magic-bus-2026',
+        name: 'Festival Magic Bus 2026',
+        type: 'festival',
+        vibe: 'concert',
+        genres: ['rock', 'electro', 'musique'],
+        lat: 45.1856594,
+        lng: 5.7407455,
+        address: 'Palais des Sports, Grenoble',
+        city: 'Grenoble',
+        start_time: '2026-05-29T18:00:00+02:00',
+        end_time: '2026-05-31T01:00:00+02:00',
+        price_range: '€',
+        description: "25e édition du festival Magic Bus au Palais des Sports de Grenoble — 2 jours de concerts et de fête. • via Route des Festivals",
+        venue: 'Palais des Sports',
+        ticket_url: 'https://www.seetickets.com/fr/d/event/festival-magic-bus-2026-pass-2-jours-ven-sam/palais-des-sports-de-grenoble/11587107',
+        source: 'routedesfestivals',
+        external_attendees: null,
+      },
+    ];
+
     // Process cities in parallel batches of 3 (~3x faster than sequential)
     const BATCH_SIZE = 3;
     for (let i = 0; i < citiesToRefresh.length; i += BATCH_SIZE) {
@@ -269,6 +292,18 @@ Deno.serve(async (req) => {
       for (const r of results) {
         if (r.status === 'fulfilled') totalInserted += r.value;
       }
+    }
+
+    // Upsert curated AFTER city refresh so the stale-events cleanup doesn't drop them
+    const curatedForCities = CURATED_EVENTS
+      .filter(e => citiesToRefresh.length > 5 || citiesToRefresh.includes(e.city))
+      .map(e => ({ ...e, updated_at: new Date().toISOString() }));
+    if (curatedForCities.length > 0) {
+      const { error: curatedErr } = await supabase
+        .from('cached_events')
+        .upsert(curatedForCities, { onConflict: 'id' });
+      if (curatedErr) console.error('Curated upsert error:', curatedErr.message);
+      else console.log(`Curated: ${curatedForCities.length} events upserted`);
     }
 
     // ── Brocabrac: scrape ALL French departments not already covered by city loop ──
