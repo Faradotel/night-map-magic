@@ -18,23 +18,25 @@ function getCorsHeaders(req: Request) {
   };
 }
 
+// Slugs verified against infoconcert.com — major cities use new numeric IDs,
+// smaller cities still use the legacy slug-id format.
 const CITY_SLUGS: Record<string, string> = {
-  'Paris': 'paris-1938', 'Marseille': 'marseille-1900', 'Lyon': 'lyon-1893',
-  'Toulouse': 'toulouse-2086', 'Nice': 'nice-1921', 'Nantes': 'nantes-1915',
-  'Montpellier': 'montpellier-1911', 'Strasbourg': 'strasbourg-2071',
-  'Bordeaux': 'bordeaux-1794', 'Lille': 'lille-1884', 'Rennes': 'rennes-2004',
-  'Reims': 'reims-2001', 'Grenoble': 'grenoble-1842', 'Dijon': 'dijon-1827',
-  'Tours': 'tours-2091', 'Rouen': 'rouen-2017', 'Metz': 'metz-1907',
-  'Nancy': 'nancy-1914', 'Avignon': 'avignon-1778', 'Poitiers': 'poitiers-1962',
-  'Besançon': 'besancon-1786', 'Caen': 'caen-1800', 'Orléans': 'orleans-1934',
-  'Angers': 'angers-1769', 'Brest': 'brest-1796', 'Limoges': 'limoges-1886',
+  'Paris': 'paris-5133', 'Marseille': 'marseille-5132', 'Lyon': 'lyon-5131',
+  'Toulouse': 'toulouse-2991', 'Nice': 'nice-2336', 'Nantes': 'nantes-2306',
+  'Montpellier': 'montpellier-2271', 'Strasbourg': 'strasbourg-2950',
+  'Bordeaux': 'bordeaux-1098', 'Lille': 'lille-2078', 'Rennes': 'rennes-2569',
+  'Reims': 'reims-2567', 'Grenoble': 'grenoble-1842', 'Dijon': 'dijon-1721',
+  'Tours': 'tours-2998', 'Rouen': 'rouen-2610', 'Metz': 'metz-1907',
+  'Nancy': 'nancy-1914', 'Avignon': 'avignon-427', 'Poitiers': 'poitiers-1962',
+  'Besançon': 'besancon-1786', 'Caen': 'caen-1284', 'Orléans': 'orleans-1934',
+  'Angers': 'angers-200', 'Brest': 'brest-1796', 'Limoges': 'limoges-1886',
   'Amiens': 'amiens-1765', 'Perpignan': 'perpignan-1952',
   'La Rochelle': 'la-rochelle-1871', 'Pau': 'pau-1944',
-  'Clermont-Ferrand': 'clermont-ferrand-1815', 'Monaco': 'monaco-1909',
-  'Aix-en-Provence': 'aix-en-provence-1757', 'Toulon': 'toulon-2083',
-  'Saint-Étienne': 'saint-etienne-2025', 'Nîmes': 'nimes-1923',
+  'Clermont-Ferrand': 'clermont-ferrand-3180', 'Monaco': 'monaco-1909',
+  'Aix-en-Provence': 'aix-en-provence-48', 'Toulon': 'toulon-2990',
+  'Saint-Étienne': 'saint-etienne-2676', 'Nîmes': 'nimes-2340',
   'Valence': 'valence-2098', 'Mulhouse': 'mulhouse-1912',
-  'Dunkerque': 'dunkerque-1831',
+  'Dunkerque': 'dunkerque-1831', 'Le Mans': 'le-mans-2007',
 };
 
 const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
