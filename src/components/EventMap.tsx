@@ -244,7 +244,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       const newMarker = markersRef.current.get(newId);
       if (newMarker) {
         const stack = stackCountsRef.current.get(newId) ?? 1;
-        newMarker.setIcon(createEventIcon(selectedEvent, true, isDark, livePulseMap?.[newId] ?? 0, stack));
+        newMarker.setIcon(createEventIcon(selectedEvent, true, isDark, livePulseMap?.[newId] ?? 0, stack, !!liveMode));
         newMarker.setZIndexOffset(500);
       }
     }
