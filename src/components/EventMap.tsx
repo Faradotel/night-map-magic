@@ -17,6 +17,8 @@ interface EventMapProps {
   radiusKm: number;
   /** Map event_id → nombre de check-ins récents. Active l'animation Live Pulse. */
   livePulseMap?: Record<string, number>;
+  /** Mode LIVE immersif : tous les markers gagnent un halo + glow renforcé. */
+  liveMode?: boolean;
 }
 
 function createEventIcon(
