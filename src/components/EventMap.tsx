@@ -209,7 +209,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       const liveCount = livePulseMap?.[event.id] ?? 0;
       const stack = stackCounts.get(event.id) ?? 1;
       const marker = L.marker([event.lat, event.lng], {
-        icon: createEventIcon(event, false, isDark, liveCount, stack),
+        icon: createEventIcon(event, false, isDark, liveCount, stack, !!liveMode),
         zIndexOffset: liveCount > 0 ? 250 : (stack > 1 ? 100 : 0),
       });
       marker.on('click', () => onEventSelect(event));
@@ -219,7 +219,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
 
     map.addLayer(clusterGroup);
     clusterGroupRef.current = clusterGroup;
-  }, [events, onEventSelect, isDark, livePulseMap]);
+  }, [events, onEventSelect, isDark, livePulseMap, liveMode]);
 
   // Selection highlight – only update the 2 affected markers
   useEffect(() => {
