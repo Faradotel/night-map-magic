@@ -34,20 +34,36 @@ const DEFAULT_ZOOM = 12;
 const NEARBY_RADIUS_DEFAULT = 30;
 const CITY_RADIUS_DEFAULT = 80;
 
+const FRANCE_CENTER: [number, number] = [46.2276, 2.2137];
+const FRANCE_ZOOM = 6;
+const NEARBY_CITY_MAX_KM = 30;
+
+function findNearestCity(lat: number, lng: number): City | null {
+  let best: City | null = null;
+  let bestDist = Infinity;
+  for (const c of CITIES) {
+    const d = getDistance(lat, lng, c.lat, c.lng);
+    if (d < bestDist) { bestDist = d; best = c; }
+  }
+  return best && bestDist <= NEARBY_CITY_MAX_KM ? best : null;
+}
+
 export default function Index() {
   const { user, loading: authLoading } = useAuth();
   const { isPro } = useUserRole();
   const { preferredCity, setPreferredCity } = usePreferredCity();
-  const savedCity = CITIES.find(c => c.name === preferredCity);
-  const defaultCity = savedCity || CITIES.find(c => c.name === 'Paris')!;
-  const initCenter: [number, number] = [defaultCity.lat, defaultCity.lng];
+  const savedCity = preferredCity ? CITIES.find(c => c.name === preferredCity) : null;
+  // Default mode: city if saved, otherwise France
+  const initMode: LocationModeType = savedCity ? 'city' : 'france';
+  const initCenter: [number, number] = savedCity ? [savedCity.lat, savedCity.lng] : FRANCE_CENTER;
+  const initZoom = savedCity ? DEFAULT_ZOOM : FRANCE_ZOOM;
 
   const [activeTab, setActiveTab] = useState<Tab>('map');
   const [selectedEvent, setSelectedEvent] = useState<NightEvent | null>(null);
   const [showDetail, setShowDetail] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>(initCenter);
-  const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
+  const [mapZoom, setMapZoom] = useState(initZoom);
   const [locating, setLocating] = useState(false);
   const attendance = useAttendance();
   const favorites = useFavorites();
@@ -57,9 +73,9 @@ export default function Index() {
   const [shotgunLoading, setShotgunLoading] = useState(false);
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [userEvents, setUserEvents] = useState<NightEventType[]>([]);
-  const [locationMode, setLocationMode] = useState<LocationModeType>('nearby');
-  const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
-  const [filterCenter, setFilterCenter] = useState<[number, number] | null>(null);
+  const [locationMode, setLocationMode] = useState<LocationModeType>(initMode);
+  const [selectedCityName, setSelectedCityName] = useState<string | null>(savedCity ? savedCity.name : null);
+  const [filterCenter, setFilterCenter] = useState<[number, number] | null>(savedCity ? [savedCity.lat, savedCity.lng] : null);
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const loadIdRef = useRef(0);
   const [showLivePulse, setShowLivePulse] = useState(false);
@@ -75,7 +91,7 @@ export default function Index() {
     genres: [],
     vibes: [],
     sources: [],
-    radiusKm: NEARBY_RADIUS_DEFAULT
+    radiusKm: savedCity ? CITY_RADIUS_DEFAULT : initMode === 'france' ? 9999 : NEARBY_RADIUS_DEFAULT
   });
 
   // Compute a loading key based on mode + city/location
@@ -157,21 +173,33 @@ export default function Index() {
 
   // Request geolocation on load
   useEffect(() => {
-    if ('geolocation' in navigator) {
-      setLocating(true);
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const loc: [number, number] = [pos.coords.latitude, pos.coords.longitude];
-          setUserLocation(loc);
-          setFilterCenter(loc);
-          setLocating(false);
-          setMapCenter(loc);
-          setMapZoom(13);
-        },
-        () => { setLocating(false); },
-        { enableHighAccuracy: true, timeout: 8000 }
-      );
-    }
+    if (!('geolocation' in navigator)) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc: [number, number] = [pos.coords.latitude, pos.coords.longitude];
+        setUserLocation(loc);
+        setLocating(false);
+
+        // If no city was previously saved, try to detect a nearby French city
+        // and use it as the default — otherwise keep France-wide view.
+        if (!savedCity) {
+          const nearest = findNearestCity(loc[0], loc[1]);
+          if (nearest) {
+            setSelectedCityName(nearest.name);
+            setPreferredCity(nearest.name);
+            setLocationMode('city');
+            setFilterCenter([nearest.lat, nearest.lng]);
+            setMapCenter([nearest.lat, nearest.lng]);
+            setMapZoom(DEFAULT_ZOOM);
+            setFilters((prev) => ({ ...prev, radiusKm: CITY_RADIUS_DEFAULT }));
+          }
+        }
+      },
+      () => { setLocating(false); },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Filter events using filterCenter (user location or city center)
