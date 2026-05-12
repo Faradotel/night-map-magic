@@ -18,23 +18,25 @@ function getCorsHeaders(req: Request) {
   };
 }
 
+// Slugs verified against infoconcert.com — major cities use new numeric IDs,
+// smaller cities still use the legacy slug-id format.
 const CITY_SLUGS: Record<string, string> = {
-  'Paris': 'paris-1938', 'Marseille': 'marseille-1900', 'Lyon': 'lyon-1893',
-  'Toulouse': 'toulouse-2086', 'Nice': 'nice-1921', 'Nantes': 'nantes-1915',
-  'Montpellier': 'montpellier-1911', 'Strasbourg': 'strasbourg-2071',
-  'Bordeaux': 'bordeaux-1794', 'Lille': 'lille-1884', 'Rennes': 'rennes-2004',
-  'Reims': 'reims-2001', 'Grenoble': 'grenoble-1842', 'Dijon': 'dijon-1827',
-  'Tours': 'tours-2091', 'Rouen': 'rouen-2017', 'Metz': 'metz-1907',
-  'Nancy': 'nancy-1914', 'Avignon': 'avignon-1778', 'Poitiers': 'poitiers-1962',
-  'Besançon': 'besancon-1786', 'Caen': 'caen-1800', 'Orléans': 'orleans-1934',
-  'Angers': 'angers-1769', 'Brest': 'brest-1796', 'Limoges': 'limoges-1886',
+  'Paris': 'paris-5133', 'Marseille': 'marseille-5132', 'Lyon': 'lyon-5131',
+  'Toulouse': 'toulouse-2991', 'Nice': 'nice-2336', 'Nantes': 'nantes-2306',
+  'Montpellier': 'montpellier-2271', 'Strasbourg': 'strasbourg-2950',
+  'Bordeaux': 'bordeaux-1098', 'Lille': 'lille-2078', 'Rennes': 'rennes-2569',
+  'Reims': 'reims-2567', 'Grenoble': 'grenoble-1842', 'Dijon': 'dijon-1721',
+  'Tours': 'tours-2998', 'Rouen': 'rouen-2610', 'Metz': 'metz-1907',
+  'Nancy': 'nancy-1914', 'Avignon': 'avignon-427', 'Poitiers': 'poitiers-1962',
+  'Besançon': 'besancon-1786', 'Caen': 'caen-1284', 'Orléans': 'orleans-1934',
+  'Angers': 'angers-200', 'Brest': 'brest-1796', 'Limoges': 'limoges-1886',
   'Amiens': 'amiens-1765', 'Perpignan': 'perpignan-1952',
   'La Rochelle': 'la-rochelle-1871', 'Pau': 'pau-1944',
-  'Clermont-Ferrand': 'clermont-ferrand-1815', 'Monaco': 'monaco-1909',
-  'Aix-en-Provence': 'aix-en-provence-1757', 'Toulon': 'toulon-2083',
-  'Saint-Étienne': 'saint-etienne-2025', 'Nîmes': 'nimes-1923',
+  'Clermont-Ferrand': 'clermont-ferrand-3180', 'Monaco': 'monaco-1909',
+  'Aix-en-Provence': 'aix-en-provence-48', 'Toulon': 'toulon-2990',
+  'Saint-Étienne': 'saint-etienne-2676', 'Nîmes': 'nimes-2340',
   'Valence': 'valence-2098', 'Mulhouse': 'mulhouse-1912',
-  'Dunkerque': 'dunkerque-1831',
+  'Dunkerque': 'dunkerque-1831', 'Le Mans': 'le-mans-2007',
 };
 
 const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
@@ -64,8 +66,13 @@ const MONTHS_FR: Record<string, number> = {
 };
 
 function parseFrenchDate(s: string): string {
-  // e.g. "Lundi 11 mai 2026 à 20h00" or "Du 11 mai 2026 au 15 mai 2026"
+  // e.g. "Lundi 11 mai 2026 à 20h00" or "Du 11 mai 2026 au 15 mai 2026" — or already ISO
   if (!s) return '';
+  // ISO passthrough (RSC payload already gives us "2026-07-04T19:00:00.000Z")
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s)) {
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? '' : d.toISOString();
+  }
   const m = s.match(/(\d{1,2})\s+(janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|septembre|octobre|novembre|décembre|decembre)\s+(\d{4})(?:[^0-9]+(\d{1,2})h(\d{2})?)?/i);
   if (!m) return '';
   const day = parseInt(m[1], 10);
@@ -186,10 +193,77 @@ interface RawCard {
   id: string;
 }
 
-function parsePage(html: string, citySlug: string): RawCard[] {
+// New: parse concerts directly from the React-Server-Components payload
+// embedded in `self.__next_f.push([..., "<json-string>"])` chunks.
+// This is the authoritative data source — works for ALL cities (including
+// the big ones where the static HTML only shows skeletons).
+function parseRscPayload(html: string, expectedCity: string): RawCard[] {
   const cards: RawCard[] = [];
-  // Split on concert URLs. Each card starts before its first <a href="/artiste/...">.
-  // Strategy: find all `/concerts/concert-...-NNN` ids, then for each grab the surrounding ~3000 chars.
+  // Unescape the JS-string-encoded JSON
+  const unesc = html
+    .replace(/\\"/g, '"')
+    .replace(/\\\//g, '/')
+    .replace(/\\u0026/g, '&')
+    .replace(/\\n/g, '\n');
+
+  const expected = expectedCity.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const seen = new Set<string>();
+  const idRe = /\{"id":"(\d{6,8})","iri":"\/api\/concerts\/\1","status"/g;
+  let mm: RegExpExecArray | null;
+  while ((mm = idRe.exec(unesc)) !== null) {
+    const cid = mm[1];
+    if (seen.has(cid)) continue;
+
+    // Brace-match to find the full concert object
+    let depth = 0, i = mm.index, inStr = false;
+    for (; i < unesc.length; i++) {
+      const ch = unesc[i];
+      if (inStr) {
+        if (ch === '\\') { i++; continue; }
+        if (ch === '"') inStr = false;
+        continue;
+      }
+      if (ch === '"') inStr = true;
+      else if (ch === '{') depth++;
+      else if (ch === '}') { depth--; if (depth === 0) break; }
+    }
+    if (depth !== 0) continue;
+    const block = unesc.slice(mm.index, i + 1);
+
+    let obj: any;
+    try { obj = JSON.parse(block); } catch { continue; }
+    const lineUp = obj.lineUp?.[0]?.name || obj.firstPart?.[0]?.name;
+    if (!lineUp) continue;
+    const venueName = obj.venue?.name || '';
+    const cityName = obj.venue?.city?.name || '';
+    if (!cityName) continue;
+    // Only keep events whose venue city matches the requested city
+    const cn = cityName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (cn !== expected) continue;
+    const rawDate: string | undefined = obj.dates?.[0]?.date;
+    if (!rawDate) continue;
+    const isoDate = rawDate.replace(/^\$D/, ''); // already ISO
+
+    seen.add(cid);
+    cards.push({
+      name: lineUp,
+      url: `https://www.infoconcert.com/concerts/${cid}`,
+      date: isoDate,        // pre-parsed ISO — parseFrenchDate will detect and return as-is
+      venue: venueName,
+      ville: cityName,
+      id: cid,
+    });
+  }
+  return cards;
+}
+
+function parsePage(html: string, citySlug: string, expectedCity?: string): RawCard[] {
+  // Prefer the structured RSC payload (works on modern InfoConcert pages)
+  if (expectedCity) {
+    const rsc = parseRscPayload(html, expectedCity);
+    if (rsc.length) return rsc;
+  }
+  const cards: RawCard[] = [];
   const seen = new Set<string>();
   const urlRe = /href="(\/concerts\/concert-[a-z0-9-]+-(\d+))"/gi;
   let m: RegExpExecArray | null;
@@ -199,7 +273,6 @@ function parsePage(html: string, citySlug: string): RawCard[] {
     if (seen.has(id)) continue;
     seen.add(id);
 
-    // Look back up to 3500 chars to find the artist name and date
     const start = Math.max(0, m.index - 3500);
     const block = html.slice(start, m.index + 200);
 
@@ -220,6 +293,7 @@ function parsePage(html: string, citySlug: string): RawCard[] {
   }
   return cards;
 }
+
 
 async function fetchPage(url: string): Promise<string> {
   try {
@@ -265,7 +339,7 @@ Deno.serve(async (req) => {
     const maxPage = pageNums.length ? Math.min(Math.max(...pageNums), 25) : 1;
     console.log(`[InfoConcert] ${city} – detected ${maxPage} pages`);
 
-    let allCards: RawCard[] = parsePage(firstHtml, slug);
+    let allCards: RawCard[] = parsePage(firstHtml, slug, city);
 
     if (maxPage > 1) {
       const urls: string[] = [];
@@ -275,7 +349,7 @@ Deno.serve(async (req) => {
       for (let i = 0; i < urls.length; i += CONCURRENCY) {
         const chunk = urls.slice(i, i + CONCURRENCY);
         const htmls = await Promise.all(chunk.map(fetchPage));
-        htmls.forEach(h => h && allCards.push(...parsePage(h, slug)));
+        htmls.forEach(h => h && allCards.push(...parsePage(h, slug, city)));
       }
     }
 
