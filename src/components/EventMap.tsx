@@ -17,6 +17,8 @@ interface EventMapProps {
   radiusKm: number;
   /** Map event_id → nombre de check-ins récents. Active l'animation Live Pulse. */
   livePulseMap?: Record<string, number>;
+  /** Mode LIVE immersif : tous les markers gagnent un halo + glow renforcé. */
+  liveMode?: boolean;
 }
 
 function createEventIcon(
@@ -25,27 +27,34 @@ function createEventIcon(
   isDark: boolean,
   liveCount: number = 0,
   stackCount: number = 1,
+  liveMode: boolean = false,
 ): L.DivIcon {
   const vibe = vibeConfig[event.vibe];
   const typeEmoji = getSourceEmoji(event.id, typeConfig[event.type]?.emoji ?? '📍', event.type);
   const color = vibe.color;
-  // +15% larger markers for stronger map presence
-  const size = isSelected ? 60 : 48;
+  // +15% larger markers for stronger map presence; +6px in LIVE mode
+  const baseSize = isSelected ? 60 : 48;
+  const size = liveMode ? baseSize + 6 : baseSize;
   const bg = isDark ? 'rgba(26,13,21,0.85)' : 'rgba(255,255,255,0.96)';
   const liveDotBorder = isDark ? 'rgba(26,13,21,0.9)' : 'rgba(255,255,255,0.95)';
   const pulse = liveCount > 0;
   const pulseColor = 'hsl(142,71%,45%)';
   const stackAccent = 'hsl(325,95%,54%)';
   const showStack = stackCount > 1;
-  // Stronger glow in light mode so neon identity survives daylight
-  const glowAlpha = isDark ? '55' : '88';
-  const glowAlpha2 = isDark ? '22' : '44';
+  // Stronger glow in light mode so neon identity survives daylight; even stronger in LIVE
+  const glowAlpha = liveMode ? 'cc' : (isDark ? '55' : '88');
+  const glowAlpha2 = liveMode ? '66' : (isDark ? '22' : '44');
   const dropShadow = isDark ? '0 4px 12px rgba(0,0,0,.5)' : '0 6px 16px rgba(40,10,60,.18), 0 2px 4px rgba(40,10,60,.12)';
+  // LIVE mode: soft breathing halo on every marker (CSS keyframes in index.css)
+  const liveHalo = liveMode && !pulse
+    ? `<div style="position:absolute;inset:-8px;border-radius:50%;background:radial-gradient(circle, ${color}55 0%, transparent 65%);animation:live-breath 2.4s ease-in-out infinite;pointer-events:none;"></div>`
+    : '';
 
   return L.divIcon({
     className: '',
     html: `
       <div style="position:relative;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;">
+        ${liveHalo}
         ${pulse ? `<div style="position:absolute;inset:-6px;border-radius:50%;border:2px solid ${pulseColor};animation:ping-slow 1.8s ease-out infinite;opacity:0.55;pointer-events:none;"></div>` : ''}
         ${pulse ? `<div style="position:absolute;inset:-2px;border-radius:50%;background:${pulseColor}22;animation:ping-slow 1.8s ease-out infinite;pointer-events:none;"></div>` : ''}
         ${!pulse && !isSelected ? `<div style="position:absolute;inset:-3px;border-radius:50%;background:radial-gradient(circle, ${color}${glowAlpha2} 0%, transparent 70%);pointer-events:none;"></div>` : ''}
@@ -70,7 +79,7 @@ function createUserIcon(): L.DivIcon {
   });
 }
 
-export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, userLocation, radiusKm, livePulseMap }: EventMapProps) {
+export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, userLocation, radiusKm, livePulseMap, liveMode }: EventMapProps) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const containerRef = useRef<HTMLDivElement>(null);
@@ -200,7 +209,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       const liveCount = livePulseMap?.[event.id] ?? 0;
       const stack = stackCounts.get(event.id) ?? 1;
       const marker = L.marker([event.lat, event.lng], {
-        icon: createEventIcon(event, false, isDark, liveCount, stack),
+        icon: createEventIcon(event, false, isDark, liveCount, stack, !!liveMode),
         zIndexOffset: liveCount > 0 ? 250 : (stack > 1 ? 100 : 0),
       });
       marker.on('click', () => onEventSelect(event));
@@ -210,7 +219,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
 
     map.addLayer(clusterGroup);
     clusterGroupRef.current = clusterGroup;
-  }, [events, onEventSelect, isDark, livePulseMap]);
+  }, [events, onEventSelect, isDark, livePulseMap, liveMode]);
 
   // Selection highlight – only update the 2 affected markers
   useEffect(() => {
@@ -225,7 +234,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       const prevEvent = events.find(e => e.id === prevId);
       if (prevMarker && prevEvent) {
         const stack = stackCountsRef.current.get(prevId) ?? 1;
-        prevMarker.setIcon(createEventIcon(prevEvent, false, isDark, livePulseMap?.[prevId] ?? 0, stack));
+        prevMarker.setIcon(createEventIcon(prevEvent, false, isDark, livePulseMap?.[prevId] ?? 0, stack, !!liveMode));
         prevMarker.setZIndexOffset((livePulseMap?.[prevId] ?? 0) > 0 ? 250 : (stack > 1 ? 100 : 0));
       }
     }
@@ -235,7 +244,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       const newMarker = markersRef.current.get(newId);
       if (newMarker) {
         const stack = stackCountsRef.current.get(newId) ?? 1;
-        newMarker.setIcon(createEventIcon(selectedEvent, true, isDark, livePulseMap?.[newId] ?? 0, stack));
+        newMarker.setIcon(createEventIcon(selectedEvent, true, isDark, livePulseMap?.[newId] ?? 0, stack, !!liveMode));
         newMarker.setZIndexOffset(500);
       }
     }

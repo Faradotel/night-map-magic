@@ -315,3 +315,59 @@
 .ping-slow {
   animation: ping-slow 1.5s ease-out infinite;
 }
+
+/* ─── LIVE MODE ─────────────────────────────────────────────── */
+/* Soft breathing halo around every marker when LIVE mode is on */
+@keyframes live-breath {
+  0%, 100% { transform: scale(0.85); opacity: 0.55; }
+  50%      { transform: scale(1.15); opacity: 0.9; }
+}
+
+/* Button breathing pulse */
+@keyframes live-button-breath {
+  0%, 100% {
+    box-shadow:
+      0 0 0 0 hsl(0 95% 55% / 0.55),
+      0 6px 24px hsl(0 95% 55% / 0.45);
+  }
+  70% {
+    box-shadow:
+      0 0 0 14px hsl(0 95% 55% / 0),
+      0 6px 24px hsl(0 95% 55% / 0.45);
+  }
+}
+.live-button-breath {
+  animation: live-button-breath 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Cinematic atmospheric overlay above the tiles, below markers */
+.live-mode-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 350;
+  background:
+    radial-gradient(ellipse at center, transparent 0%, transparent 35%, rgba(20, 5, 35, 0.35) 100%),
+    linear-gradient(180deg, rgba(20, 5, 35, 0.15) 0%, rgba(20, 5, 35, 0) 40%, rgba(20, 5, 35, 0.25) 100%);
+  mix-blend-mode: multiply;
+  animation: live-overlay-in 350ms ease-out;
+}
+.light .live-mode-overlay {
+  background:
+    radial-gradient(ellipse at center, transparent 0%, transparent 30%, rgba(40, 10, 60, 0.25) 100%),
+    linear-gradient(180deg, rgba(40, 10, 60, 0.1) 0%, transparent 40%, rgba(40, 10, 60, 0.18) 100%);
+}
+@keyframes live-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Subtle scanline pulse over busy zones (purely decorative) */
+.live-mode-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 351;
+  background: radial-gradient(circle at 50% 55%, hsl(325 95% 54% / 0.08) 0%, transparent 45%);
+  animation: live-breath 4s ease-in-out infinite;
+}
