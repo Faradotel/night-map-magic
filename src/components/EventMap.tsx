@@ -32,18 +32,23 @@ function createEventIcon(
   const vibe = vibeConfig[event.vibe];
   const typeEmoji = getSourceEmoji(event.id, typeConfig[event.type]?.emoji ?? '📍', event.type);
   const color = vibe.color;
-  // +15% larger markers for stronger map presence
-  const size = isSelected ? 60 : 48;
+  // +15% larger markers for stronger map presence; +6px in LIVE mode
+  const baseSize = isSelected ? 60 : 48;
+  const size = liveMode ? baseSize + 6 : baseSize;
   const bg = isDark ? 'rgba(26,13,21,0.85)' : 'rgba(255,255,255,0.96)';
   const liveDotBorder = isDark ? 'rgba(26,13,21,0.9)' : 'rgba(255,255,255,0.95)';
   const pulse = liveCount > 0;
   const pulseColor = 'hsl(142,71%,45%)';
   const stackAccent = 'hsl(325,95%,54%)';
   const showStack = stackCount > 1;
-  // Stronger glow in light mode so neon identity survives daylight
-  const glowAlpha = isDark ? '55' : '88';
-  const glowAlpha2 = isDark ? '22' : '44';
+  // Stronger glow in light mode so neon identity survives daylight; even stronger in LIVE
+  const glowAlpha = liveMode ? 'cc' : (isDark ? '55' : '88');
+  const glowAlpha2 = liveMode ? '66' : (isDark ? '22' : '44');
   const dropShadow = isDark ? '0 4px 12px rgba(0,0,0,.5)' : '0 6px 16px rgba(40,10,60,.18), 0 2px 4px rgba(40,10,60,.12)';
+  // LIVE mode: soft breathing halo on every marker (CSS keyframes in index.css)
+  const liveHalo = liveMode && !pulse
+    ? `<div style="position:absolute;inset:-8px;border-radius:50%;background:radial-gradient(circle, ${color}55 0%, transparent 65%);animation:live-breath 2.4s ease-in-out infinite;pointer-events:none;"></div>`
+    : '';
 
   return L.divIcon({
     className: '',
