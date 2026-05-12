@@ -73,9 +73,9 @@ export default function Index() {
   const [shotgunLoading, setShotgunLoading] = useState(false);
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [userEvents, setUserEvents] = useState<NightEventType[]>([]);
-  const [locationMode, setLocationMode] = useState<LocationModeType>('nearby');
-  const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
-  const [filterCenter, setFilterCenter] = useState<[number, number] | null>(null);
+  const [locationMode, setLocationMode] = useState<LocationModeType>(initMode);
+  const [selectedCityName, setSelectedCityName] = useState<string | null>(savedCity ? savedCity.name : null);
+  const [filterCenter, setFilterCenter] = useState<[number, number] | null>(savedCity ? [savedCity.lat, savedCity.lng] : null);
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const loadIdRef = useRef(0);
   const [showLivePulse, setShowLivePulse] = useState(false);
