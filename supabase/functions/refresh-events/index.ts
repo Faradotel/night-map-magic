@@ -123,6 +123,8 @@ Deno.serve(async (req) => {
       { match: 'musee de grenoble', lat: 45.1957700, lng: 5.7314200 },
       { match: 'musee dauphinois', lat: 45.1954300, lng: 5.7220500 },
       { match: 'la source', lat: 45.1483000, lng: 5.7508000 },
+      { match: 'cafe des arts', lat: 45.1961170, lng: 5.7300422 },
+      { match: 'café des arts', lat: 45.1961170, lng: 5.7300422 },
       // Paris national venues
       { match: 'accor arena', lat: 48.8386, lng: 2.3789 },
       { match: 'bercy', lat: 48.8386, lng: 2.3789 },
