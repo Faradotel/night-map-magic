@@ -54,6 +54,7 @@ function createEventIcon(
     className: '',
     html: `
       <div style="position:relative;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;">
+        ${liveHalo}
         ${pulse ? `<div style="position:absolute;inset:-6px;border-radius:50%;border:2px solid ${pulseColor};animation:ping-slow 1.8s ease-out infinite;opacity:0.55;pointer-events:none;"></div>` : ''}
         ${pulse ? `<div style="position:absolute;inset:-2px;border-radius:50%;background:${pulseColor}22;animation:ping-slow 1.8s ease-out infinite;pointer-events:none;"></div>` : ''}
         ${!pulse && !isSelected ? `<div style="position:absolute;inset:-3px;border-radius:50%;background:radial-gradient(circle, ${color}${glowAlpha2} 0%, transparent 70%);pointer-events:none;"></div>` : ''}
