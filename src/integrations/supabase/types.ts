@@ -19,6 +19,7 @@ export type Database = {
           address: string
           city: string
           created_at: string
+          created_by: string | null
           description: string
           end_time: string | null
           external_attendees: number | null
@@ -42,6 +43,7 @@ export type Database = {
           address?: string
           city: string
           created_at?: string
+          created_by?: string | null
           description?: string
           end_time?: string | null
           external_attendees?: number | null
@@ -65,6 +67,7 @@ export type Database = {
           address?: string
           city?: string
           created_at?: string
+          created_by?: string | null
           description?: string
           end_time?: string | null
           external_attendees?: number | null
@@ -529,6 +532,13 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      lookup_share_code: {
+        Args: { _code: string }
+        Returns: {
+          expires_at: string
+          user_id: string
+        }[]
       }
       move_to_dlq: {
         Args: {

@@ -331,6 +331,12 @@ async function fetchAgendaEvents(
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+  // Auth: require service-role bearer (internal call from refresh-events)
+  const _serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+  const _auth = req.headers.get("authorization") || "";
+  if (_auth !== `Bearer ${_serviceKey}`) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
 
   try {
     const { city } = await req.json();
