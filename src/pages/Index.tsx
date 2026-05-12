@@ -323,7 +323,15 @@ export default function Index() {
             selectedEvent={selectedEvent}
             userLocation={userLocation}
             radiusKm={filters.radiusKm}
-            livePulseMap={livePulseMap} />
+            livePulseMap={livePulseMap}
+            liveMode={showLivePulse} />
+          {/* Cinematic LIVE overlay */}
+          {showLivePulse && (
+            <>
+              <div className="live-mode-overlay" />
+              <div className="live-mode-vignette" />
+            </>
+          )}
         </div>
 
         {/* Hotspots banner (top of map, scrollable) */}
