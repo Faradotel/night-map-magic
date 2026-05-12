@@ -390,40 +390,53 @@ export default function Index() {
                 onClick={() => {
                   setShowLivePulse(v => {
                     const next = !v;
-                    if (next) toast.success('Mode Live activé 🔥', { description: 'Les events qui bougent en temps réel.' });
+                    if (next) {
+                      toast.success('🔴 LIVE MODE activé', {
+                        description: 'Ce qui se passe autour de toi en ce moment.',
+                      });
+                    } else {
+                      toast('Mode normal', { description: 'Tous les évènements à venir.' });
+                    }
                     return next;
                   });
                 }}
-                aria-label="Activer le mode Live"
-                className="h-10 px-3 rounded-full flex items-center gap-1.5 border shrink-0 transition-all active:scale-95 relative overflow-hidden"
+                aria-label={showLivePulse ? 'Quitter le mode Live' : 'Activer le mode Live'}
+                className={`h-10 pl-2.5 pr-3.5 rounded-full flex items-center gap-2 shrink-0 transition-all active:scale-95 relative overflow-hidden ${showLivePulse ? 'live-button-breath' : ''}`}
                 style={{
                   background: showLivePulse
-                    ? 'linear-gradient(135deg, hsl(142 71% 45%), hsl(160 71% 42%))'
+                    ? 'linear-gradient(135deg, hsl(0 95% 55%), hsl(340 95% 55%))'
                     : 'var(--controls-bg)',
                   backdropFilter: 'blur(14px)',
                   WebkitBackdropFilter: 'blur(14px)',
-                  borderColor: showLivePulse ? 'hsl(142, 71%, 45%)' : 'hsl(142 71% 45% / 0.35)',
+                  border: showLivePulse ? '1.5px solid hsl(0 95% 60% / 0.8)' : '1.5px solid hsl(0 95% 55% / 0.4)',
                   boxShadow: showLivePulse
-                    ? '0 0 0 3px hsl(142, 71%, 45%, 0.25), 0 6px 24px hsl(142, 71%, 45%, 0.5)'
-                    : '0 4px 14px hsl(142 71% 45% / 0.2), var(--controls-shadow)',
-                  color: showLivePulse ? 'white' : 'hsl(142 71% 38%)',
+                    ? '0 0 0 3px hsl(0 95% 55% / 0.2), 0 8px 28px hsl(0 95% 55% / 0.55)'
+                    : '0 4px 14px hsl(0 95% 55% / 0.18), var(--controls-shadow)',
+                  color: showLivePulse ? 'white' : 'hsl(0 85% 48%)',
                 }}
               >
+                {/* Live broadcast dot */}
                 <span
-                  className="w-2 h-2 rounded-full relative"
+                  className="w-2.5 h-2.5 rounded-full relative shrink-0"
                   style={{
-                    background: showLivePulse ? 'white' : 'hsl(142 71% 45%)',
-                    boxShadow: showLivePulse ? '0 0 8px white' : '0 0 8px hsl(142 71% 45%)',
+                    background: showLivePulse ? 'white' : 'hsl(0 95% 55%)',
+                    boxShadow: showLivePulse
+                      ? '0 0 10px white, 0 0 20px hsl(0 95% 55%)'
+                      : '0 0 10px hsl(0 95% 55%)',
                   }}
                 >
                   <span
                     className="absolute inset-0 rounded-full animate-ping"
-                    style={{ background: showLivePulse ? 'white' : 'hsl(142 71% 45%)', opacity: 0.6 }}
+                    style={{
+                      background: showLivePulse ? 'white' : 'hsl(0 95% 55%)',
+                      opacity: 0.7,
+                    }}
                   />
                 </span>
-                <Zap size={13} strokeWidth={2.5} fill={showLivePulse ? 'white' : 'none'} />
-                <span className="text-[11px] font-extrabold tracking-wide">
-                  {showLivePulse ? `Live · ${liveEvents.length}` : 'Live'}
+                <span className="text-[11px] font-extrabold tracking-[0.08em] uppercase leading-none">
+                  {showLivePulse
+                    ? (liveEvents.length > 0 ? `${liveEvents.length} live` : 'Live now')
+                    : 'Live'}
                 </span>
               </button>
             </div>
