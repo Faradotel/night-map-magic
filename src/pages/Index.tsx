@@ -435,6 +435,8 @@ export default function Index() {
               </button>
               <button
                 onClick={() => {
+                  // Subtle haptic on activation (mobile only, silently ignored elsewhere)
+                  try { (navigator as any).vibrate?.(showLivePulse ? 8 : [12, 30, 18]); } catch {}
                   setShowLivePulse(v => {
                     const next = !v;
                     if (next) {
@@ -451,38 +453,34 @@ export default function Index() {
                 className={`h-10 pl-2.5 pr-3.5 rounded-full flex items-center gap-2 shrink-0 transition-all active:scale-95 relative overflow-hidden ${showLivePulse ? 'live-button-breath' : ''}`}
                 style={{
                   background: showLivePulse
-                    ? 'linear-gradient(135deg, hsl(0 95% 55%), hsl(340 95% 55%))'
+                    ? 'linear-gradient(135deg, hsl(0 95% 52%), hsl(325 95% 54%) 60%, hsl(285 90% 58%))'
                     : 'var(--controls-bg)',
                   backdropFilter: 'blur(14px)',
                   WebkitBackdropFilter: 'blur(14px)',
-                  border: showLivePulse ? '1.5px solid hsl(0 95% 60% / 0.8)' : '1.5px solid hsl(0 95% 55% / 0.4)',
+                  border: showLivePulse ? '1.5px solid hsl(0 95% 65% / 0.9)' : '1.5px solid hsl(0 95% 55% / 0.4)',
                   boxShadow: showLivePulse
-                    ? '0 0 0 3px hsl(0 95% 55% / 0.2), 0 8px 28px hsl(0 95% 55% / 0.55)'
+                    ? '0 0 0 3px hsl(0 95% 55% / 0.25), 0 0 22px hsl(325 95% 54% / 0.5), 0 8px 32px hsl(0 95% 55% / 0.6)'
                     : '0 4px 14px hsl(0 95% 55% / 0.18), var(--controls-shadow)',
                   color: showLivePulse ? 'white' : 'hsl(0 85% 48%)',
                 }}
               >
-                {/* Live broadcast dot */}
-                <span
-                  className="w-2.5 h-2.5 rounded-full relative shrink-0"
-                  style={{
-                    background: showLivePulse ? 'white' : 'hsl(0 95% 55%)',
-                    boxShadow: showLivePulse
-                      ? '0 0 10px white, 0 0 20px hsl(0 95% 55%)'
-                      : '0 0 10px hsl(0 95% 55%)',
-                  }}
-                >
+                {/* Live broadcast dot OR flame when active */}
+                {showLivePulse ? (
+                  <Flame size={13} className="flame-flicker shrink-0" style={{ color: 'hsl(45 100% 70%)' }} />
+                ) : (
                   <span
-                    className="absolute inset-0 rounded-full animate-ping"
-                    style={{
-                      background: showLivePulse ? 'white' : 'hsl(0 95% 55%)',
-                      opacity: 0.7,
-                    }}
-                  />
-                </span>
+                    className="w-2.5 h-2.5 rounded-full relative shrink-0"
+                    style={{ background: 'hsl(0 95% 55%)', boxShadow: '0 0 10px hsl(0 95% 55%)' }}
+                  >
+                    <span
+                      className="absolute inset-0 rounded-full animate-ping"
+                      style={{ background: 'hsl(0 95% 55%)', opacity: 0.7 }}
+                    />
+                  </span>
+                )}
                 <span className="text-[11px] font-extrabold tracking-[0.08em] uppercase leading-none">
                   {showLivePulse
-                    ? (liveEvents.length > 0 ? `${liveEvents.length} live` : 'Live now')
+                    ? (liveEvents.length > 0 ? `${liveEvents.length} LIVE NOW` : 'HOT TONIGHT')
                     : 'Live'}
                 </span>
               </button>
