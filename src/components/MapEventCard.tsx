@@ -1,5 +1,5 @@
 import { useRef, useCallback, useMemo } from 'react';
-import { X, ChevronUp, ChevronLeft, ChevronRight, Users } from 'lucide-react';
+import { X, ChevronUp, ChevronLeft, ChevronRight, Users, Flame } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, getDistance } from '@/data/mockEvents';
 import { useDistanceUnit } from '@/hooks/useDistanceUnit';
 import { useTheme } from '@/hooks/useTheme';
@@ -15,9 +15,13 @@ interface MapEventCardProps {
   /** All co-located events (same address/coords). If provided, enables swiping. */
   coLocatedEvents?: NightEvent[];
   onEventChange?: (event: NightEvent) => void;
+  /** LIVE MODE active – amplify social signals on the card. */
+  liveMode?: boolean;
+  /** Recent check-ins for this event (live activity signal). */
+  liveCount?: number;
 }
 
-export function MapEventCard({ event, onClose, onDetails, userLocation, coLocatedEvents, onEventChange }: MapEventCardProps) {
+export function MapEventCard({ event, onClose, onDetails, userLocation, coLocatedEvents, onEventChange, liveMode, liveCount }: MapEventCardProps) {
   const vibe = vibeConfig[event.vibe];
   const type = typeConfig[event.type];
   const { theme } = useTheme();
