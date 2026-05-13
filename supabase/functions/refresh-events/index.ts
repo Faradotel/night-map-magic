@@ -148,6 +148,12 @@ Deno.serve(async (req) => {
       { match: 'stade de france', lat: 48.9244, lng: 2.3601 },
       { match: 'la défense arena', lat: 48.8956, lng: 2.2294 },
       { match: 'la defense arena', lat: 48.8956, lng: 2.2294 },
+      // Nice
+      { match: 'palais nikaia', lat: 43.6614, lng: 7.1989 },
+      { match: 'palais nikaïa', lat: 43.6614, lng: 7.1989 },
+      { match: 'nikaia', lat: 43.6614, lng: 7.1989 },
+      { match: 'allianz riviera', lat: 43.7050, lng: 7.1925 },
+      { match: 'stade allianz', lat: 43.7050, lng: 7.1925 },
     ];
 
     function normalizeForMatch(s: string): string {
