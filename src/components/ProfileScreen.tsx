@@ -1,9 +1,11 @@
 import { allBadges } from '@/data/badges';
+import { CITY_SLUGS } from '@/lib/seo/slug';
 import { AllBadgesScreen } from '@/components/AllBadgesScreen';
 import { useUnlockedBadges } from '@/hooks/useUnlockedBadges';
 import { AuthScreen } from '@/components/AuthScreen';
 import { PrivacyPolicyScreen } from '@/components/PrivacyPolicyScreen';
-import { Settings, ChevronRight, MapPin, Calendar, Star, Sun, Moon, LogOut, Bell, Pencil, Check, X, Heart, Clock, QrCode } from 'lucide-react';
+import { Settings, ChevronRight, MapPin, Calendar, Star, Sun, Moon, LogOut, Bell, Pencil, Check, X, Heart, Clock, QrCode, Link as LinkIcon, Globe } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useTheme } from '@/hooks/useTheme';
 import { useAttendance } from '@/hooks/useAttendance';
 import { usePreferredCity } from '@/hooks/usePreferredCity';
@@ -456,6 +458,40 @@ export function ProfileScreen() {
               </div>
               <ChevronRight size={14} className="text-muted-foreground" />
             </button>
+          </div>
+        </div>
+
+        {/* Explorer links */}
+        <div className="mx-4 mt-6 mb-2">
+          <h3 className="text-sm font-black mb-2 text-muted-foreground">Explorer</h3>
+          <div
+            className="rounded-2xl border border-surface-4 overflow-hidden"
+            style={{ background: 'var(--profile-card-bg)' }}
+          >
+            <Link
+              to="/villes"
+              className="w-full flex items-center justify-between px-4 py-3 text-left"
+              style={{ borderBottom: '1px solid var(--profile-divider)' }}
+            >
+              <div>
+                <p className="text-sm font-medium">Toutes les villes</p>
+                <p className="text-xs text-muted-foreground">Voir les événements par ville</p>
+              </div>
+              <ChevronRight size={14} className="text-muted-foreground" />
+            </Link>
+            {Object.entries(CITY_SLUGS).slice(0, 6).map(([slug, name]) => (
+              <Link
+                key={slug}
+                to={`/villes/${slug}`}
+                className="w-full flex items-center justify-between px-4 py-3 text-left"
+                style={{ borderBottom: '1px solid var(--profile-divider)' }}
+              >
+                <div>
+                  <p className="text-sm font-medium">{name}</p>
+                </div>
+                <ChevronRight size={14} className="text-muted-foreground" />
+              </Link>
+            ))}
           </div>
         </div>
 

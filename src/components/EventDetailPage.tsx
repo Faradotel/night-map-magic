@@ -1,6 +1,8 @@
 import { useRef, useCallback } from 'react';
 import { toast } from 'sonner';
-import { X, MapPin, Clock, Ticket, ExternalLink, Check, ChevronDown, Share2, Music, Users, Info, Heart } from 'lucide-react';
+import { X, MapPin, Clock, Ticket, ExternalLink, Check, ChevronDown, Share2, Music, Users, Info, Heart, Link as LinkIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { eventSlug, slugify } from '@/lib/seo/slug';
 import { NightEvent, vibeConfig, typeConfig, formatTime, formatDate } from '@/data/mockEvents';
 import { getSourceEmoji } from '@/lib/sourceEmoji';
 import { useEventAttendanceCount } from '@/hooks/useEventAttendanceCount';
@@ -188,6 +190,30 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
             <Info size={12} />
             Source : {source}
           </div>
+          <Link
+            to={`/evenements/${eventSlug(event.name, event.id)}`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold ml-2"
+            style={{
+              borderColor: 'hsl(var(--primary) / 0.4)',
+              color: 'hsl(var(--primary))',
+              background: 'hsl(var(--primary) / 0.1)',
+            }}
+          >
+            <LinkIcon size={12} />
+            Fiche événement
+          </Link>
+          <Link
+            to={`/villes/${slugify(event.city)}`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold ml-2"
+            style={{
+              borderColor: 'hsl(var(--secondary) / 0.4)',
+              color: 'hsl(var(--foreground))',
+              background: 'hsl(var(--secondary))',
+            }}
+          >
+            <MapPin size={12} />
+            {event.city}
+          </Link>
           {event.externalAttendees != null && event.externalAttendees > 0 && (
             <div
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold ml-2"
