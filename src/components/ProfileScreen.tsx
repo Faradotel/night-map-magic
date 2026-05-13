@@ -471,7 +471,6 @@ export function ProfileScreen() {
             <Link
               to="/villes"
               className="w-full flex items-center justify-between px-4 py-3 text-left"
-              style={{ borderBottom: '1px solid var(--profile-divider)' }}
             >
               <div>
                 <p className="text-sm font-medium">Toutes les villes</p>
@@ -479,19 +478,6 @@ export function ProfileScreen() {
               </div>
               <ChevronRight size={14} className="text-muted-foreground" />
             </Link>
-            {Object.entries(CITY_SLUGS).map(([slug, name]) => (
-              <Link
-                key={slug}
-                to={`/villes/${slug}`}
-                className="w-full flex items-center justify-between px-4 py-3 text-left"
-                style={{ borderBottom: '1px solid var(--profile-divider)' }}
-              >
-                <div>
-                  <p className="text-sm font-medium">{name}</p>
-                </div>
-                <ChevronRight size={14} className="text-muted-foreground" />
-              </Link>
-            ))}
           </div>
         </div>
 
