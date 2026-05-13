@@ -13,6 +13,7 @@
 - [/categories/sport](/categories/sport): Événements sportifs en direct.
 - [/categories/culture](/categories/culture): Théâtre, expositions et spectacles.
 - [/categories/brocantes](/categories/brocantes): Brocantes, vide-greniers et puces.
+- [/rgpd](/rgpd): Politique de confidentialité et protection des données (RGPD).
 
 ## Villes
 
