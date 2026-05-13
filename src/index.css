@@ -368,6 +368,63 @@
   inset: 0;
   pointer-events: none;
   z-index: 351;
-  background: radial-gradient(circle at 50% 55%, hsl(325 95% 54% / 0.08) 0%, transparent 45%);
+  background:
+    radial-gradient(circle at 25% 35%, hsl(0 95% 55% / 0.10) 0%, transparent 28%),
+    radial-gradient(circle at 75% 65%, hsl(325 95% 54% / 0.10) 0%, transparent 30%),
+    radial-gradient(circle at 50% 55%, hsl(325 95% 54% / 0.08) 0%, transparent 45%);
   animation: live-breath 4s ease-in-out infinite;
 }
+
+/* Top neon scan line slowly sweeping across the map in LIVE mode */
+@keyframes live-scan {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  10%  { opacity: 0.6; }
+  90%  { opacity: 0.6; }
+  100% { transform: translateY(120vh); opacity: 0; }
+}
+.live-mode-scan {
+  position: absolute;
+  left: 0; right: 0;
+  height: 120px;
+  pointer-events: none;
+  z-index: 352;
+  background: linear-gradient(180deg, transparent 0%, hsl(0 95% 55% / 0.10) 50%, transparent 100%);
+  filter: blur(8px);
+  animation: live-scan 7s linear infinite;
+}
+
+/* Live ticker scrolling marquee */
+@keyframes live-ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.live-ticker-track {
+  display: inline-flex;
+  gap: 1.5rem;
+  white-space: nowrap;
+  animation: live-ticker 28s linear infinite;
+  will-change: transform;
+}
+
+/* Live button label cross-fade */
+@keyframes live-label-in {
+  0%   { opacity: 0; transform: translateY(6px); }
+  20%  { opacity: 1; transform: translateY(0); }
+  80%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-6px); }
+}
+.live-label-cycle { animation: live-label-in 3.2s ease-in-out infinite; }
+
+/* Social signal badge breath */
+@keyframes signal-breath {
+  0%, 100% { box-shadow: 0 0 0 0 currentColor; opacity: 0.95; }
+  50%      { box-shadow: 0 0 0 4px transparent; opacity: 1; }
+}
+.signal-breath { animation: signal-breath 2.2s ease-in-out infinite; }
+
+/* Flame flicker for HOT badge */
+@keyframes flame-flicker {
+  0%, 100% { transform: scale(1) rotate(-2deg); filter: drop-shadow(0 0 4px hsl(28 95% 55% / 0.8)); }
+  50%      { transform: scale(1.12) rotate(2deg); filter: drop-shadow(0 0 8px hsl(0 95% 55% / 0.9)); }
+}
+.flame-flicker { animation: flame-flicker 1.4s ease-in-out infinite; }
