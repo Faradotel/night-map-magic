@@ -367,6 +367,7 @@ export default function Index() {
             <>
               <div className="live-mode-overlay" />
               <div className="live-mode-vignette" />
+              <div className="live-mode-scan" />
             </>
           )}
         </div>
@@ -375,8 +376,17 @@ export default function Index() {
         <TonightsHotspotsBanner
           allEvents={allEvents}
           onSelect={handleEventSelect}
-          visible={!selectedEvent && !showDetail}
+          visible={!selectedEvent && !showDetail && !showLivePulse}
         />
+
+        {/* LIVE TICKER — only in LIVE mode, replaces the hotspots banner */}
+        {showLivePulse && !selectedEvent && !showDetail && (
+          <LiveTicker
+            liveEvents={liveEvents}
+            allEvents={allEvents}
+            onSelect={handleEventSelect}
+          />
+        )}
 
         {/* ── Top Controls ── */}
         <div className="absolute top-0 left-0 right-0 z-[500] pointer-events-none"
