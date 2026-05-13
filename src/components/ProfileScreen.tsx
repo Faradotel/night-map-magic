@@ -3,7 +3,6 @@ import { CITY_SLUGS } from '@/lib/seo/slug';
 import { AllBadgesScreen } from '@/components/AllBadgesScreen';
 import { useUnlockedBadges } from '@/hooks/useUnlockedBadges';
 import { AuthScreen } from '@/components/AuthScreen';
-import { PrivacyPolicyScreen } from '@/components/PrivacyPolicyScreen';
 import { Settings, ChevronRight, MapPin, Calendar, Star, Sun, Moon, LogOut, Bell, Pencil, Check, X, Heart, Clock, QrCode, Link as LinkIcon, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@/hooks/useTheme';
@@ -32,7 +31,6 @@ export function ProfileScreen() {
   const [editingUsername, setEditingUsername] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [showAllBadges, setShowAllBadges] = useState(false);
-  const [showPrivacy, setShowPrivacy] = useState(false);
   const [viewingPass, setViewingPass] = useState<{ eventId: string; eventName: string } | null>(null);
   const [friendNotifs, setFriendNotifs] = useState(true);
 
@@ -448,8 +446,8 @@ export function ProfileScreen() {
               </div>
               <ChevronRight size={14} className="text-muted-foreground" />
             </button>
-            <button
-              onClick={() => setShowPrivacy(true)}
+            <Link
+              to="/rgpd"
               className="w-full flex items-center justify-between px-4 py-3 text-left"
             >
               <div>
@@ -457,7 +455,7 @@ export function ProfileScreen() {
                 <p className="text-xs text-muted-foreground">RGPD & données personnelles</p>
               </div>
               <ChevronRight size={14} className="text-muted-foreground" />
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -480,8 +478,6 @@ export function ProfileScreen() {
             </Link>
           </div>
         </div>
-
-        {showPrivacy && <PrivacyPolicyScreen onBack={() => setShowPrivacy(false)} />}
       </div>
     </div>
   );
