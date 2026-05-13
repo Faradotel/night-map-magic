@@ -83,6 +83,9 @@ export default function Index() {
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const loadIdRef = useRef(0);
   const [showLivePulse, setShowLivePulse] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const hasProcessedCity = useRef(false);
+  const hasProcessedEvent = useRef(false);
   const { liveCountById: liveCountByIdRaw, events: liveEvents } = useLiveEvents({
     enabled: showLivePulse,
     sinceHours: 6,
