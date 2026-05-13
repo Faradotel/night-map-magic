@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://pulse-map.live/</loc><lastmod>2026-05-13</lastmod><changefreq>hourly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://pulse-map.live/villes</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/villes/paris</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/villes/lyon</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/villes/marseille</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/villes/toulouse</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/villes/nice</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/villes/nantes</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/villes/bordeaux</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/villes/grenoble</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/villes/lille</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/villes/strasbourg</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/villes/rennes</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/villes/montpellier</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/villes/aix-en-provence</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/villes/saint-etienne</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/villes/villeurbanne</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/concerts</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pulse-map.live/categories/soirees</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pulse-map.live/categories/festivals</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pulse-map.live/categories/bars</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pulse-map.live/categories/sport</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pulse-map.live/categories/culture</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pulse-map.live/categories/brocantes</loc><lastmod>2026-05-13</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+</urlset>
