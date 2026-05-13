@@ -520,6 +520,8 @@ export default function Index() {
               return Math.abs(e.lat - selectedEvent.lat) < THRESHOLD && Math.abs(e.lng - selectedEvent.lng) < THRESHOLD;
             })}
             onEventChange={(ev) => setSelectedEvent(ev)}
+            liveMode={showLivePulse}
+            liveCount={liveCountByIdRaw?.[selectedEvent.id] ?? 0}
           />
         )}
 
