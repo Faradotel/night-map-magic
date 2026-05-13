@@ -16,6 +16,7 @@ const CitiesIndex = lazy(() => import("./pages/CitiesIndex"));
 const CityPage = lazy(() => import("./pages/CityPage"));
 const EventPage = lazy(() => import("./pages/EventPage"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));
+const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 import { Capacitor } from "@capacitor/core";
 import { App as CapacitorApp } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
@@ -77,6 +78,7 @@ const App = () => {
                     <Route path="/categories/:slug" element={<CategoryPage />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
+                    <Route path="/rgpd" element={<PrivacyPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
