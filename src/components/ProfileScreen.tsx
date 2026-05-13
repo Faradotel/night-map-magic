@@ -446,8 +446,8 @@ export function ProfileScreen() {
               </div>
               <ChevronRight size={14} className="text-muted-foreground" />
             </button>
-            <button
-              onClick={() => setShowPrivacy(true)}
+            <Link
+              to="/rgpd"
               className="w-full flex items-center justify-between px-4 py-3 text-left"
             >
               <div>
@@ -455,7 +455,7 @@ export function ProfileScreen() {
                 <p className="text-xs text-muted-foreground">RGPD & données personnelles</p>
               </div>
               <ChevronRight size={14} className="text-muted-foreground" />
-            </button>
+            </Link>
           </div>
         </div>
 
