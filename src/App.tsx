@@ -78,6 +78,7 @@ const App = () => {
                     <Route path="/categories/:slug" element={<CategoryPage />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
+                    <Route path="/rgpd" element={<PrivacyPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
