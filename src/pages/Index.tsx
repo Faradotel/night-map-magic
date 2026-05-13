@@ -22,10 +22,11 @@ import { useOfflineEvents } from '@/hooks/useOfflineEvents';
 import { loadEventsForCity, loadEventsNearby, loadAllEvents, deduplicateEvents } from '@/lib/api/shotgun';
 import { mapGenres, deduceVibe, deduceType, parsePriceRange } from '@/lib/api/shotgun';
 import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
-import { MapPin, Locate, Sliders, Bell, Plus, Zap } from 'lucide-react';
+import { MapPin, Locate, Sliders, Bell, Plus, Zap, Flame } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLiveEvents } from '@/hooks/useLiveEvents';
 import { TonightsHotspotsBanner } from '@/components/TonightsHotspotsBanner';
+import { LiveTicker } from '@/components/LiveTicker';
 
 type Tab = 'map' | 'search' | 'friends' | 'profile';
 
