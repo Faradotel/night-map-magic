@@ -23,10 +23,10 @@ export default function CitiesIndex() {
         ]}
       />
       <main className="h-full overflow-y-auto bg-background text-foreground px-5 py-8 max-w-3xl mx-auto">
-        <nav aria-label="Fil d'ariane" className="text-xs text-muted-foreground mb-4">
-          <Link to="/" className="hover:text-foreground">Accueil</Link>
-          <span className="mx-2">/</span>
-          <span>Villes</span>
+        <nav aria-label="Fil d'ariane" className="flex items-center gap-2 text-sm text-muted-foreground mb-5">
+          <Link to="/" className="px-3 py-1.5 rounded-lg bg-secondary hover:bg-accent/10 font-medium transition-colors">Accueil</Link>
+          <span>/</span>
+          <span className="px-3 py-1.5 font-medium text-foreground">Villes</span>
         </nav>
         <h1 className="text-3xl font-black mb-3">Sorties & Événements en France</h1>
         <p className="text-sm text-muted-foreground mb-8 leading-relaxed">

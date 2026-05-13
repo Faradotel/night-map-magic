@@ -99,12 +99,12 @@ export default function EventPage() {
         jsonLd={ld}
       />
       <main className="h-full overflow-y-auto bg-background text-foreground px-5 py-6 max-w-2xl mx-auto">
-        <nav aria-label="Fil d'ariane" className="text-xs text-muted-foreground mb-4">
-          <Link to="/" className="hover:text-foreground">Accueil</Link>
-          <span className="mx-2">/</span>
-          <Link to="/villes" className="hover:text-foreground">Villes</Link>
-          <span className="mx-2">/</span>
-          <span>{event.name}</span>
+        <nav aria-label="Fil d'ariane" className="flex items-center gap-2 text-sm text-muted-foreground mb-5">
+          <Link to="/" className="px-3 py-1.5 rounded-lg bg-secondary hover:bg-accent/10 font-medium transition-colors">Accueil</Link>
+          <span>/</span>
+          <Link to="/villes" className="px-3 py-1.5 rounded-lg bg-secondary hover:bg-accent/10 font-medium transition-colors">Villes</Link>
+          <span>/</span>
+          <span className="px-3 py-1.5 font-medium text-foreground truncate max-w-[120px]">{event.name}</span>
         </nav>
 
         {event.image_url && (
