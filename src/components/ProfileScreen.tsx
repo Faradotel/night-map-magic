@@ -108,7 +108,7 @@ export function ProfileScreen() {
   return (
     <div
       className="absolute inset-0 z-[300] overflow-y-auto scrollbar-hidden"
-      style={{ background: 'hsl(var(--surface-1))' }}
+      style={{ background: 'hsl(var(--surface-1))', WebkitOverflowScrolling: 'touch' }}
     >
       {/* Background glow */}
       <div
@@ -479,7 +479,7 @@ export function ProfileScreen() {
               </div>
               <ChevronRight size={14} className="text-muted-foreground" />
             </Link>
-            {Object.entries(CITY_SLUGS).slice(0, 6).map(([slug, name]) => (
+            {Object.entries(CITY_SLUGS).map(([slug, name]) => (
               <Link
                 key={slug}
                 to={`/villes/${slug}`}

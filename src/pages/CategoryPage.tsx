@@ -50,7 +50,7 @@ export default function CategoryPage() {
           { name: cat.label, url: canonical },
         ])]}
       />
-      <main className="min-h-screen bg-background text-foreground px-5 py-6 max-w-3xl mx-auto">
+      <main className="h-full overflow-y-auto bg-background text-foreground px-5 py-6 max-w-3xl mx-auto">
         <nav aria-label="Fil d'ariane" className="text-xs text-muted-foreground mb-4">
           <Link to="/" className="hover:text-foreground">Accueil</Link>
           <span className="mx-2">/</span>
