@@ -478,8 +478,6 @@ export function ProfileScreen() {
             </Link>
           </div>
         </div>
-
-        {showPrivacy && <PrivacyPolicyScreen onBack={() => setShowPrivacy(false)} />}
       </div>
     </div>
   );
