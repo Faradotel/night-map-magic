@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { SEO } from '@/components/SEO';
 
 // This page runs inside Chrome Custom Tab after Google OAuth.
 // It uses the Android Intent URL scheme — Chrome recognises it natively
