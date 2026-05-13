@@ -108,7 +108,7 @@ export function ProfileScreen() {
   return (
     <div
       className="absolute inset-0 z-[300] overflow-y-auto scrollbar-hidden"
-      style={{ background: 'hsl(var(--surface-1))' }}
+      style={{ background: 'hsl(var(--surface-1))', WebkitOverflowScrolling: 'touch' }}
     >
       {/* Background glow */}
       <div
