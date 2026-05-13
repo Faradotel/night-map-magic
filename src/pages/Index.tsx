@@ -27,6 +27,8 @@ import { toast } from 'sonner';
 import { useLiveEvents } from '@/hooks/useLiveEvents';
 import { TonightsHotspotsBanner } from '@/components/TonightsHotspotsBanner';
 import { LiveTicker } from '@/components/LiveTicker';
+import { SEO } from '@/components/SEO';
+import { organizationLd, websiteLd } from '@/lib/seo/jsonld';
 
 type Tab = 'map' | 'search' | 'friends' | 'profile';
 
@@ -348,6 +350,12 @@ export default function Index() {
 
   return (
     <div className="relative w-full h-full overflow-hidden" style={{ background: 'var(--map-bg)' }}>
+      <SEO
+        title="PulseMap — Sorties, concerts & événements en direct près de chez vous"
+        description="Découvre les soirées, concerts, festivals, bars animés et événements live autour de toi sur une carte temps réel. Toutes les sorties en France."
+        canonical="/"
+        jsonLd={[organizationLd(), websiteLd()]}
+      />
       {/* ── MAP SCREEN (always mounted, hidden via visibility) ── */}
       <div className="absolute inset-0" style={{ visibility: activeTab === 'map' ? 'visible' : 'hidden' }}>
         {/* Map */}
