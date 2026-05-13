@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/toaster";
 import { SplashScreen } from "@/components/SplashScreen";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -11,6 +12,10 @@ import Index from "./pages/Index";
 import ResetPassword from "./pages/ResetPassword";
 import AuthCallback from "./pages/AuthCallback";
 import NotFound from "./pages/NotFound";
+const CitiesIndex = lazy(() => import("./pages/CitiesIndex"));
+const CityPage = lazy(() => import("./pages/CityPage"));
+const EventPage = lazy(() => import("./pages/EventPage"));
+const CategoryPage = lazy(() => import("./pages/CategoryPage"));
 import { Capacitor } from "@capacitor/core";
 import { App as CapacitorApp } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
@@ -46,33 +51,41 @@ const App = () => {
   });
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ThemeProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <OAuthCallbackHandler />
-            {showSplash && (
-              <SplashScreen
-                onComplete={() => {
-                  sessionStorage.setItem('pulse_splash_shown', '1');
-                  setShowSplash(false);
-                }}
-              />
-            )}
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/auth/callback" element={<AuthCallback />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </ThemeProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <ThemeProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <OAuthCallbackHandler />
+              {showSplash && (
+                <SplashScreen
+                  onComplete={() => {
+                    sessionStorage.setItem('pulse_splash_shown', '1');
+                    setShowSplash(false);
+                  }}
+                />
+              )}
+              <BrowserRouter>
+                <Suspense fallback={null}>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/villes" element={<CitiesIndex />} />
+                    <Route path="/villes/:slug" element={<CityPage />} />
+                    <Route path="/evenements/:slug" element={<EventPage />} />
+                    <Route path="/categories/:slug" element={<CategoryPage />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/auth/callback" element={<AuthCallback />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </BrowserRouter>
+            </TooltipProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 };
 
