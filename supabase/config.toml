@@ -1,34 +1,4 @@
 project_id = "rhzojoyxldrllxroyyqt"
 
-[functions.fetch-ticketmaster]
-verify_jwt = false
-
-[functions.scrape-shotgun]
-verify_jwt = false
-
-[functions.refresh-events]
-verify_jwt = false
-
-[functions.fetch-eventbrite]
-verify_jwt = false
-
-[functions.fetch-meetup]
-verify_jwt = false
-
-[functions.fetch-infoconcert]
-verify_jwt = false
-
-[functions.fetch-routedesfestivals]
-verify_jwt = false
-
-[functions.fetch-brocabrac]
-verify_jwt = false
-
-[functions.fetch-runtrail]
-verify_jwt = false
-
-[functions.fetch-openagenda]
-verify_jwt = false
-
-[functions.fetch-sports-federations]
+[functions.sitemap-events]
 verify_jwt = false
