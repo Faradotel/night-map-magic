@@ -461,6 +461,40 @@ export function ProfileScreen() {
           </div>
         </div>
 
+        {/* Explorer links */}
+        <div className="mx-4 mt-6 mb-2">
+          <h3 className="text-sm font-black mb-2 text-muted-foreground">Explorer</h3>
+          <div
+            className="rounded-2xl border border-surface-4 overflow-hidden"
+            style={{ background: 'var(--profile-card-bg)' }}
+          >
+            <Link
+              to="/villes"
+              className="w-full flex items-center justify-between px-4 py-3 text-left"
+              style={{ borderBottom: '1px solid var(--profile-divider)' }}
+            >
+              <div>
+                <p className="text-sm font-medium">Toutes les villes</p>
+                <p className="text-xs text-muted-foreground">Voir les événements par ville</p>
+              </div>
+              <ChevronRight size={14} className="text-muted-foreground" />
+            </Link>
+            {Object.entries(CITY_SLUGS).slice(0, 6).map(([slug, name]) => (
+              <Link
+                key={slug}
+                to={`/villes/${slug}`}
+                className="w-full flex items-center justify-between px-4 py-3 text-left"
+                style={{ borderBottom: '1px solid var(--profile-divider)' }}
+              >
+                <div>
+                  <p className="text-sm font-medium">{name}</p>
+                </div>
+                <ChevronRight size={14} className="text-muted-foreground" />
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {showPrivacy && <PrivacyPolicyScreen onBack={() => setShowPrivacy(false)} />}
       </div>
     </div>
