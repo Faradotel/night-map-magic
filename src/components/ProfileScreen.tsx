@@ -3,7 +3,6 @@ import { CITY_SLUGS } from '@/lib/seo/slug';
 import { AllBadgesScreen } from '@/components/AllBadgesScreen';
 import { useUnlockedBadges } from '@/hooks/useUnlockedBadges';
 import { AuthScreen } from '@/components/AuthScreen';
-import { PrivacyPolicyScreen } from '@/components/PrivacyPolicyScreen';
 import { Settings, ChevronRight, MapPin, Calendar, Star, Sun, Moon, LogOut, Bell, Pencil, Check, X, Heart, Clock, QrCode, Link as LinkIcon, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@/hooks/useTheme';
