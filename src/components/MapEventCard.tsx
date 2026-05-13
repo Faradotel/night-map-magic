@@ -144,7 +144,7 @@ export function MapEventCard({ event, onClose, onDetails, userLocation, coLocate
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: vibe.color }}>
                 {vibe.emoji} {vibe.label}
               </span>
@@ -154,6 +154,23 @@ export function MapEventCard({ event, onClose, onDetails, userLocation, coLocate
               {hasMultiple && (
                 <span className="text-[9px] font-medium opacity-40">
                   {currentIndex + 1}/{group!.length}
+                </span>
+              )}
+              {/* LIVE MODE social signals */}
+              {liveMode && (liveCount ?? 0) > 0 && (
+                <span
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider signal-breath"
+                  style={{ background: 'hsl(0 95% 55% / 0.15)', color: 'hsl(0 95% 60%)' }}
+                >
+                  <Flame size={9} className="flame-flicker" /> Trending • +{liveCount}
+                </span>
+              )}
+              {liveMode && event.isLive && (
+                <span
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider"
+                  style={{ background: 'hsl(142 71% 45% / 0.18)', color: 'hsl(142 71% 55%)' }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'hsl(142 71% 50%)' }} /> Active now
                 </span>
               )}
             </div>
