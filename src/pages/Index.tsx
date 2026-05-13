@@ -350,7 +350,37 @@ export default function Index() {
     if (activeTab !== 'map') setActiveTab('map');
   }
 
+  // Handle ?city= from URL (SEO pages "Voir sur la carte")
+  useEffect(() => {
+    if (hasProcessedCity.current) return;
+    const cityParam = searchParams.get('city');
+    if (cityParam) {
+      const city = CITIES.find(c => c.name.toLowerCase() === cityParam.toLowerCase());
+      if (city) {
+        hasProcessedCity.current = true;
+        handleCitySelect(city);
+        setSearchParams({}, { replace: true });
+      }
+    }
+  }, [searchParams, handleCitySelect, setSearchParams]);
 
+  // Handle ?event= from URL (SEO event page "Voir sur la carte")
+  useEffect(() => {
+    if (hasProcessedEvent.current) return;
+    const eventParam = searchParams.get('event');
+    if (eventParam && allEvents.length > 0) {
+      const ev = allEvents.find(e => e.id === eventParam);
+      if (ev) {
+        hasProcessedEvent.current = true;
+        setSelectedEvent(ev);
+        setShowDetail(true);
+        setMapCenter([ev.lat, ev.lng]);
+        if (activeTab !== 'map') setActiveTab('map');
+        setSearchParams({}, { replace: true });
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allEvents]);
 
   return (
     <div className="relative w-full h-full overflow-hidden" style={{ background: 'var(--map-bg)' }}>
