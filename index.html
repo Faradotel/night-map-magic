@@ -27,11 +27,15 @@
       body { margin: 0; background: #0a0b1e; }
     </style>
 
+    <link rel="preconnect" href="https://rhzojoyxldrllxroyyqt.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://a.basemaps.cartocdn.com" crossorigin />
+    <link rel="dns-prefetch" href="https://b.basemaps.cartocdn.com" />
+    <link rel="dns-prefetch" href="https://c.basemaps.cartocdn.com" />
+
     <!-- impact.com STAT tag — affiliate link transformation + impression tracking -->
-    <script>
+    <script defer>
       (function(i,m,p,a,c,t){c.ire_o=p;c[p]=c[p]||function(){(c[p].a=c[p].a||[]).push(arguments)};t=a.createElement(m);var z=a.getElementsByTagName(m)[0];t.async=1;t.src=i;z.parentNode.insertBefore(t,z)})('https://utt.impactcdn.com/P-A7261544-5f75-4391-bf8c-e18beac7e5f01.js','script','impactStat',document,window);
-      impactStat('transformLinks');
-      impactStat('trackImpression');
+      window.addEventListener('load', function(){ try { impactStat('transformLinks'); impactStat('trackImpression'); } catch(e){} });
     </script>
   </head>
 
