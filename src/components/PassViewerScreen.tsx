@@ -134,7 +134,7 @@ export function PassViewerScreen({ eventId, eventName, onBack }: PassViewerScree
                 </div>
                 <img
                   src={imageUrl}
-                  alt="Pass"
+                  alt={`Billet d'entrée pour ${eventName}`}
                   className="rounded-xl max-w-full max-h-[400px] object-contain"
                 />
               </div>

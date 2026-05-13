@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Lock, Eye, EyeOff, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { SEO } from '@/components/SEO';
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -101,10 +102,16 @@ export default function ResetPassword() {
     <div className="min-h-screen flex flex-col" style={{ background: 'hsl(var(--background))' }}>
       <div className="absolute top-20 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(var(--accent) / 0.12) 0%, transparent 70%)', filter: 'blur(50px)' }} />
 
+      <SEO
+        title="Réinitialiser le mot de passe | PulseMap"
+        description="Choisissez un nouveau mot de passe pour votre compte PulseMap."
+        canonical="/reset-password"
+        noindex
+      />
       <div className="relative flex-1 flex flex-col items-center justify-center px-6">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-black tracking-tight">
-            Night<span style={{ color: 'hsl(var(--primary))' }}>Map</span>
+            PulseMap — Réinitialisation du mot de passe
           </h1>
           <p className="text-xs text-muted-foreground mt-1">Choisis ton nouveau mot de passe</p>
         </div>

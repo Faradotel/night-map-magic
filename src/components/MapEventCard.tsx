@@ -121,6 +121,7 @@ export function MapEventCard({ event, onClose, onDetails, userLocation, coLocate
           {hasMultiple && (
             <button
               onClick={goPrev}
+              aria-label="Événement précédent au même lieu"
               className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 active:scale-90 transition-transform"
               style={{
                 background: isLight ? 'hsl(0 0% 0% / 0.06)' : 'hsl(0 0% 100% / 0.08)',
@@ -195,6 +196,7 @@ export function MapEventCard({ event, onClose, onDetails, userLocation, coLocate
           {hasMultiple && (
             <button
               onClick={goNext}
+              aria-label="Événement suivant au même lieu"
               className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 active:scale-90 transition-transform"
               style={{
                 background: isLight ? 'hsl(0 0% 0% / 0.06)' : 'hsl(0 0% 100% / 0.08)',
@@ -212,6 +214,7 @@ export function MapEventCard({ event, onClose, onDetails, userLocation, coLocate
             )}
             <button
               onClick={(e) => { e.stopPropagation(); onClose(); }}
+              aria-label="Fermer l'aperçu de l'événement"
               className="w-6 h-6 rounded-full flex items-center justify-center"
               style={{ background: 'hsl(0 0% 100% / 0.1)', color: 'hsl(225 15% 60%)' }}
             >

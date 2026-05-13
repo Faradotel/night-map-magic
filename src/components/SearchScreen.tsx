@@ -59,7 +59,7 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
             
           />
           {query && (
-            <button onClick={() => setQuery('')}>
+            <button onClick={() => setQuery('')} aria-label="Effacer la recherche">
               <X size={14} className="text-muted-foreground" />
             </button>
           )}
