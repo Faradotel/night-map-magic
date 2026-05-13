@@ -31,7 +31,6 @@ export function ProfileScreen() {
   const [editingUsername, setEditingUsername] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [showAllBadges, setShowAllBadges] = useState(false);
-  const [showPrivacy, setShowPrivacy] = useState(false);
   const [viewingPass, setViewingPass] = useState<{ eventId: string; eventName: string } | null>(null);
   const [friendNotifs, setFriendNotifs] = useState(true);
 
