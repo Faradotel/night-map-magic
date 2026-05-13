@@ -385,11 +385,12 @@ export default function Index() {
   return (
     <div className="relative w-full h-full overflow-hidden" style={{ background: 'var(--map-bg)' }}>
       <SEO
-        title="PulseMap — Sorties, concerts & événements en direct près de chez vous"
+        title="PulseMap — Sorties & événements en direct près de toi"
         description="Découvre les soirées, concerts, festivals, bars animés et événements live autour de toi sur une carte temps réel. Toutes les sorties en France."
         canonical="/"
         jsonLd={[organizationLd(), websiteLd()]}
       />
+      <h1 className="sr-only">PulseMap — Sorties, concerts & événements en direct près de chez vous</h1>
       {/* ── MAP SCREEN (always mounted, hidden via visibility) ── */}
       <div className="absolute inset-0" style={{ visibility: activeTab === 'map' ? 'visible' : 'hidden' }}>
         {/* Map */}
@@ -448,6 +449,7 @@ export default function Index() {
             <div className="flex items-center gap-2 mt-2">
               <button
                 onClick={() => setShowNotifications(true)}
+                aria-label="Ouvrir les notifications"
                 className="w-10 h-10 rounded-full flex items-center justify-center border shrink-0 relative"
                 style={{
                   background: 'var(--controls-bg)',
@@ -464,6 +466,7 @@ export default function Index() {
                   const el = document.querySelector('[data-filter-toggle]') as HTMLButtonElement;
                   el?.click();
                 }}
+                aria-label="Ouvrir les filtres"
                 className="w-10 h-10 rounded-full flex items-center justify-center border shrink-0"
                 style={{
                   background: 'var(--controls-bg)',
@@ -538,6 +541,7 @@ export default function Index() {
         <button
           onClick={handleLocate}
           disabled={locating}
+          aria-label="Me localiser sur la carte"
           className="absolute right-3 z-[400] w-12 h-12 rounded-full flex items-center justify-center border transition-all"
           style={{
             bottom: selectedEvent ? '220px' : '80px',
@@ -611,6 +615,7 @@ export default function Index() {
       {isPro && activeTab === 'map' && (
         <button
           onClick={() => setShowAddEvent(true)}
+          aria-label="Ajouter un événement"
           className="absolute z-[450] w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90"
           style={{
             bottom: selectedEvent ? '232px' : '92px',

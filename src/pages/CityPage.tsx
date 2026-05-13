@@ -52,7 +52,7 @@ export default function CityPage() {
   if (!cityName) return <Navigate to="/villes" replace />;
 
   const canonical = `/villes/${slug.toLowerCase()}`;
-  const title = `Sorties à ${cityName} ce soir — Concerts, soirées & événements | PulseMap`;
+  const title = `Sorties à ${cityName} ce soir | PulseMap`;
   const description = `Découvrez tous les événements live à ${cityName} ce soir : concerts, soirées, clubs, festivals, bars animés et plus encore. Carte en temps réel.`;
 
   const ld: object[] = [

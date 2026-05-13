@@ -31,7 +31,7 @@ export function StepDetails({ data, onChange, errors }: Props) {
         />
         {previewUrl ? (
           <div className="relative rounded-xl overflow-hidden border" style={{ borderColor: 'hsl(258 40% 22%)' }}>
-            <img src={previewUrl} alt="Preview" className="w-full h-40 object-cover" />
+            <img src={previewUrl} alt="Aperçu de l'affiche de l'événement à publier" className="w-full h-40 object-cover" />
             <button
               onClick={() => { onChange({ imageFile: null }); if (fileRef.current) fileRef.current.value = ''; }}
               className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"
