@@ -1,0 +1,42 @@
+# PulseMap
+
+> PulseMap est une application mobile-first qui permet de découvrir les soirées, concerts, festivals, bars et événements culturels autour de soi, via une carte interactive couvrant toute la France. Tous les événements sont agrégés en temps réel depuis des sources locales et nationales.
+
+## Pages principales
+
+- [/](/): Accueil — carte interactive des événements autour de vous.
+- [/villes](/villes): Explorer toutes les villes couvertes par PulseMap.
+- [/categories/concerts](/categories/concerts): Concerts live à venir en France.
+- [/categories/soirees](/categories/soirees): Soirées et clubs ouverts ce soir.
+- [/categories/festivals](/categories/festivals): Festivals de musique et culture à venir.
+- [/categories/bars](/categories/bars): Bars animés et afterworks.
+- [/categories/sport](/categories/sport): Événements sportifs en direct.
+- [/categories/culture](/categories/culture): Théâtre, expositions et spectacles.
+- [/categories/brocantes](/categories/brocantes): Brocantes, vide-greniers et puces.
+
+## Villes
+
+- [/villes/paris](/villes/paris): Événements à Paris.
+- [/villes/lyon](/villes/lyon): Événements à Lyon.
+- [/villes/marseille](/villes/marseille): Événements à Marseille.
+- [/villes/toulouse](/villes/toulouse): Événements à Toulouse.
+- [/villes/nice](/villes/nice): Événements à Nice.
+- [/villes/nantes](/villes/nantes): Événements à Nantes.
+- [/villes/bordeaux](/villes/bordeaux): Événements à Bordeaux.
+- [/villes/grenoble](/villes/grenoble): Événements à Grenoble.
+- [/villes/lille](/villes/lille): Événements à Lille.
+- [/villes/strasbourg](/villes/strasbourg): Événements à Strasbourg.
+- [/villes/rennes](/villes/rennes): Événements à Rennes.
+- [/villes/montpellier](/villes/montpellier): Événements à Montpellier.
+- [/villes/aix-en-provence](/villes/aix-en-provence): Événements à Aix-en-Provence.
+- [/villes/saint-etienne](/villes/saint-etienne): Événements à Saint-Étienne.
+- [/villes/villeurbanne](/villes/villeurbanne): Événements à Villeurbanne.
+
+## Exemples d'événements
+
+- [/evenements/techno-night-grenoble-shotgun-abc123](/evenements/techno-night-grenoble-shotgun-abc123): Page détail d'un événement individuel (exemple : soirée techno à Grenoble).
+- [/evenements/concert-jazz-lyon-tm-xyz789](/evenements/concert-jazz-lyon-tm-xyz789): Page détail d'un événement individuel (exemple : concert jazz à Lyon).
+
+## Sitemaps
+
+- [/sitemap.xml](/sitemap.xml): Sitemap principal avec toutes les pages publiques.
