@@ -372,9 +372,10 @@ export default function Index() {
       const ev = allEvents.find(e => e.id === eventParam);
       if (ev) {
         hasProcessedEvent.current = true;
-        setSelectedEvent(ev);
-        setShowDetail(true);
+        setSelectedEvent(null);
+        setShowDetail(false);
         setMapCenter([ev.lat, ev.lng]);
+        setMapZoom(16);
         if (activeTab !== 'map') setActiveTab('map');
         setSearchParams({}, { replace: true });
       }
