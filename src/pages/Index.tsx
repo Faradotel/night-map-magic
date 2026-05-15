@@ -190,7 +190,11 @@ export default function Index() {
 
         // If no city was previously saved, try to detect a nearby French city
         // and use it as the default — otherwise keep France-wide view.
-        if (!savedCity) {
+        // Skip the auto-recenter when arriving from a deep link (?event= or ?city=)
+        // so the user stays focused on the targeted event/city.
+        const arrivingFromDeepLink = !!(searchParams.get('event') || searchParams.get('city'))
+          || hasProcessedEvent.current || hasProcessedCity.current;
+        if (!savedCity && !arrivingFromDeepLink) {
           const nearest = findNearestCity(loc[0], loc[1]);
           if (nearest) {
             setSelectedCityName(nearest.name);
@@ -374,6 +378,9 @@ export default function Index() {
         hasProcessedEvent.current = true;
         setSelectedEvent(null);
         setShowDetail(false);
+        // Ensure the targeted event is not filtered out by the city radius
+        setFilterCenter([ev.lat, ev.lng]);
+        setFilters((prev) => ({ ...prev, radiusKm: Math.max(prev.radiusKm, 50) }));
         setMapCenter([ev.lat, ev.lng]);
         setMapZoom(16);
         if (activeTab !== 'map') setActiveTab('map');
