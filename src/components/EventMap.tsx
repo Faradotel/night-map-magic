@@ -128,9 +128,22 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     tileLayerRef.current = L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(map);
   }, [theme]);
 
-  // Update center/zoom
+  // Update center/zoom — preserve user's manual zoom when only center changes.
+  // We track the last props applied; if the zoom prop is unchanged, we just panTo
+  // so pinching/scrolling on the map isn't reset on the next center update.
+  const lastAppliedRef = useRef<{ center: [number, number]; zoom: number } | null>(null);
   useEffect(() => {
-    mapRef.current?.setView(center, zoom, { animate: true });
+    const map = mapRef.current;
+    if (!map) return;
+    const last = lastAppliedRef.current;
+    const zoomChanged = !last || last.zoom !== zoom;
+    const centerChanged = !last || last.center[0] !== center[0] || last.center[1] !== center[1];
+    if (zoomChanged) {
+      map.setView(center, zoom, { animate: true });
+    } else if (centerChanged) {
+      map.panTo(center, { animate: true });
+    }
+    lastAppliedRef.current = { center, zoom };
   }, [center, zoom]);
 
   // User location marker + radius circle
