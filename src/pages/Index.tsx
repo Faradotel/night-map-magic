@@ -378,6 +378,9 @@ export default function Index() {
         hasProcessedEvent.current = true;
         setSelectedEvent(null);
         setShowDetail(false);
+        // Ensure the targeted event is not filtered out by the city radius
+        setFilterCenter([ev.lat, ev.lng]);
+        setFilters((prev) => ({ ...prev, radiusKm: Math.max(prev.radiusKm, 50) }));
         setMapCenter([ev.lat, ev.lng]);
         setMapZoom(16);
         if (activeTab !== 'map') setActiveTab('map');
