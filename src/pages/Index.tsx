@@ -660,6 +660,9 @@ export default function Index() {
         }}
       />
 
+      {/* ── LEGAL FOOTER (above BottomNav, only on map tab to keep immersion) ── */}
+      {activeTab === 'map' && !selectedEvent && <LegalFooter />}
+
       {/* ── BOTTOM NAV ── */}
       <BottomNav activeTab={activeTab} onTabChange={(tab) => {setActiveTab(tab);setSelectedEvent(null);}} />
     </div>);
