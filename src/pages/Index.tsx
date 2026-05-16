@@ -68,6 +68,7 @@ export default function Index() {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>(initCenter);
   const [mapZoom, setMapZoom] = useState(initZoom);
+  const [mapFocusTarget, setMapFocusTarget] = useState<{ center: [number, number]; zoom: number } | null>(null);
   const [locating, setLocating] = useState(false);
   const attendance = useAttendance();
   const favorites = useFavorites();
@@ -282,9 +283,12 @@ export default function Index() {
 
     return true;
   }), [allEvents, filters, filterCenter, showLivePulse, liveCountByIdRaw]);
+  const displayedMapCenter = mapFocusTarget?.center ?? mapCenter;
+  const displayedMapZoom = mapFocusTarget?.zoom ?? mapZoom;
 
   // Switch to "nearby" mode
   const handleModeChange = useCallback((mode: LocationModeType) => {
+    setMapFocusTarget(null);
     setLocationMode(mode);
     if (mode === 'nearby') {
       setSelectedCityName(null);
@@ -299,6 +303,7 @@ export default function Index() {
 
   // Handle France-wide mode
   const handleFranceMode = useCallback(() => {
+    setMapFocusTarget(null);
     setLocationMode('france');
     setSelectedCityName(null);
     setFilterCenter(null);
@@ -309,6 +314,7 @@ export default function Index() {
 
   // Handle manual city selection
   const handleCitySelect = useCallback((city: City) => {
+    setMapFocusTarget(null);
     setSelectedCityName(city.name);
     setPreferredCity(city.name);
     setLocationMode('city');
@@ -325,6 +331,7 @@ export default function Index() {
       return;
     }
     setLocating(true);
+    setMapFocusTarget(null);
     setLocationMode('nearby');
     setSelectedCityName(null);
     setLoadedKey(null); // Force reload for new location
@@ -348,6 +355,7 @@ export default function Index() {
   }, []);
 
   function handleEventSelect(event: NightEvent) {
+    setMapFocusTarget(null);
     setSelectedEvent(event);
     setShowDetail(false);
     setMapCenter([event.lat, event.lng]);
@@ -385,6 +393,7 @@ export default function Index() {
         setFilterCenter([ev.lat, ev.lng]);
         setLoadedKey(null);
         setFilters((prev) => ({ ...prev, radiusKm: Math.max(prev.radiusKm, 50) }));
+        setMapFocusTarget({ center: [ev.lat, ev.lng], zoom: 16 });
         setMapCenter([ev.lat, ev.lng]);
         setMapZoom(16);
         if (activeTab !== 'map') setActiveTab('map');
