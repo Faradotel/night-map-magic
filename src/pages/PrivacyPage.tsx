@@ -78,7 +78,7 @@ export default function PrivacyPage() {
               PulseMap s'engage à protéger la vie privée de ses utilisateurs conformément au Règlement Général sur la Protection des Données (RGPD – UE 2016/679) et à la loi Informatique et Libertés.
             </p>
             <p className="mt-2 text-xs font-medium" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Dernière mise à jour : mai 2026
+              Dernière mise à jour : 16 mai 2026
             </p>
           </div>
         </header>

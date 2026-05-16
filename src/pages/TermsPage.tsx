@@ -2,12 +2,30 @@ import { ArrowLeft, FileText } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 import { Link } from 'react-router-dom';
 
+const orgJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'PulseMap',
+  url: 'https://pulse-map.live/',
+  logo: 'https://pulse-map.live/icon-512.png',
+  email: 'privacy@pulsemap.app',
+  sameAs: ['https://pulse-map.live/'],
+};
+
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
   name: 'Terms of Service — PulseMap',
   description: 'Terms of Service for PulseMap, the live event map application.',
   url: 'https://pulse-map.live/terms',
+  dateModified: '2026-05-15',
+  inLanguage: 'en',
+  isPartOf: {
+    '@type': 'WebSite',
+    name: 'PulseMap',
+    url: 'https://pulse-map.live/',
+  },
+  about: orgJsonLd,
 };
 
 export default function TermsPage() {
@@ -17,7 +35,7 @@ export default function TermsPage() {
         title="Terms of Service | PulseMap"
         description="Read the Terms of Service governing your use of PulseMap, the live event discovery map."
         canonical="/terms"
-        jsonLd={jsonLd}
+        jsonLd={[orgJsonLd, jsonLd]}
       />
 
       <div className="min-h-screen" style={{ background: 'hsl(var(--background))' }}>
@@ -68,7 +86,7 @@ export default function TermsPage() {
               className="mt-2 text-xs font-medium"
               style={{ color: 'hsl(var(--muted-foreground))' }}
             >
-              Last updated: May 2026
+              Last updated: 15 May 2026
             </p>
           </div>
         </header>
