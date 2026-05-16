@@ -5,6 +5,7 @@ import { EventDetailPage } from '@/components/EventDetailPage';
 import { MapEventCard } from '@/components/MapEventCard';
 import { FilterBar, Filters, SOURCE_OPTIONS } from '@/components/FilterBar';
 import { BottomNav } from '@/components/BottomNav';
+import { LegalFooter } from '@/components/LegalFooter';
 import { SearchScreen } from '@/components/SearchScreen';
 import { ProfileScreen } from '@/components/ProfileScreen';
 import { FriendsScreen } from '@/components/FriendsScreen';
