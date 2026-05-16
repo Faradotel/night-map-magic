@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { EventMap } from '@/components/EventMap';
 import { EventDetailPage } from '@/components/EventDetailPage';
 import { MapEventCard } from '@/components/MapEventCard';
@@ -68,6 +68,7 @@ export default function Index() {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>(initCenter);
   const [mapZoom, setMapZoom] = useState(initZoom);
+  const [mapFocusTarget, setMapFocusTarget] = useState<{ center: [number, number]; zoom: number } | null>(null);
   const [locating, setLocating] = useState(false);
   const attendance = useAttendance();
   const favorites = useFavorites();
@@ -282,9 +283,12 @@ export default function Index() {
 
     return true;
   }), [allEvents, filters, filterCenter, showLivePulse, liveCountByIdRaw]);
+  const displayedMapCenter = mapFocusTarget?.center ?? mapCenter;
+  const displayedMapZoom = mapFocusTarget?.zoom ?? mapZoom;
 
   // Switch to "nearby" mode
   const handleModeChange = useCallback((mode: LocationModeType) => {
+    setMapFocusTarget(null);
     setLocationMode(mode);
     if (mode === 'nearby') {
       setSelectedCityName(null);
@@ -299,6 +303,7 @@ export default function Index() {
 
   // Handle France-wide mode
   const handleFranceMode = useCallback(() => {
+    setMapFocusTarget(null);
     setLocationMode('france');
     setSelectedCityName(null);
     setFilterCenter(null);
@@ -309,6 +314,7 @@ export default function Index() {
 
   // Handle manual city selection
   const handleCitySelect = useCallback((city: City) => {
+    setMapFocusTarget(null);
     setSelectedCityName(city.name);
     setPreferredCity(city.name);
     setLocationMode('city');
@@ -325,6 +331,7 @@ export default function Index() {
       return;
     }
     setLocating(true);
+    setMapFocusTarget(null);
     setLocationMode('nearby');
     setSelectedCityName(null);
     setLoadedKey(null); // Force reload for new location
@@ -348,6 +355,7 @@ export default function Index() {
   }, []);
 
   function handleEventSelect(event: NightEvent) {
+    setMapFocusTarget(null);
     setSelectedEvent(event);
     setShowDetail(false);
     setMapCenter([event.lat, event.lng]);
@@ -376,11 +384,16 @@ export default function Index() {
       const ev = allEvents.find(e => e.id === eventParam);
       if (ev) {
         hasProcessedEvent.current = true;
+        loadIdRef.current += 1;
         setSelectedEvent(null);
         setShowDetail(false);
+        setLocationMode('france');
+        setSelectedCityName(null);
         // Ensure the targeted event is not filtered out by the city radius
         setFilterCenter([ev.lat, ev.lng]);
+        setLoadedKey(null);
         setFilters((prev) => ({ ...prev, radiusKm: Math.max(prev.radiusKm, 50) }));
+        setMapFocusTarget({ center: [ev.lat, ev.lng], zoom: 16 });
         setMapCenter([ev.lat, ev.lng]);
         setMapZoom(16);
         if (activeTab !== 'map') setActiveTab('map');
@@ -405,8 +418,8 @@ export default function Index() {
         <div className="absolute inset-0 bottom-16">
           <EventMap
             events={filteredEvents}
-            center={mapCenter}
-            zoom={mapZoom}
+            center={displayedMapCenter}
+            zoom={displayedMapZoom}
             onEventSelect={setSelectedEvent}
             selectedEvent={selectedEvent}
             userLocation={userLocation}
@@ -537,6 +550,20 @@ export default function Index() {
                     : 'Live'}
                 </span>
               </button>
+              <Link
+                to="/rgpd"
+                className="h-10 px-3 rounded-full flex items-center justify-center shrink-0 text-[11px] font-extrabold tracking-[0.08em] uppercase transition-all active:scale-95"
+                style={{
+                  background: 'var(--controls-bg)',
+                  backdropFilter: 'blur(14px)',
+                  WebkitBackdropFilter: 'blur(14px)',
+                  border: '1.5px solid var(--controls-border)',
+                  boxShadow: 'var(--controls-shadow)',
+                  color: 'hsl(var(--foreground))',
+                }}
+              >
+                RGPD
+              </Link>
             </div>
           </div>
         </div>
