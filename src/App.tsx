@@ -17,6 +17,7 @@ const CityPage = lazy(() => import("./pages/CityPage"));
 const EventPage = lazy(() => import("./pages/EventPage"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
+const TermsPage = lazy(() => import("./pages/TermsPage"));
 import { Capacitor } from "@capacitor/core";
 import { App as CapacitorApp } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
@@ -79,6 +80,8 @@ const App = () => {
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
                     <Route path="/rgpd" element={<PrivacyPage />} />
+                    <Route path="/privacy-policy" element={<PrivacyPage />} />
+                    <Route path="/terms" element={<TermsPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>

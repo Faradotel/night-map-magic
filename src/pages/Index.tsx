@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { EventMap } from '@/components/EventMap';
 import { EventDetailPage } from '@/components/EventDetailPage';
 import { MapEventCard } from '@/components/MapEventCard';
 import { FilterBar, Filters, SOURCE_OPTIONS } from '@/components/FilterBar';
 import { BottomNav } from '@/components/BottomNav';
+import { LegalFooter } from '@/components/LegalFooter';
 import { SearchScreen } from '@/components/SearchScreen';
 import { ProfileScreen } from '@/components/ProfileScreen';
 import { FriendsScreen } from '@/components/FriendsScreen';
@@ -550,20 +551,6 @@ export default function Index() {
                     : 'Live'}
                 </span>
               </button>
-              <Link
-                to="/rgpd"
-                className="h-10 px-3 rounded-full flex items-center justify-center shrink-0 text-[11px] font-extrabold tracking-[0.08em] uppercase transition-all active:scale-95"
-                style={{
-                  background: 'var(--controls-bg)',
-                  backdropFilter: 'blur(14px)',
-                  WebkitBackdropFilter: 'blur(14px)',
-                  border: '1.5px solid var(--controls-border)',
-                  boxShadow: 'var(--controls-shadow)',
-                  color: 'hsl(var(--foreground))',
-                }}
-              >
-                RGPD
-              </Link>
             </div>
           </div>
         </div>
@@ -672,6 +659,9 @@ export default function Index() {
           toast.success('Événement ajouté !');
         }}
       />
+
+      {/* ── LEGAL FOOTER (above BottomNav, only on map tab to keep immersion) ── */}
+      {activeTab === 'map' && !selectedEvent && <LegalFooter />}
 
       {/* ── BOTTOM NAV ── */}
       <BottomNav activeTab={activeTab} onTabChange={(tab) => {setActiveTab(tab);setSelectedEvent(null);}} />
