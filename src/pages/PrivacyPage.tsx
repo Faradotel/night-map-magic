@@ -32,10 +32,10 @@ export default function PrivacyPage() {
   return (
     <>
       <SEO
-        title="Politique de confidentialité (RGPD) | PulseMap"
-        description="Découvre comment PulseMap protège tes données personnelles conformément au RGPD. Droits d'accès, suppression, hébergement UE."
-        canonical="/rgpd"
-        jsonLd={jsonLd}
+        title="Privacy Policy | PulseMap"
+        description="Learn how PulseMap protects your personal data. Access, deletion, EU hosting and your GDPR rights."
+        canonical="/privacy-policy"
+        jsonLd={[orgJsonLd, jsonLd]}
       />
 
       <div className="min-h-screen" style={{ background: 'hsl(var(--background))' }}>
