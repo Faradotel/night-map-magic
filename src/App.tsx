@@ -80,6 +80,8 @@ const App = () => {
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
                     <Route path="/rgpd" element={<PrivacyPage />} />
+                    <Route path="/privacy-policy" element={<PrivacyPage />} />
+                    <Route path="/terms" element={<TermsPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
