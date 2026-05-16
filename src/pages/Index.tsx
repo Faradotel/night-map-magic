@@ -550,20 +550,6 @@ export default function Index() {
                     : 'Live'}
                 </span>
               </button>
-              <Link
-                to="/rgpd"
-                className="h-10 px-3 rounded-full flex items-center justify-center shrink-0 text-[11px] font-extrabold tracking-[0.08em] uppercase transition-all active:scale-95"
-                style={{
-                  background: 'var(--controls-bg)',
-                  backdropFilter: 'blur(14px)',
-                  WebkitBackdropFilter: 'blur(14px)',
-                  border: '1.5px solid var(--controls-border)',
-                  boxShadow: 'var(--controls-shadow)',
-                  color: 'hsl(var(--foreground))',
-                }}
-              >
-                RGPD
-              </Link>
             </div>
           </div>
         </div>
