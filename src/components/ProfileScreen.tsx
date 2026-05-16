@@ -447,12 +447,12 @@ export function ProfileScreen() {
               <ChevronRight size={14} className="text-muted-foreground" />
             </button>
             <Link
-              to="/rgpd"
+              to="/privacy-policy"
               className="w-full flex items-center justify-between px-4 py-3 text-left"
             >
               <div>
-                <p className="text-sm font-medium">Confidentialité</p>
-                <p className="text-xs text-muted-foreground">RGPD & données personnelles</p>
+                <p className="text-sm font-medium">Privacy Policy</p>
+                <p className="text-xs text-muted-foreground">Personal data & privacy</p>
               </div>
               <ChevronRight size={14} className="text-muted-foreground" />
             </Link>
