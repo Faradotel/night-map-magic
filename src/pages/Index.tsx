@@ -418,8 +418,8 @@ export default function Index() {
         <div className="absolute inset-0 bottom-16">
           <EventMap
             events={filteredEvents}
-            center={mapCenter}
-            zoom={mapZoom}
+            center={displayedMapCenter}
+            zoom={displayedMapZoom}
             onEventSelect={setSelectedEvent}
             selectedEvent={selectedEvent}
             userLocation={userLocation}
