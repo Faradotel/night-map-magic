@@ -2,27 +2,40 @@ import { ArrowLeft, Shield, Database, Eye, Trash2, Mail, MapPin, Users, Cookie, 
 import { SEO } from '@/components/SEO';
 import { Link } from 'react-router-dom';
 
+const orgJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'PulseMap',
+  url: 'https://pulse-map.live/',
+  logo: 'https://pulse-map.live/icon-512.png',
+  email: 'privacy@pulsemap.app',
+  sameAs: ['https://pulse-map.live/'],
+};
+
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
-  name: 'Politique de confidentialité — PulseMap',
-  description: 'Politique de confidentialité et protection des données personnelles (RGPD) de PulseMap.',
-  url: 'https://pulse-map.live/rgpd',
+  name: 'Privacy Policy — PulseMap',
+  description: 'Privacy policy and personal data protection statement for PulseMap.',
+  url: 'https://pulse-map.live/privacy-policy',
+  dateModified: '2026-05-16',
+  inLanguage: 'en',
   isPartOf: {
     '@type': 'WebSite',
     name: 'PulseMap',
     url: 'https://pulse-map.live/',
   },
+  about: orgJsonLd,
 };
 
 export default function PrivacyPage() {
   return (
     <>
       <SEO
-        title="Politique de confidentialité (RGPD) | PulseMap"
-        description="Découvre comment PulseMap protège tes données personnelles conformément au RGPD. Droits d'accès, suppression, hébergement UE."
-        canonical="/rgpd"
-        jsonLd={jsonLd}
+        title="Privacy Policy | PulseMap"
+        description="Learn how PulseMap protects your personal data. Access, deletion, EU hosting and your GDPR rights."
+        canonical="/privacy-policy"
+        jsonLd={[orgJsonLd, jsonLd]}
       />
 
       <div className="min-h-screen" style={{ background: 'hsl(var(--background))' }}>
@@ -65,7 +78,7 @@ export default function PrivacyPage() {
               PulseMap s'engage à protéger la vie privée de ses utilisateurs conformément au Règlement Général sur la Protection des Données (RGPD – UE 2016/679) et à la loi Informatique et Libertés.
             </p>
             <p className="mt-2 text-xs font-medium" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Dernière mise à jour : mai 2026
+              Dernière mise à jour : 16 mai 2026
             </p>
           </div>
         </header>
