@@ -2,17 +2,30 @@ import { ArrowLeft, Shield, Database, Eye, Trash2, Mail, MapPin, Users, Cookie, 
 import { SEO } from '@/components/SEO';
 import { Link } from 'react-router-dom';
 
+const orgJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'PulseMap',
+  url: 'https://pulse-map.live/',
+  logo: 'https://pulse-map.live/icon-512.png',
+  email: 'privacy@pulsemap.app',
+  sameAs: ['https://pulse-map.live/'],
+};
+
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
-  name: 'Politique de confidentialité — PulseMap',
-  description: 'Politique de confidentialité et protection des données personnelles (RGPD) de PulseMap.',
-  url: 'https://pulse-map.live/rgpd',
+  name: 'Privacy Policy — PulseMap',
+  description: 'Privacy policy and personal data protection statement for PulseMap.',
+  url: 'https://pulse-map.live/privacy-policy',
+  dateModified: '2026-05-16',
+  inLanguage: 'en',
   isPartOf: {
     '@type': 'WebSite',
     name: 'PulseMap',
     url: 'https://pulse-map.live/',
   },
+  about: orgJsonLd,
 };
 
 export default function PrivacyPage() {
