@@ -1,12 +1,20 @@
 import { SITE } from '@/components/SEO';
 
+const LOGO_PULSE = `${SITE.url}/icon-512.png`;
+
 export function organizationLd() {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'PulseMap',
     url: SITE.url,
-    logo: `${SITE.url}/icon-512.png`,
+    logo: {
+      '@type': 'ImageObject',
+      url: LOGO_PULSE,
+      width: 512,
+      height: 512,
+      caption: 'PulseMap logo',
+    },
     sameAs: [],
   };
 }
