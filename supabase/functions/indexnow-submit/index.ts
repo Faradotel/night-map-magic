@@ -1,6 +1,8 @@
 // IndexNow submission endpoint — pings Bing/Yandex with new/updated URLs.
-// Call from refresh-events (or manually) after new events are added.
+// URL list comes from _shared/seo-routes.ts — shared with the sitemap.
 // https://www.indexnow.org/documentation
+
+import { getAllSeoUrls } from '../_shared/seo-routes.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,28 +24,9 @@ Deno.serve(async (req) => {
       urlList = Array.isArray(body.urls) ? body.urls : [];
     }
 
-    // Default: ping the main SEO pages (cities + categories + sortir-ce-soir)
+    // Default: ping every SEO route (shared with the sitemap)
     if (urlList.length === 0) {
-      const cities = [
-        'paris', 'lyon', 'marseille', 'toulouse', 'nice', 'nantes', 'bordeaux',
-        'grenoble', 'lille', 'strasbourg', 'rennes', 'montpellier',
-        'aix-en-provence', 'saint-etienne', 'villeurbanne',
-      ];
-      const categories = ['concerts', 'soirees', 'festivals', 'bars', 'sport', 'culture', 'brocantes'];
-      const genres = ['techno', 'electro', 'house', 'rock', 'pop', 'indie', 'jazz', 'rnb'];
-      const vibes = ['rave', 'chill', 'afterwork', 'cosy', 'concert', 'culture', 'sport'];
-      urlList = [
-        `https://${HOST}/`,
-        `https://${HOST}/villes`,
-        ...cities.map(c => `https://${HOST}/sortir-ce-soir/${c}`),
-        ...cities.map(c => `https://${HOST}/villes/${c}`),
-        ...categories.map(c => `https://${HOST}/categories/${c}`),
-        ...categories.flatMap(cat => cities.map(c => `https://${HOST}/categories/${cat}/${c}`)),
-        ...genres.map(g => `https://${HOST}/genres/${g}`),
-        ...genres.flatMap(g => cities.map(c => `https://${HOST}/genres/${g}/${c}`)),
-        ...vibes.map(v => `https://${HOST}/ambiances/${v}`),
-        ...vibes.flatMap(v => cities.map(c => `https://${HOST}/ambiances/${v}/${c}`)),
-      ];
+      urlList = getAllSeoUrls();
     }
 
     // IndexNow caps at 10 000 URLs per request
