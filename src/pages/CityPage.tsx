@@ -3,7 +3,7 @@ import { Link, useParams, Navigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { SEO } from '@/components/SEO';
 import { breadcrumbLd, eventLd, placeLd } from '@/lib/seo/jsonld';
-import { CITY_SLUGS, eventSlug } from '@/lib/seo/slug';
+import { CITY_SLUGS, CATEGORY_SLUGS, eventSlug } from '@/lib/seo/slug';
 
 interface CachedEvent {
   id: string;
