@@ -85,6 +85,14 @@ export default function Index() {
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const loadIdRef = useRef(0);
   const [showLivePulse, setShowLivePulse] = useState(false);
+  const [eventCountBadge, setEventCountBadge] = useState<number | null>(null);
+  const eventCountTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showEventCountBadge = useCallback((count: number) => {
+    if (eventCountTimerRef.current) clearTimeout(eventCountTimerRef.current);
+    setEventCountBadge(count);
+    eventCountTimerRef.current = setTimeout(() => setEventCountBadge(null), 3000);
+  }, []);
+  useEffect(() => () => { if (eventCountTimerRef.current) clearTimeout(eventCountTimerRef.current); }, []);
   const [searchParams, setSearchParams] = useSearchParams();
   const hasProcessedCity = useRef(false);
   const hasProcessedEvent = useRef(false);
