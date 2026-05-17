@@ -1,6 +1,7 @@
 import { ArrowLeft, Mail, Shield, User, MapPin, Building } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 import { Link } from 'react-router-dom';
+import { BackButton, useSwipeBack } from '@/components/BackButton';
 
 const orgJsonLd = {
   '@context': 'https://schema.org',
@@ -46,6 +47,8 @@ const jsonLd = {
 };
 
 export default function ContactLegalPage() {
+  useSwipeBack();
+
   return (
     <>
       <SEO
@@ -76,14 +79,7 @@ export default function ContactLegalPage() {
           style={{ background: 'hsl(var(--background) / 0.85)', backdropFilter: 'blur(12px)', borderColor: 'hsl(var(--border))' }}
         >
           <div className="mx-auto max-w-3xl flex items-center gap-3">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
-              style={{ color: 'hsl(var(--muted-foreground))' }}
-            >
-              <ArrowLeft size={16} />
-              Retour à la carte
-            </Link>
+            <BackButton label="Retour à la carte" />
             <span
               className="ml-auto text-xs font-bold tracking-widest uppercase"
               style={{ color: 'hsl(var(--muted-foreground))' }}

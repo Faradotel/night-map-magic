@@ -1,6 +1,7 @@
 import { ArrowLeft, FileText, HelpCircle, Cookie } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 import { Link } from 'react-router-dom';
+import { BackButton, useSwipeBack } from '@/components/BackButton';
 import { openCookieBanner } from '@/components/CookieConsent';
 
 const faqs = [
@@ -69,6 +70,8 @@ const jsonLd = {
 };
 
 export default function TermsPage() {
+  useSwipeBack();
+
   return (
     <>
       <SEO
@@ -98,14 +101,7 @@ export default function TermsPage() {
           }}
         >
           <div className="mx-auto max-w-3xl flex items-center gap-3">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
-              style={{ color: 'hsl(var(--muted-foreground))' }}
-            >
-              <ArrowLeft size={16} />
-              Back to map
-            </Link>
+            <BackButton label="Back to map" />
             <span
               className="ml-auto text-xs font-bold tracking-widest uppercase"
               style={{ color: 'hsl(var(--muted-foreground))' }}
