@@ -163,6 +163,63 @@ export default function TermsPage() {
               </a>
               .
             </Section>
+
+            <section
+              className="rounded-2xl border p-5"
+              style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
+            >
+              <div className="mb-3 flex items-center gap-2">
+                <Cookie size={16} style={{ color: 'hsl(var(--accent))' }} />
+                <h2 className="text-base font-bold text-foreground">8. Cookies & local storage</h2>
+              </div>
+              <p>
+                PulseMap only uses local browser storage to keep your session and preferences. No
+                third-party tracking or advertising cookies are used. You can review and change
+                your consent at any time.
+              </p>
+              <button
+                type="button"
+                onClick={openCookieBanner}
+                className="mt-4 inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors hover:bg-muted"
+                style={{ borderColor: 'hsl(var(--border))', color: 'hsl(var(--foreground))' }}
+              >
+                <Cookie size={14} />
+                Manage cookie preferences
+              </button>
+            </section>
+
+            <section
+              className="rounded-2xl border p-5"
+              style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
+            >
+              <div className="mb-3 flex items-center gap-2">
+                <HelpCircle size={16} style={{ color: 'hsl(var(--accent))' }} />
+                <h2 className="text-base font-bold text-foreground">Frequently asked questions</h2>
+              </div>
+              <div className="space-y-2">
+                {faqs.map((f, i) => (
+                  <details
+                    key={i}
+                    className="group rounded-xl border p-3 transition-colors open:bg-muted/40"
+                    style={{ borderColor: 'hsl(var(--border))' }}
+                  >
+                    <summary className="cursor-pointer list-none text-sm font-semibold text-foreground flex items-center justify-between gap-2">
+                      <span>{f.q}</span>
+                      <span
+                        className="text-lg leading-none transition-transform group-open:rotate-45"
+                        style={{ color: 'hsl(var(--accent))' }}
+                        aria-hidden
+                      >
+                        +
+                      </span>
+                    </summary>
+                    <p className="mt-2 text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                      {f.a}
+                    </p>
+                  </details>
+                ))}
+              </div>
+            </section>
           </div>
         </main>
 
