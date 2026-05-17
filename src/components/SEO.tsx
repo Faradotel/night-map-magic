@@ -71,9 +71,10 @@ export function SEO({
       <meta property="og:locale" content="fr_FR" />
 
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={fullDesc} />
+      <meta name="twitter:title" content={ogT} />
+      <meta name="twitter:description" content={ogD} />
       <meta name="twitter:image" content={image} />
+      {imageAlt && <meta name="twitter:image:alt" content={imageAlt} />}
 
       {hreflang?.map((h) => (
         <link key={h.lang} rel="alternate" hrefLang={h.lang} href={`${SITE_URL}${h.path}`} />
