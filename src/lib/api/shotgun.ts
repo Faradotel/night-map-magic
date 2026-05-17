@@ -318,7 +318,7 @@ export async function loadEventsForCity(
     .or(`start_time.gte.${now},end_time.gte.${now}`);
 
   // Events geographically within radiusKm of the city center
-  let nearbyQuery: ReturnType<typeof cityQuery> | null = null;
+  let nearbyQuery: any = null;
   if (coords) {
     const latDelta = radiusKm / 111;
     const lngDelta = radiusKm / (111 * Math.cos(coords.lat * Math.PI / 180));
