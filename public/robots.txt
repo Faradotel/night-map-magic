@@ -4,4 +4,5 @@ Disallow: /auth/
 Disallow: /reset-password
 
 Sitemap: https://pulse-map.live/sitemap.xml
+Sitemap: https://pulse-map.live/sitemap-pages
 Sitemap: https://pulse-map.live/sitemap-events
