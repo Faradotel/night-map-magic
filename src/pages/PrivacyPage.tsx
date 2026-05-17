@@ -73,7 +73,7 @@ export default function PrivacyPage() {
         title="Privacy Policy | PulseMap"
         description="Learn how PulseMap protects your personal data. Access, deletion, EU hosting and your GDPR rights."
         canonical="/privacy-policy"
-        jsonLd={[orgJsonLd, jsonLd]}
+        jsonLd={[orgJsonLd, jsonLd, faqJsonLd]}
       />
 
       <div className="min-h-screen" style={{ background: 'hsl(var(--background))' }}>
