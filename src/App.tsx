@@ -12,6 +12,7 @@ import Index from "./pages/Index";
 import ResetPassword from "./pages/ResetPassword";
 import AuthCallback from "./pages/AuthCallback";
 import NotFound from "./pages/NotFound";
+import { CookieConsent } from "./components/CookieConsent";
 const CitiesIndex = lazy(() => import("./pages/CitiesIndex"));
 const CityPage = lazy(() => import("./pages/CityPage"));
 const EventPage = lazy(() => import("./pages/EventPage"));
