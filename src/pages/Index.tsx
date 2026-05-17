@@ -663,6 +663,22 @@ export default function Index() {
       {/* ── LEGAL FOOTER (above BottomNav, only on map tab to keep immersion) ── */}
       {activeTab === 'map' && !selectedEvent && <LegalFooter />}
 
+      {/* ── Event count badge (above BottomNav) ── */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 z-[450] px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider pointer-events-none"
+        style={{
+          bottom: '68px',
+          background: 'var(--controls-bg)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          border: '1px solid var(--controls-border)',
+          boxShadow: 'var(--controls-shadow)',
+          color: 'hsl(var(--muted-foreground))',
+        }}
+      >
+        {filteredEvents.length} événement{filteredEvents.length > 1 ? 's' : ''}
+      </div>
+
       {/* ── BOTTOM NAV ── */}
       <BottomNav activeTab={activeTab} onTabChange={(tab) => {setActiveTab(tab);setSelectedEvent(null);}} />
     </div>);
