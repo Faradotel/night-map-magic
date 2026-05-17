@@ -1,6 +1,40 @@
-import { ArrowLeft, FileText } from 'lucide-react';
+import { ArrowLeft, FileText, HelpCircle, Cookie } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 import { Link } from 'react-router-dom';
+import { openCookieBanner } from '@/components/CookieConsent';
+
+const faqs = [
+  {
+    q: 'Is PulseMap free to use?',
+    a: 'Yes. PulseMap is free for personal, non-commercial use. No subscription, no hidden fees.',
+  },
+  {
+    q: 'Do I need an account to view the event map?',
+    a: 'No. The interactive map and event browsing are fully accessible without signing in. An account is only required for social features (friends, check-ins, badges).',
+  },
+  {
+    q: 'Where does the event data come from?',
+    a: 'Events are aggregated from public third-party sources such as Shotgun, Ticketmaster, OpenAgenda and Meetup. PulseMap does not organize these events itself.',
+  },
+  {
+    q: 'Can I report inaccurate or inappropriate content?',
+    a: 'Yes. Contact privacy@pulsemap.app and we will review the report within 7 days.',
+  },
+  {
+    q: 'Does PulseMap use tracking cookies?',
+    a: 'No. PulseMap only uses local browser storage to keep your session and preferences. No third-party advertising or analytics cookies are used.',
+  },
+];
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
 
 const orgJsonLd = {
   '@context': 'https://schema.org',
@@ -35,7 +69,7 @@ export default function TermsPage() {
         title="Terms of Service | PulseMap"
         description="Read the Terms of Service governing your use of PulseMap, the live event discovery map."
         canonical="/terms"
-        jsonLd={[orgJsonLd, jsonLd]}
+        jsonLd={[orgJsonLd, jsonLd, faqJsonLd]}
       />
 
       <div className="min-h-screen" style={{ background: 'hsl(var(--background))' }}>
@@ -129,6 +163,63 @@ export default function TermsPage() {
               </a>
               .
             </Section>
+
+            <section
+              className="rounded-2xl border p-5"
+              style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
+            >
+              <div className="mb-3 flex items-center gap-2">
+                <Cookie size={16} style={{ color: 'hsl(var(--accent))' }} />
+                <h2 className="text-base font-bold text-foreground">8. Cookies & local storage</h2>
+              </div>
+              <p>
+                PulseMap only uses local browser storage to keep your session and preferences. No
+                third-party tracking or advertising cookies are used. You can review and change
+                your consent at any time.
+              </p>
+              <button
+                type="button"
+                onClick={openCookieBanner}
+                className="mt-4 inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors hover:bg-muted"
+                style={{ borderColor: 'hsl(var(--border))', color: 'hsl(var(--foreground))' }}
+              >
+                <Cookie size={14} />
+                Manage cookie preferences
+              </button>
+            </section>
+
+            <section
+              className="rounded-2xl border p-5"
+              style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
+            >
+              <div className="mb-3 flex items-center gap-2">
+                <HelpCircle size={16} style={{ color: 'hsl(var(--accent))' }} />
+                <h2 className="text-base font-bold text-foreground">Frequently asked questions</h2>
+              </div>
+              <div className="space-y-2">
+                {faqs.map((f, i) => (
+                  <details
+                    key={i}
+                    className="group rounded-xl border p-3 transition-colors open:bg-muted/40"
+                    style={{ borderColor: 'hsl(var(--border))' }}
+                  >
+                    <summary className="cursor-pointer list-none text-sm font-semibold text-foreground flex items-center justify-between gap-2">
+                      <span>{f.q}</span>
+                      <span
+                        className="text-lg leading-none transition-transform group-open:rotate-45"
+                        style={{ color: 'hsl(var(--accent))' }}
+                        aria-hidden
+                      >
+                        +
+                      </span>
+                    </summary>
+                    <p className="mt-2 text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                      {f.a}
+                    </p>
+                  </details>
+                ))}
+              </div>
+            </section>
           </div>
         </main>
 

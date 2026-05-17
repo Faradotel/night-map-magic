@@ -1,6 +1,44 @@
-import { ArrowLeft, Shield, Database, Eye, Trash2, Mail, MapPin, Users, Cookie, Server, FileText } from 'lucide-react';
+import { ArrowLeft, Shield, Database, Eye, Trash2, Mail, MapPin, Users, Cookie, Server, FileText, HelpCircle } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 import { Link } from 'react-router-dom';
+import { openCookieBanner } from '@/components/CookieConsent';
+
+const faqs = [
+  {
+    q: 'PulseMap utilise-t-il des cookies de tracking ?',
+    a: "Non. PulseMap n'utilise aucun cookie tiers de tracking, publicitaire ou analytique. Seul le stockage local (localStorage) du navigateur est utilisé pour mémoriser ta session et tes préférences (thème, ville, unité de distance).",
+  },
+  {
+    q: 'Mes données sont-elles vendues ou partagées ?',
+    a: "Jamais. Aucune donnée personnelle n'est vendue, louée ou partagée avec des tiers à des fins commerciales. Tes données restent strictement utilisées pour le fonctionnement de l'application.",
+  },
+  {
+    q: 'Où sont hébergées mes données ?',
+    a: "Toutes les données sont hébergées sur des serveurs sécurisés situés au sein de l'Union Européenne, conformément au RGPD. Les communications sont chiffrées en HTTPS/TLS.",
+  },
+  {
+    q: 'Comment supprimer mon compte et mes données ?',
+    a: "Tu peux supprimer ton compte directement depuis ton profil dans l'application, ou en envoyant une demande à privacy@pulsemap.app. Toutes tes données personnelles sont supprimées définitivement dans un délai de 30 jours.",
+  },
+  {
+    q: 'Ma géolocalisation est-elle envoyée à PulseMap ?',
+    a: "Non. Ta position GPS est traitée uniquement localement dans ton navigateur pour afficher les événements proches. Elle n'est jamais transmise ni stockée sur nos serveurs.",
+  },
+  {
+    q: 'Comment exercer mes droits RGPD ?',
+    a: "Pour toute demande d'accès, de rectification, d'effacement, de portabilité ou d'opposition, écris-nous à privacy@pulsemap.app. Nous répondons sous 30 jours maximum. Tu peux aussi saisir la CNIL (www.cnil.fr).",
+  },
+];
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
 
 const orgJsonLd = {
   '@context': 'https://schema.org',
@@ -35,7 +73,7 @@ export default function PrivacyPage() {
         title="Privacy Policy | PulseMap"
         description="Learn how PulseMap protects your personal data. Access, deletion, EU hosting and your GDPR rights."
         canonical="/privacy-policy"
-        jsonLd={[orgJsonLd, jsonLd]}
+        jsonLd={[orgJsonLd, jsonLd, faqJsonLd]}
       />
 
       <div className="min-h-screen" style={{ background: 'hsl(var(--background))' }}>
@@ -165,7 +203,45 @@ export default function PrivacyPage() {
               <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 PulseMap utilise le stockage local du navigateur (localStorage) pour sauvegarder tes préférences (thème, unité de distance, ville préférée) et ta session d'authentification. Aucun cookie tiers de tracking ou publicitaire n'est utilisé.
               </p>
+              <button
+                type="button"
+                onClick={openCookieBanner}
+                className="mt-4 inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors hover:bg-muted"
+                style={{ borderColor: 'hsl(var(--border))', color: 'hsl(var(--foreground))' }}
+              >
+                <Cookie size={14} />
+                Gérer mes préférences cookies
+              </button>
             </Section>
+
+            <Section icon={<HelpCircle size={18} />} iconColor="hsl(200 90% 55%)" iconBg="hsl(200 90% 55% / 0.12)" title="FAQ — Vie privée & RGPD">
+              <div className="space-y-3">
+                {faqs.map((f, i) => (
+                  <details
+                    key={i}
+                    className="group rounded-xl border p-3 transition-colors open:bg-muted/40"
+                    style={{ borderColor: 'hsl(var(--border))' }}
+                  >
+                    <summary
+                      className="cursor-pointer list-none text-sm font-semibold text-foreground flex items-center justify-between gap-2"
+                    >
+                      <span>{f.q}</span>
+                      <span
+                        className="text-lg leading-none transition-transform group-open:rotate-45"
+                        style={{ color: 'hsl(var(--accent))' }}
+                        aria-hidden
+                      >
+                        +
+                      </span>
+                    </summary>
+                    <p className="mt-2 text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                      {f.a}
+                    </p>
+                  </details>
+                ))}
+              </div>
+            </Section>
+
 
             <Section icon={<Mail size={18} />} iconColor="hsl(var(--accent))" iconBg="hsl(var(--accent) / 0.12)" title="9. Contact">
               <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
