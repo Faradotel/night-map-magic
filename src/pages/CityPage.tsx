@@ -115,7 +115,14 @@ export default function CityPage() {
 
   return (
     <>
-      <SEO title={title} description={description} canonical={canonical} jsonLd={ld} />
+      <SEO
+        title={title}
+        description={description}
+        ogTitle={ogTitle}
+        ogDescription={ogDescription}
+        canonical={canonical}
+        jsonLd={ld}
+      />
       <main className="h-full overflow-y-auto bg-background text-foreground px-5 py-6 max-w-3xl mx-auto">
         <nav aria-label="Fil d'ariane" className="flex items-center gap-2 text-sm text-muted-foreground mb-5">
           <Link to="/" className="px-3 py-1.5 rounded-lg bg-secondary hover:bg-accent/10 font-medium transition-colors">Accueil</Link>
@@ -125,21 +132,23 @@ export default function CityPage() {
           <span className="px-3 py-1.5 font-medium text-foreground">{cityName}</span>
         </nav>
 
-        <h1 className="text-3xl font-black mb-2">Événements à {cityName} ce soir</h1>
+        <h1 className="text-3xl font-black mb-2">Sortir ce soir à {cityName}</h1>
         <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-          Concerts, soirées, festivals, bars animés et sorties en direct à {cityName}.
-          PulseMap met à jour la carte des événements en temps réel pour ne rien manquer de ce qui se passe autour de vous.
+          Tu cherches <strong>où sortir ce soir à {cityName}</strong> ? PulseMap référence
+          en temps réel tous les concerts, soirées, clubs, festivals et bars animés ouverts
+          ce soir à {cityName}. La carte interactive te montre instantanément les meilleures
+          sorties autour de toi, avec horaires, lieux et liens billetterie.
         </p>
 
         <Link
           to={`/?city=${encodeURIComponent(cityName)}`}
           className="inline-block mb-6 px-4 py-2 rounded-xl bg-accent text-accent-foreground font-bold text-sm"
         >
-          Voir sur la carte
+          Voir la carte des sorties ce soir à {cityName}
         </Link>
 
         <section aria-labelledby="evts-h2">
-          <h2 id="evts-h2" className="text-xl font-bold mb-3">Prochains événements à {cityName}</h2>
+          <h2 id="evts-h2" className="text-xl font-bold mb-3">Sorties ce soir à {cityName} — prochains événements</h2>
           {loading && <p className="text-sm text-muted-foreground">Chargement…</p>}
           {!loading && events.length === 0 && (
             <p className="text-sm text-muted-foreground">Aucun événement référencé pour le moment.</p>
@@ -164,13 +173,30 @@ export default function CityPage() {
         </section>
 
         <section className="mt-10 text-sm text-muted-foreground leading-relaxed">
-          <h2 className="text-base font-bold text-foreground mb-2">Que faire à {cityName} ce soir ?</h2>
+          <h2 className="text-base font-bold text-foreground mb-2">Où sortir ce soir à {cityName} ?</h2>
           <p>
-            Que vous cherchiez une soirée techno, un concert live, un festival, un afterwork ou simplement
-            un bar animé, PulseMap regroupe les meilleures sorties à {cityName} en un seul endroit. La carte
-            interactive vous montre instantanément ce qui se passe autour de vous, avec les horaires, les
-            lieux et les liens vers la billetterie.
+            Que tu cherches une soirée techno, un concert live, un festival, un afterwork ou
+            simplement un bar animé pour <strong>sortir ce soir à {cityName}</strong>,
+            PulseMap regroupe les meilleures sorties en un seul endroit. La carte interactive
+            te montre en temps réel ce qui se passe autour de toi : horaires, lieux, prix et
+            billetterie. Plus besoin de jongler entre Shotgun, Ticketmaster ou Facebook — tout
+            est centralisé pour trouver où sortir ce soir à {cityName} en quelques secondes.
           </p>
+        </section>
+
+        <section className="mt-10">
+          <h2 className="text-base font-bold text-foreground mb-3">Questions fréquentes — sortir ce soir à {cityName}</h2>
+          <div className="space-y-2">
+            {faqs.map((f, i) => (
+              <details key={i} className="group rounded-xl border border-border bg-secondary p-3">
+                <summary className="cursor-pointer list-none text-sm font-semibold text-foreground flex items-center justify-between gap-2">
+                  <span>{f.q}</span>
+                  <span className="text-lg leading-none transition-transform group-open:rotate-45 text-accent" aria-hidden>+</span>
+                </summary>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{f.a}</p>
+              </details>
+            ))}
+          </div>
         </section>
       </main>
     </>
