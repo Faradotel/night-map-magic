@@ -87,6 +87,7 @@ const App = () => {
                   </Routes>
                 </Suspense>
               </BrowserRouter>
+              <CookieConsent />
             </TooltipProvider>
           </ThemeProvider>
         </AuthProvider>
