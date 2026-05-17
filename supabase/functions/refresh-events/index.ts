@@ -420,6 +420,20 @@ Deno.serve(async (req) => {
 
     console.log(`Total: ${totalInserted} events cached`);
 
+    // Ping IndexNow (Bing/Yandex) so new events are discovered ASAP — fire-and-forget
+    if (totalInserted > 0) {
+      try {
+        await fetchWithTimeout(
+          `${supabaseUrl}/functions/v1/indexnow-submit`,
+          { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' },
+          15000
+        );
+        console.log('IndexNow ping sent');
+      } catch (e) {
+        console.error('IndexNow ping failed:', e);
+      }
+    }
+
     return new Response(
       JSON.stringify({ success: true, total: totalInserted }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
