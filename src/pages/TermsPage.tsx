@@ -236,6 +236,8 @@ export default function TermsPage() {
               <span style={{ color: 'hsl(var(--border))' }}>|</span>
               <a href="/privacy-policy" className="hover:text-foreground transition-colors">Privacy Policy</a>
               <span style={{ color: 'hsl(var(--border))' }}>|</span>
+              <a href="/contact-legal" className="hover:text-foreground transition-colors">Legal contact</a>
+              <span style={{ color: 'hsl(var(--border))' }}>|</span>
               <span style={{ color: 'hsl(var(--foreground))' }}>Terms</span>
             </div>
           </div>
