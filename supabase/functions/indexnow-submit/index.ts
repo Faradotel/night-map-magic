@@ -30,6 +30,8 @@ Deno.serve(async (req) => {
         'aix-en-provence', 'saint-etienne', 'villeurbanne',
       ];
       const categories = ['concerts', 'soirees', 'festivals', 'bars', 'sport', 'culture', 'brocantes'];
+      const genres = ['techno', 'electro', 'house', 'rock', 'pop', 'indie', 'jazz', 'rnb'];
+      const vibes = ['rave', 'chill', 'afterwork', 'cosy', 'concert', 'culture', 'sport'];
       urlList = [
         `https://${HOST}/`,
         `https://${HOST}/villes`,
@@ -37,6 +39,10 @@ Deno.serve(async (req) => {
         ...cities.map(c => `https://${HOST}/villes/${c}`),
         ...categories.map(c => `https://${HOST}/categories/${c}`),
         ...categories.flatMap(cat => cities.map(c => `https://${HOST}/categories/${cat}/${c}`)),
+        ...genres.map(g => `https://${HOST}/genres/${g}`),
+        ...genres.flatMap(g => cities.map(c => `https://${HOST}/genres/${g}/${c}`)),
+        ...vibes.map(v => `https://${HOST}/ambiances/${v}`),
+        ...vibes.flatMap(v => cities.map(c => `https://${HOST}/ambiances/${v}/${c}`)),
       ];
     }
 
