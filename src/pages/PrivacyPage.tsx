@@ -85,6 +85,9 @@ export default function PrivacyPage() {
           { lang: 'en', path: '/terms' },
           { lang: 'x-default', path: '/privacy-policy' },
         ]}
+        imageWidth={512}
+        imageHeight={512}
+        imageAlt="PulseMap logo"
       />
 
       <div className="min-h-screen" style={{ background: 'hsl(var(--background))' }}>
