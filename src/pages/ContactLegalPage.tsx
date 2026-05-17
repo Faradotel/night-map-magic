@@ -7,7 +7,13 @@ const orgJsonLd = {
   '@type': 'Organization',
   name: 'PulseMap',
   url: 'https://pulse-map.live/',
-  logo: 'https://pulse-map.live/icon-512.png',
+  logo: {
+    '@type': 'ImageObject',
+    url: 'https://pulse-map.live/icon-512.png',
+    width: 512,
+    height: 512,
+    caption: 'PulseMap logo',
+  },
   email: 'privacy@pulsemap.app',
   sameAs: ['https://pulse-map.live/'],
 };
