@@ -81,6 +81,10 @@ const App = () => {
                     <Route path="/sortir-ce-soir/:slug" element={<CityPage />} />
                     <Route path="/evenements/:slug" element={<EventPage />} />
                     <Route path="/categories/:slug" element={<CategoryPage />} />
+                    <Route path="/genres/:slug" element={<TagPage kind="genre" />} />
+                    <Route path="/genres/:slug/:city" element={<TagPage kind="genre" />} />
+                    <Route path="/ambiances/:slug" element={<TagPage kind="vibe" />} />
+                    <Route path="/ambiances/:slug/:city" element={<TagPage kind="vibe" />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
                     <Route path="/rgpd" element={<PrivacyPage />} />
