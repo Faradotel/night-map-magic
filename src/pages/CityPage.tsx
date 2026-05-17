@@ -139,7 +139,7 @@ export default function CityPage() {
           <span className="px-3 py-1.5 font-medium text-foreground">{cityName}</span>
         </nav>
 
-        <h1 className="text-3xl font-black mb-2">Sortir ce soir à {cityName}</h1>
+        <h1 className="text-3xl font-black mb-2">Où sortir ce soir à {cityName} ?</h1>
         <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
           Tu cherches <strong>où sortir ce soir à {cityName}</strong> ? PulseMap référence
           en temps réel tous les concerts, soirées, clubs, festivals et bars animés ouverts
