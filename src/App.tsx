@@ -77,6 +77,7 @@ const App = () => {
                     <Route path="/" element={<Index />} />
                     <Route path="/villes" element={<CitiesIndex />} />
                     <Route path="/villes/:slug" element={<CityPage />} />
+                    <Route path="/sortir-ce-soir/:slug" element={<CityPage />} />
                     <Route path="/evenements/:slug" element={<EventPage />} />
                     <Route path="/categories/:slug" element={<CategoryPage />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
