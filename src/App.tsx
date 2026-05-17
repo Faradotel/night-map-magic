@@ -17,6 +17,7 @@ const CitiesIndex = lazy(() => import("./pages/CitiesIndex"));
 const CityPage = lazy(() => import("./pages/CityPage"));
 const EventPage = lazy(() => import("./pages/EventPage"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));
+const TagPage = lazy(() => import("./pages/TagPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
 const ContactLegalPage = lazy(() => import("./pages/ContactLegalPage"));
@@ -80,6 +81,10 @@ const App = () => {
                     <Route path="/sortir-ce-soir/:slug" element={<CityPage />} />
                     <Route path="/evenements/:slug" element={<EventPage />} />
                     <Route path="/categories/:slug" element={<CategoryPage />} />
+                    <Route path="/genres/:slug" element={<TagPage kind="genre" />} />
+                    <Route path="/genres/:slug/:city" element={<TagPage kind="genre" />} />
+                    <Route path="/ambiances/:slug" element={<TagPage kind="vibe" />} />
+                    <Route path="/ambiances/:slug/:city" element={<TagPage kind="vibe" />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
                     <Route path="/rgpd" element={<PrivacyPage />} />

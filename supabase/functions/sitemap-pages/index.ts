@@ -19,6 +19,9 @@ const CATEGORIES = [
   'concerts', 'soirees', 'festivals', 'bars', 'sport', 'culture', 'brocantes',
 ];
 
+const GENRES = ['techno', 'electro', 'house', 'rock', 'pop', 'indie', 'jazz', 'rnb'];
+const VIBES = ['rave', 'chill', 'afterwork', 'cosy', 'concert', 'culture', 'sport'];
+
 const LEGAL = ['privacy-policy', 'terms', 'contact-legal'];
 
 function escapeXml(s: string): string {
@@ -46,6 +49,18 @@ Deno.serve((req) => {
 
   // Category pages
   for (const cat of CATEGORIES) urls.push(urlEntry(`/categories/${cat}`, 'daily', '0.7'));
+
+  // Genre pages (national + per city)
+  for (const g of GENRES) {
+    urls.push(urlEntry(`/genres/${g}`, 'daily', '0.7'));
+    for (const c of CITIES) urls.push(urlEntry(`/genres/${g}/${c}`, 'daily', '0.6'));
+  }
+
+  // Vibe / ambiance pages (national + per city)
+  for (const v of VIBES) {
+    urls.push(urlEntry(`/ambiances/${v}`, 'daily', '0.7'));
+    for (const c of CITIES) urls.push(urlEntry(`/ambiances/${v}/${c}`, 'daily', '0.6'));
+  }
 
   // Legal pages
   for (const l of LEGAL) urls.push(urlEntry(`/${l}`, 'monthly', '0.3'));
