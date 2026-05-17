@@ -24,4 +24,19 @@
   <url><loc>https://pulse-map.live/categories/sport</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pulse-map.live/categories/culture</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pulse-map.live/categories/brocantes</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pulse-map.live/sortir-ce-soir/paris</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://pulse-map.live/sortir-ce-soir/lyon</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://pulse-map.live/sortir-ce-soir/marseille</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://pulse-map.live/sortir-ce-soir/toulouse</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://pulse-map.live/sortir-ce-soir/nice</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://pulse-map.live/sortir-ce-soir/nantes</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://pulse-map.live/sortir-ce-soir/bordeaux</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://pulse-map.live/sortir-ce-soir/grenoble</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://pulse-map.live/sortir-ce-soir/lille</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://pulse-map.live/sortir-ce-soir/strasbourg</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://pulse-map.live/sortir-ce-soir/rennes</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://pulse-map.live/sortir-ce-soir/montpellier</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://pulse-map.live/sortir-ce-soir/aix-en-provence</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://pulse-map.live/sortir-ce-soir/saint-etienne</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://pulse-map.live/sortir-ce-soir/villeurbanne</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
 </urlset>
