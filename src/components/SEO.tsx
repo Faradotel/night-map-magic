@@ -8,6 +8,8 @@ interface HreflangItem {
 interface SEOProps {
   title: string;
   description: string;
+  ogTitle?: string;
+  ogDescription?: string;
   canonical?: string;
   image?: string;
   imageWidth?: number;
@@ -25,6 +27,8 @@ const DEFAULT_IMAGE = `${SITE_URL}/icon-512.png`;
 export function SEO({
   title,
   description,
+  ogTitle,
+  ogDescription,
   canonical,
   image = DEFAULT_IMAGE,
   imageWidth,
