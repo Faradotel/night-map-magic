@@ -1,8 +1,9 @@
-import { ArrowLeft, FileText, HelpCircle, Cookie } from 'lucide-react';
+import { FileText, HelpCircle, Cookie } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 import { Link } from 'react-router-dom';
 import { BackButton, useSwipeBack } from '@/components/BackButton';
 import { openCookieBanner } from '@/components/CookieConsent';
+import { TableOfContents } from '@/components/TableOfContents';
 
 const faqs = [
   {
