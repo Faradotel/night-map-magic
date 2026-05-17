@@ -177,8 +177,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
 
       {/* Scrollable content */}
       <div className="flex-1">
-        {/* Source badge */}
-        <div className="px-5 mb-4">
+        <div className="px-5 mb-4 flex flex-wrap items-center gap-2">
           <div
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold"
             style={{
@@ -192,7 +191,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
           </div>
           <Link
             to={`/evenements/${eventSlug(event.name, event.id)}`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold ml-2"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold"
             style={{
               borderColor: 'hsl(var(--primary) / 0.4)',
               color: 'hsl(var(--primary))',
@@ -204,7 +203,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
           </Link>
           <Link
             to={`/villes/${slugify(event.city)}`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold ml-2"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold"
             style={{
               borderColor: 'hsl(var(--secondary) / 0.4)',
               color: 'hsl(var(--foreground))',
@@ -216,7 +215,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
           </Link>
           {event.externalAttendees != null && event.externalAttendees > 0 && (
             <div
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold ml-2"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold"
               style={{
                 borderColor: 'hsl(var(--accent) / 0.4)',
                 color: 'hsl(var(--accent))',
@@ -229,7 +228,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
           )}
           {attendanceCount != null && attendanceCount > 0 && (
             <div
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold ml-2"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold"
               style={{
                 borderColor: 'hsl(var(--primary) / 0.4)',
                 color: 'hsl(var(--primary))',
