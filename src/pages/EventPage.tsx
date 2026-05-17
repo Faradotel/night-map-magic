@@ -155,7 +155,9 @@ export default function EventPage() {
         </section>
 
         <p className="text-xs text-muted-foreground mt-10">
-          Plus d'événements à <Link to={`/villes/${event.city.toLowerCase()}`} className="underline">{event.city}</Link>.
+          Plus de sorties à <Link to={`/sortir-ce-soir/${cityLower}`} className="underline">{event.city}</Link>
+          {' · '}
+          <Link to="/villes" className="underline">Toutes les villes</Link>
         </p>
       </main>
     </>
