@@ -305,12 +305,14 @@ export default function PrivacyPage() {
 }
 
 function Section({
+  id,
   icon,
   iconColor,
   iconBg,
   title,
   children,
 }: {
+  id?: string;
   icon: React.ReactNode;
   iconColor: string;
   iconBg: string;
@@ -319,6 +321,7 @@ function Section({
 }) {
   return (
     <section
+      id={id}
       className="rounded-2xl border p-5 transition-shadow hover:shadow-lg"
       style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
     >
