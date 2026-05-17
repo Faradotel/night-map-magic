@@ -1,5 +1,10 @@
 import { Helmet } from 'react-helmet-async';
 
+interface HreflangItem {
+  lang: string;
+  path: string;
+}
+
 interface SEOProps {
   title: string;
   description: string;
@@ -8,6 +13,7 @@ interface SEOProps {
   type?: 'website' | 'article' | 'event';
   jsonLd?: object | object[];
   noindex?: boolean;
+  hreflang?: HreflangItem[];
 }
 
 const SITE_URL = 'https://pulse-map.live';
@@ -21,6 +27,7 @@ export function SEO({
   type = 'website',
   jsonLd,
   noindex,
+  hreflang,
 }: SEOProps) {
   const url = canonical
     ? canonical.startsWith('http')
@@ -52,6 +59,10 @@ export function SEO({
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={fullDesc} />
       <meta name="twitter:image" content={image} />
+
+      {hreflang?.map((h) => (
+        <link key={h.lang} rel="alternate" hrefLang={h.lang} href={`${SITE_URL}${h.path}`} />
+      ))}
 
       {ldArray.map((ld, i) => (
         <script key={i} type="application/ld+json">

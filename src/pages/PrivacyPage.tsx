@@ -74,6 +74,11 @@ export default function PrivacyPage() {
         description="Learn how PulseMap protects your personal data. Access, deletion, EU hosting and your GDPR rights."
         canonical="/privacy-policy"
         jsonLd={[orgJsonLd, jsonLd, faqJsonLd]}
+        hreflang={[
+          { lang: 'fr', path: '/privacy-policy' },
+          { lang: 'en', path: '/terms' },
+          { lang: 'x-default', path: '/privacy-policy' },
+        ]}
       />
 
       <div className="min-h-screen" style={{ background: 'hsl(var(--background))' }}>
