@@ -76,8 +76,10 @@ export default function PrivacyPage() {
   return (
     <>
       <SEO
-        title="Privacy Policy | PulseMap"
-        description="Learn how PulseMap protects your personal data. Access, deletion, EU hosting and your GDPR rights."
+        title="Politique de confidentialité — PulseMap"
+        description="PulseMap s'engage à protéger la vie privée de ses utilisateurs conformément au RGPD. Découvre comment tes données sont collectées, utilisées et sécurisées."
+        ogTitle="Politique de confidentialité — PulseMap | Vos données, votre contrôle"
+        ogDescription="Découvre comment PulseMap protège tes données personnelles. Hébergement UE, zéro tracking, droits RGPD garantis."
         canonical="/privacy-policy"
         jsonLd={[orgJsonLd, jsonLd, faqJsonLd]}
         hreflang={[

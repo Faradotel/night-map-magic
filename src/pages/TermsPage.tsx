@@ -72,8 +72,10 @@ export default function TermsPage() {
   return (
     <>
       <SEO
-        title="Terms of Service | PulseMap"
-        description="Read the Terms of Service governing your use of PulseMap, the live event discovery map."
+        title="Terms of Service — PulseMap"
+        description="Read the Terms of Service governing your use of PulseMap, the free live event discovery map. No tracking, privacy first."
+        ogTitle="Terms of Service — PulseMap | Free Event Discovery"
+        ogDescription="Read the terms governing your use of PulseMap. Free, privacy-first event discovery. No tracking, no hidden fees."
         canonical="/terms"
         jsonLd={[orgJsonLd, jsonLd, faqJsonLd]}
         hreflang={[

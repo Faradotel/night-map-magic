@@ -8,6 +8,8 @@ interface HreflangItem {
 interface SEOProps {
   title: string;
   description: string;
+  ogTitle?: string;
+  ogDescription?: string;
   canonical?: string;
   image?: string;
   imageWidth?: number;
@@ -25,6 +27,8 @@ const DEFAULT_IMAGE = `${SITE_URL}/icon-512.png`;
 export function SEO({
   title,
   description,
+  ogTitle,
+  ogDescription,
   canonical,
   image = DEFAULT_IMAGE,
   imageWidth,
@@ -43,6 +47,8 @@ export function SEO({
 
   const fullTitle = title.length > 60 ? title.slice(0, 57) + '…' : title;
   const fullDesc = description.length > 160 ? description.slice(0, 157) + '…' : description;
+  const ogT = (ogTitle || title).length > 60 ? (ogTitle || title).slice(0, 57) + '…' : (ogTitle || title);
+  const ogD = (ogDescription || description).length > 160 ? (ogDescription || description).slice(0, 157) + '…' : (ogDescription || description);
   const ogType = type === 'event' ? 'article' : type;
   const ldArray = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 
@@ -53,8 +59,8 @@ export function SEO({
       <link rel="canonical" href={url} />
       {noindex && <meta name="robots" content="noindex,nofollow" />}
 
-      <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={fullDesc} />
+      <meta property="og:title" content={ogT} />
+      <meta property="og:description" content={ogD} />
       <meta property="og:type" content={ogType} />
       <meta property="og:url" content={url} />
       <meta property="og:image" content={image} />

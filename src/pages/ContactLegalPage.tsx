@@ -49,8 +49,10 @@ export default function ContactLegalPage() {
   return (
     <>
       <SEO
-        title="Contact légal | PulseMap"
+        title="Contact légal — PulseMap"
         description="Contact légal de PulseMap : DPO, responsable RGPD, informations de l'éditeur et moyens de contact pour exercer tes droits."
+        ogTitle="Contact légal — PulseMap | DPO & Responsable RGPD"
+        ogDescription="Contacte le DPO de PulseMap pour exercer tes droits RGPD ou toute question sur la protection de tes données personnelles."
         canonical="/contact-legal"
         jsonLd={[orgJsonLd, jsonLd]}
         hreflang={[
