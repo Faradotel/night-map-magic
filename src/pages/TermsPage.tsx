@@ -1,6 +1,40 @@
-import { ArrowLeft, FileText } from 'lucide-react';
+import { ArrowLeft, FileText, HelpCircle, Cookie } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 import { Link } from 'react-router-dom';
+import { openCookieBanner } from '@/components/CookieConsent';
+
+const faqs = [
+  {
+    q: 'Is PulseMap free to use?',
+    a: 'Yes. PulseMap is free for personal, non-commercial use. No subscription, no hidden fees.',
+  },
+  {
+    q: 'Do I need an account to view the event map?',
+    a: 'No. The interactive map and event browsing are fully accessible without signing in. An account is only required for social features (friends, check-ins, badges).',
+  },
+  {
+    q: 'Where does the event data come from?',
+    a: 'Events are aggregated from public third-party sources such as Shotgun, Ticketmaster, OpenAgenda and Meetup. PulseMap does not organize these events itself.',
+  },
+  {
+    q: 'Can I report inaccurate or inappropriate content?',
+    a: 'Yes. Contact privacy@pulsemap.app and we will review the report within 7 days.',
+  },
+  {
+    q: 'Does PulseMap use tracking cookies?',
+    a: 'No. PulseMap only uses local browser storage to keep your session and preferences. No third-party advertising or analytics cookies are used.',
+  },
+];
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
 
 const orgJsonLd = {
   '@context': 'https://schema.org',
