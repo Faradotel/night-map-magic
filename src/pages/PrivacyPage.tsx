@@ -203,7 +203,45 @@ export default function PrivacyPage() {
               <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 PulseMap utilise le stockage local du navigateur (localStorage) pour sauvegarder tes préférences (thème, unité de distance, ville préférée) et ta session d'authentification. Aucun cookie tiers de tracking ou publicitaire n'est utilisé.
               </p>
+              <button
+                type="button"
+                onClick={openCookieBanner}
+                className="mt-4 inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors hover:bg-muted"
+                style={{ borderColor: 'hsl(var(--border))', color: 'hsl(var(--foreground))' }}
+              >
+                <Cookie size={14} />
+                Gérer mes préférences cookies
+              </button>
             </Section>
+
+            <Section icon={<HelpCircle size={18} />} iconColor="hsl(200 90% 55%)" iconBg="hsl(200 90% 55% / 0.12)" title="FAQ — Vie privée & RGPD">
+              <div className="space-y-3">
+                {faqs.map((f, i) => (
+                  <details
+                    key={i}
+                    className="group rounded-xl border p-3 transition-colors open:bg-muted/40"
+                    style={{ borderColor: 'hsl(var(--border))' }}
+                  >
+                    <summary
+                      className="cursor-pointer list-none text-sm font-semibold text-foreground flex items-center justify-between gap-2"
+                    >
+                      <span>{f.q}</span>
+                      <span
+                        className="text-lg leading-none transition-transform group-open:rotate-45"
+                        style={{ color: 'hsl(var(--accent))' }}
+                        aria-hidden
+                      >
+                        +
+                      </span>
+                    </summary>
+                    <p className="mt-2 text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                      {f.a}
+                    </p>
+                  </details>
+                ))}
+              </div>
+            </Section>
+
 
             <Section icon={<Mail size={18} />} iconColor="hsl(var(--accent))" iconBg="hsl(var(--accent) / 0.12)" title="9. Contact">
               <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
