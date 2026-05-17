@@ -665,9 +665,9 @@ export default function Index() {
 
       {/* ── Event count badge (above BottomNav) ── */}
       <div
-        className="absolute left-1/2 -translate-x-1/2 z-[450] px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider pointer-events-none"
+        className="absolute left-1/2 -translate-x-1/2 z-[450] px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider pointer-events-none whitespace-nowrap"
         style={{
-          bottom: '68px',
+          bottom: 'calc(60px + env(safe-area-inset-bottom, 0px) + 8px)',
           background: 'var(--controls-bg)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
