@@ -272,6 +272,14 @@ export default function PrivacyPage() {
                 Villes
               </Link>
               <span style={{ color: 'hsl(var(--border))' }}>|</span>
+              <Link to="/terms" className="text-xs font-medium transition-colors hover:text-foreground" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                Conditions
+              </Link>
+              <span style={{ color: 'hsl(var(--border))' }}>|</span>
+              <Link to="/contact-legal" className="text-xs font-medium transition-colors hover:text-foreground" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                Contact légal
+              </Link>
+              <span style={{ color: 'hsl(var(--border))' }}>|</span>
               <span className="text-xs font-medium" style={{ color: 'hsl(var(--foreground))' }}>
                 Confidentialité
               </span>
