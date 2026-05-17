@@ -19,6 +19,9 @@ const CATEGORIES = [
   'concerts', 'soirees', 'festivals', 'bars', 'sport', 'culture', 'brocantes',
 ];
 
+const GENRES = ['techno', 'electro', 'house', 'rock', 'pop', 'indie', 'jazz', 'rnb'];
+const VIBES = ['rave', 'chill', 'afterwork', 'cosy', 'concert', 'culture', 'sport'];
+
 const LEGAL = ['privacy-policy', 'terms', 'contact-legal'];
 
 function escapeXml(s: string): string {
