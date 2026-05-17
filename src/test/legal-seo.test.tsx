@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { waitFor } from '@testing-library/dom';
 import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import PrivacyPage from '@/pages/PrivacyPage';
