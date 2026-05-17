@@ -10,8 +10,8 @@ export default function CitiesIndex() {
   return (
     <>
       <SEO
-        title="Villes & Sorties en France | PulseMap"
-        description="Découvrez les événements, concerts, soirées et festivals en direct dans toutes les grandes villes de France avec PulseMap."
+        title="Où sortir ce soir en France ? Villes & sorties | PulseMap"
+        description="Où sortir ce soir en France ? Découvre les soirées, concerts, festivals et bars animés en direct dans toutes les grandes villes : Paris, Lyon, Marseille, Toulouse, Grenoble…"
         canonical="/villes"
         jsonLd={[
           organizationLd(),
@@ -28,23 +28,24 @@ export default function CitiesIndex() {
           <span>/</span>
           <span className="px-3 py-1.5 font-medium text-foreground">Villes</span>
         </nav>
-        <h1 className="text-3xl font-black mb-3">Sorties & Événements en France</h1>
+        <h1 className="text-3xl font-black mb-3">Où sortir ce soir en France ?</h1>
         <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
           PulseMap référence en temps réel les soirées, concerts, festivals, bars animés et événements
-          culturels qui se passent autour de vous. Sélectionnez une ville pour voir ce qui se passe ce soir.
+          culturels qui se passent autour de vous, partout en France. Sélectionnez votre ville pour voir
+          où sortir ce soir.
         </p>
 
         <section aria-labelledby="cities-h2" className="mb-10">
-          <h2 id="cities-h2" className="text-xl font-bold mb-3">Villes</h2>
+          <h2 id="cities-h2" className="text-xl font-bold mb-3">Sortir ce soir, par ville</h2>
           <ul className="grid grid-cols-2 gap-2">
             {cities.map(([slug, name]) => (
               <li key={slug}>
                 <Link
-                  to={`/villes/${slug}`}
+                  to={`/sortir-ce-soir/${slug}`}
                   className="block px-4 py-3 rounded-xl border border-border bg-secondary hover:bg-accent/10 transition-colors"
                 >
-                  <span className="font-bold">{name}</span>
-                  <span className="block text-xs text-muted-foreground">Sorties & événements</span>
+                  <span className="font-bold">Sortir ce soir à {name}</span>
+                  <span className="block text-xs text-muted-foreground">Concerts, soirées & bars</span>
                 </Link>
               </li>
             ))}
