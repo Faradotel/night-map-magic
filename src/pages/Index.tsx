@@ -407,12 +407,12 @@ export default function Index() {
   return (
     <div className="relative w-full h-full overflow-hidden" style={{ background: 'var(--map-bg)' }}>
       <SEO
-        title="PulseMap — Sorties & événements en direct près de toi"
-        description="Découvre les soirées, concerts, festivals, bars animés et événements live autour de toi sur une carte temps réel. Toutes les sorties en France."
+        title="Où sortir ce soir ? Carte des soirées & concerts | PulseMap"
+        description="Où sortir ce soir près de chez toi ? PulseMap affiche en direct toutes les soirées, concerts, festivals et bars animés sur une carte interactive. Gratuit, partout en France."
         canonical="/"
         jsonLd={[organizationLd(), websiteLd()]}
       />
-      <h1 className="sr-only">PulseMap — Sorties, concerts & événements en direct près de chez vous</h1>
+      <h1 className="sr-only">Où sortir ce soir ? PulseMap — sorties, concerts & événements en direct près de chez vous</h1>
       {/* ── MAP SCREEN (always mounted, hidden via visibility) ── */}
       <div className="absolute inset-0" style={{ visibility: activeTab === 'map' ? 'visible' : 'hidden' }}>
         {/* Map */}
