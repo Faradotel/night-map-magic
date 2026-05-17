@@ -672,6 +672,20 @@ export default function Index() {
       {activeTab === 'map' && !selectedEvent && <LegalFooter />}
 
 
+      {/* ── EVENT COUNT BADGE (auto-hides) ── */}
+      {eventCountBadge !== null && activeTab === 'map' && !selectedEvent && (
+        <div
+          className="fixed left-1/2 -translate-x-1/2 z-[60] pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-200"
+          style={{ bottom: 'calc(60px + env(safe-area-inset-bottom, 0px) + 8px)' }}
+        >
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/95 backdrop-blur-md border border-border shadow-lg text-xs uppercase tracking-wide whitespace-nowrap" style={{ color: 'hsl(var(--foreground))' }}>
+            <span className="inline-block w-2 h-2 rounded-full" style={{ background: 'hsl(142 71% 45%)' }} />
+            <span className="font-semibold">{eventCountBadge}</span>
+            <span>événement{eventCountBadge > 1 ? 's' : ''} chargé{eventCountBadge > 1 ? 's' : ''}</span>
+          </div>
+        </div>
+      )}
+
       {/* ── BOTTOM NAV ── */}
       <BottomNav activeTab={activeTab} onTabChange={(tab) => {setActiveTab(tab);setSelectedEvent(null);}} />
     </div>);
