@@ -199,7 +199,7 @@ export default function CityPage() {
             {Object.entries(CATEGORY_SLUGS).map(([catSlug, cat]) => (
               <li key={catSlug}>
                 <Link
-                  to={`/categories/${catSlug}`}
+                  to={`/categories/${catSlug}/${slug}`}
                   className="block px-3 py-2 rounded-lg border border-border bg-secondary hover:bg-accent/10 text-sm"
                 >
                   <span className="font-semibold">{cat.label} à {cityName}</span>
