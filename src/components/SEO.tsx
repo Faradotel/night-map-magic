@@ -59,8 +59,8 @@ export function SEO({
       <link rel="canonical" href={url} />
       {noindex && <meta name="robots" content="noindex,nofollow" />}
 
-      <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={fullDesc} />
+      <meta property="og:title" content={ogT} />
+      <meta property="og:description" content={ogD} />
       <meta property="og:type" content={ogType} />
       <meta property="og:url" content={url} />
       <meta property="og:image" content={image} />
