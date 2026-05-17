@@ -10,6 +10,9 @@ interface SEOProps {
   description: string;
   canonical?: string;
   image?: string;
+  imageWidth?: number;
+  imageHeight?: number;
+  imageAlt?: string;
   type?: 'website' | 'article' | 'event';
   jsonLd?: object | object[];
   noindex?: boolean;
@@ -24,6 +27,9 @@ export function SEO({
   description,
   canonical,
   image = DEFAULT_IMAGE,
+  imageWidth,
+  imageHeight,
+  imageAlt,
   type = 'website',
   jsonLd,
   noindex,
@@ -52,6 +58,9 @@ export function SEO({
       <meta property="og:type" content={ogType} />
       <meta property="og:url" content={url} />
       <meta property="og:image" content={image} />
+      {imageWidth && <meta property="og:image:width" content={String(imageWidth)} />}
+      {imageHeight && <meta property="og:image:height" content={String(imageHeight)} />}
+      {imageAlt && <meta property="og:image:alt" content={imageAlt} />}
       <meta property="og:site_name" content="PulseMap" />
       <meta property="og:locale" content="fr_FR" />
 

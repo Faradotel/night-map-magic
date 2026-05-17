@@ -45,7 +45,13 @@ const orgJsonLd = {
   '@type': 'Organization',
   name: 'PulseMap',
   url: 'https://pulse-map.live/',
-  logo: 'https://pulse-map.live/icon-512.png',
+  logo: {
+    '@type': 'ImageObject',
+    url: 'https://pulse-map.live/icon-512.png',
+    width: 512,
+    height: 512,
+    caption: 'PulseMap logo',
+  },
   email: 'privacy@pulsemap.app',
   sameAs: ['https://pulse-map.live/'],
 };
@@ -79,6 +85,9 @@ export default function PrivacyPage() {
           { lang: 'en', path: '/terms' },
           { lang: 'x-default', path: '/privacy-policy' },
         ]}
+        imageWidth={512}
+        imageHeight={512}
+        imageAlt="PulseMap logo"
       />
 
       <div className="min-h-screen" style={{ background: 'hsl(var(--background))' }}>
