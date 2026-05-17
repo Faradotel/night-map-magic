@@ -47,6 +47,8 @@ export function SEO({
 
   const fullTitle = title.length > 60 ? title.slice(0, 57) + '…' : title;
   const fullDesc = description.length > 160 ? description.slice(0, 157) + '…' : description;
+  const ogT = (ogTitle || title).length > 60 ? (ogTitle || title).slice(0, 57) + '…' : (ogTitle || title);
+  const ogD = (ogDescription || description).length > 160 ? (ogDescription || description).slice(0, 157) + '…' : (ogDescription || description);
   const ogType = type === 'event' ? 'article' : type;
   const ldArray = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 
