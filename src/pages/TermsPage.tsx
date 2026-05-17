@@ -1,8 +1,9 @@
-import { ArrowLeft, FileText, HelpCircle, Cookie } from 'lucide-react';
+import { FileText, HelpCircle, Cookie } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 import { Link } from 'react-router-dom';
 import { BackButton, useSwipeBack } from '@/components/BackButton';
 import { openCookieBanner } from '@/components/CookieConsent';
+import { TableOfContents } from '@/components/TableOfContents';
 
 const faqs = [
   {
@@ -139,32 +140,47 @@ export default function TermsPage() {
 
         <main className="px-4 pb-20">
           <div className="mx-auto max-w-3xl space-y-6 text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            <Section title="1. Service">
+            <TableOfContents
+              title="Contents"
+              items={[
+                { id: 'service', label: '1. Service' },
+                { id: 'account', label: '2. Account' },
+                { id: 'acceptable-use', label: '3. Acceptable use' },
+                { id: 'event-data', label: '4. Event data' },
+                { id: 'liability', label: '5. Liability' },
+                { id: 'changes', label: '6. Changes' },
+                { id: 'contact', label: '7. Contact' },
+                { id: 'cookies', label: '8. Cookies & local storage' },
+                { id: 'faq', label: 'Frequently asked questions' },
+              ]}
+            />
+
+            <Section id="service" title="1. Service">
               PulseMap is a live event discovery platform that displays public events on an
               interactive map. The service is provided free of charge for personal,
               non-commercial use.
             </Section>
-            <Section title="2. Account">
+            <Section id="account" title="2. Account">
               You may create an account using email or Google sign-in. You are responsible for
               keeping your credentials secure and for activity on your account.
             </Section>
-            <Section title="3. Acceptable use">
+            <Section id="acceptable-use" title="3. Acceptable use">
               You agree not to misuse the service, scrape data at scale, abuse other users,
               publish illegal content, or attempt to compromise the platform's security.
             </Section>
-            <Section title="4. Event data">
+            <Section id="event-data" title="4. Event data">
               Event information is aggregated from public third-party sources. PulseMap does
               not guarantee the accuracy, availability or quality of any listed event.
             </Section>
-            <Section title="5. Liability">
+            <Section id="liability" title="5. Liability">
               The service is provided "as is" without warranty. PulseMap is not liable for any
               damage arising from your use of the service or attendance to events listed.
             </Section>
-            <Section title="6. Changes">
+            <Section id="changes" title="6. Changes">
               We may update these terms at any time. Continued use of the service after changes
               are published constitutes acceptance of the updated terms.
             </Section>
-            <Section title="7. Contact">
+            <Section id="contact" title="7. Contact">
               For any question regarding these terms, contact{' '}
               <a
                 href="mailto:privacy@pulsemap.app"
@@ -177,6 +193,7 @@ export default function TermsPage() {
             </Section>
 
             <section
+              id="cookies"
               className="rounded-2xl border p-5"
               style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
             >
@@ -201,6 +218,7 @@ export default function TermsPage() {
             </section>
 
             <section
+              id="faq"
               className="rounded-2xl border p-5"
               style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
             >
@@ -259,9 +277,10 @@ export default function TermsPage() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ id, title, children }: { id?: string; title: string; children: React.ReactNode }) {
   return (
     <section
+      id={id}
       className="rounded-2xl border p-5"
       style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
     >

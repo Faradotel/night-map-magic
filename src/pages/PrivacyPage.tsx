@@ -1,8 +1,9 @@
-import { ArrowLeft, Shield, Database, Eye, Trash2, Mail, MapPin, Users, Cookie, Server, FileText, HelpCircle } from 'lucide-react';
+import { Shield, Database, Eye, Trash2, Mail, MapPin, Users, Cookie, Server, HelpCircle } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 import { Link } from 'react-router-dom';
 import { BackButton, useSwipeBack } from '@/components/BackButton';
 import { openCookieBanner } from '@/components/CookieConsent';
+import { TableOfContents } from '@/components/TableOfContents';
 
 const faqs = [
   {
@@ -136,7 +137,23 @@ export default function PrivacyPage() {
         {/* Content */}
         <main className="px-4 pb-20">
           <div className="mx-auto max-w-3xl space-y-4">
-            <Section icon={<Database size={18} />} iconColor="hsl(var(--primary))" iconBg="hsl(var(--primary) / 0.12)" title="1. Données collectées">
+            <TableOfContents
+              title="Sommaire"
+              items={[
+                { id: 'donnees-collectees', label: '1. Données collectées' },
+                { id: 'geolocalisation', label: '2. Géolocalisation' },
+                { id: 'finalites', label: '3. Finalités du traitement' },
+                { id: 'partage', label: '4. Partage des données' },
+                { id: 'conservation', label: '5. Conservation des données' },
+                { id: 'hebergement', label: '6. Hébergement & sécurité' },
+                { id: 'droits-rgpd', label: '7. Tes droits (RGPD)' },
+                { id: 'cookies', label: '8. Cookies & stockage local' },
+                { id: 'faq', label: 'FAQ — Vie privée & RGPD' },
+                { id: 'contact', label: '9. Contact' },
+              ]}
+            />
+
+            <Section id="donnees-collectees" icon={<Database size={18} />} iconColor="hsl(var(--primary))" iconBg="hsl(var(--primary) / 0.12)" title="1. Données collectées">
               <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 Nous collectons uniquement les données nécessaires au fonctionnement de l'application :
               </p>
@@ -149,13 +166,13 @@ export default function PrivacyPage() {
               </ul>
             </Section>
 
-            <Section icon={<MapPin size={18} />} iconColor="hsl(var(--neon-pink))" iconBg="hsl(var(--neon-pink) / 0.12)" title="2. Géolocalisation">
+            <Section id="geolocalisation" icon={<MapPin size={18} />} iconColor="hsl(var(--neon-pink))" iconBg="hsl(var(--neon-pink) / 0.12)" title="2. Géolocalisation">
               <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 PulseMap peut utiliser ta position géographique pour afficher les événements proches de toi. Cette donnée est traitée <strong className="text-foreground">localement dans ton navigateur</strong> et n'est jamais transmise ni stockée sur nos serveurs. Tu peux refuser la géolocalisation à tout moment via les paramètres de ton navigateur, et utiliser le mode « Ville » à la place.
               </p>
             </Section>
 
-            <Section icon={<Eye size={18} />} iconColor="hsl(var(--neon-purple))" iconBg="hsl(var(--neon-purple) / 0.12)" title="3. Finalités du traitement">
+            <Section id="finalites" icon={<Eye size={18} />} iconColor="hsl(var(--neon-purple))" iconBg="hsl(var(--neon-purple) / 0.12)" title="3. Finalités du traitement">
               <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 Tes données sont utilisées exclusivement pour :
               </p>
@@ -171,7 +188,7 @@ export default function PrivacyPage() {
               </p>
             </Section>
 
-            <Section icon={<Users size={18} />} iconColor="hsl(45 100% 55%)" iconBg="hsl(45 100% 55% / 0.12)" title="4. Partage des données">
+            <Section id="partage" icon={<Users size={18} />} iconColor="hsl(45 100% 55%)" iconBg="hsl(45 100% 55% / 0.12)" title="4. Partage des données">
               <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 Tes données sont visibles de manière limitée :
               </p>
@@ -185,19 +202,19 @@ export default function PrivacyPage() {
               </p>
             </Section>
 
-            <Section icon={<Server size={18} />} iconColor="hsl(var(--neon-green))" iconBg="hsl(var(--neon-green) / 0.12)" title="5. Conservation des données">
+            <Section id="conservation" icon={<Server size={18} />} iconColor="hsl(var(--neon-green))" iconBg="hsl(var(--neon-green) / 0.12)" title="5. Conservation des données">
               <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 Tes données sont conservées tant que ton compte est actif. En cas de suppression de compte, toutes tes données personnelles (profil, check-ins, amitiés, notifications) sont supprimées définitivement dans un délai de 30 jours.
               </p>
             </Section>
 
-            <Section icon={<Shield size={18} />} iconColor="hsl(210 100% 56%)" iconBg="hsl(210 100% 56% / 0.12)" title="6. Hébergement & sécurité">
+            <Section id="hebergement" icon={<Shield size={18} />} iconColor="hsl(210 100% 56%)" iconBg="hsl(210 100% 56% / 0.12)" title="6. Hébergement & sécurité">
               <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 Les données sont hébergées sur des serveurs sécurisés au sein de l'Union Européenne. Les communications sont chiffrées via HTTPS/TLS. Les mots de passe sont hashés et ne sont jamais stockés en clair. L'accès aux données est protégé par des politiques de sécurité au niveau de la base de données (Row Level Security).
               </p>
             </Section>
 
-            <Section icon={<Trash2 size={18} />} iconColor="hsl(var(--destructive))" iconBg="hsl(var(--destructive) / 0.12)" title="7. Tes droits (RGPD)">
+            <Section id="droits-rgpd" icon={<Trash2 size={18} />} iconColor="hsl(var(--destructive))" iconBg="hsl(var(--destructive) / 0.12)" title="7. Tes droits (RGPD)">
               <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 Conformément au RGPD, tu disposes des droits suivants :
               </p>
@@ -211,7 +228,7 @@ export default function PrivacyPage() {
               </ul>
             </Section>
 
-            <Section icon={<Cookie size={18} />} iconColor="hsl(25 90% 55%)" iconBg="hsl(25 90% 55% / 0.12)" title="8. Cookies & stockage local">
+            <Section id="cookies" icon={<Cookie size={18} />} iconColor="hsl(25 90% 55%)" iconBg="hsl(25 90% 55% / 0.12)" title="8. Cookies & stockage local">
               <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 PulseMap utilise le stockage local du navigateur (localStorage) pour sauvegarder tes préférences (thème, unité de distance, ville préférée) et ta session d'authentification. Aucun cookie tiers de tracking ou publicitaire n'est utilisé.
               </p>
@@ -226,7 +243,7 @@ export default function PrivacyPage() {
               </button>
             </Section>
 
-            <Section icon={<HelpCircle size={18} />} iconColor="hsl(200 90% 55%)" iconBg="hsl(200 90% 55% / 0.12)" title="FAQ — Vie privée & RGPD">
+            <Section id="faq" icon={<HelpCircle size={18} />} iconColor="hsl(200 90% 55%)" iconBg="hsl(200 90% 55% / 0.12)" title="FAQ — Vie privée & RGPD">
               <div className="space-y-3">
                 {faqs.map((f, i) => (
                   <details
@@ -254,8 +271,7 @@ export default function PrivacyPage() {
               </div>
             </Section>
 
-
-            <Section icon={<Mail size={18} />} iconColor="hsl(var(--accent))" iconBg="hsl(var(--accent) / 0.12)" title="9. Contact">
+            <Section id="contact" icon={<Mail size={18} />} iconColor="hsl(var(--accent))" iconBg="hsl(var(--accent) / 0.12)" title="9. Contact">
               <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 Pour exercer tes droits ou pour toute question relative à la protection de tes données, tu peux nous contacter à :
               </p>
@@ -304,12 +320,14 @@ export default function PrivacyPage() {
 }
 
 function Section({
+  id,
   icon,
   iconColor,
   iconBg,
   title,
   children,
 }: {
+  id?: string;
   icon: React.ReactNode;
   iconColor: string;
   iconBg: string;
@@ -318,6 +336,7 @@ function Section({
 }) {
   return (
     <section
+      id={id}
       className="rounded-2xl border p-5 transition-shadow hover:shadow-lg"
       style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
     >
