@@ -422,16 +422,10 @@ Deno.serve(async (req) => {
 
     // Ping IndexNow (Bing/Yandex) so new events are discovered ASAP — fire-and-forget
     if (totalInserted > 0) {
-      try {
-        await fetchWithTimeout(
-          `${supabaseUrl}/functions/v1/indexnow-submit`,
-          { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' },
-          15000
-        );
-        console.log('IndexNow ping sent');
-      } catch (e) {
-        console.error('IndexNow ping failed:', e);
-      }
+      fetch(
+        `${supabaseUrl}/functions/v1/indexnow-submit`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }
+      ).catch(() => {});
     }
 
     return new Response(
