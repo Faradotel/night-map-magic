@@ -52,8 +52,39 @@ export default function CityPage() {
   if (!cityName) return <Navigate to="/villes" replace />;
 
   const canonical = `/villes/${slug.toLowerCase()}`;
-  const title = `Sorties à ${cityName} ce soir | PulseMap`;
-  const description = `Découvrez tous les événements live à ${cityName} ce soir : concerts, soirées, clubs, festivals, bars animés et plus encore. Carte en temps réel.`;
+  const title = `Sortir ce soir à ${cityName} : que faire ? | PulseMap`;
+  const description = `Sortir ce soir à ${cityName} : la carte temps réel des concerts, soirées, clubs, festivals et bars ouverts ce soir à ${cityName}. Trouve où sortir en 1 clic.`;
+  const ogTitle = `Sortir ce soir à ${cityName} — Concerts, soirées & clubs live`;
+  const ogDescription = `Tu cherches où sortir ce soir à ${cityName} ? PulseMap te montre tous les événements live ce soir sur une carte interactive. Gratuit, sans inscription.`;
+
+  const faqs = [
+    {
+      q: `Où sortir ce soir à ${cityName} ?`,
+      a: `Pour sortir ce soir à ${cityName}, PulseMap affiche en temps réel tous les concerts, soirées, clubs, bars animés et festivals ouverts ce soir à ${cityName} sur une carte interactive. Filtre par type, distance ou horaire pour trouver la sortie idéale.`,
+    },
+    {
+      q: `Que faire ce soir à ${cityName} ?`,
+      a: `Ce soir à ${cityName}, tu peux profiter de concerts live, soirées électro et techno, clubs, afterworks, festivals, expos nocturnes ou simplement un bar animé. Tous les événements sont géolocalisés et mis à jour en continu sur PulseMap.`,
+    },
+    {
+      q: `Comment trouver une soirée ce soir à ${cityName} ?`,
+      a: `Ouvre PulseMap, sélectionne ${cityName} et active le filtre « ce soir ». La carte affiche immédiatement toutes les soirées disponibles ce soir à ${cityName} avec les horaires, le lieu et le lien vers la billetterie.`,
+    },
+    {
+      q: `PulseMap est-il gratuit pour découvrir les sorties à ${cityName} ?`,
+      a: `Oui, PulseMap est 100 % gratuit. Tu peux consulter la carte des sorties à ${cityName} sans inscription, et créer un compte uniquement pour les fonctionnalités sociales (amis, check-ins, badges).`,
+    },
+  ];
+
+  const faqLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(f => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  };
 
   const ld: object[] = [
     placeLd(cityName),
@@ -62,6 +93,7 @@ export default function CityPage() {
       { name: 'Villes', url: '/villes' },
       { name: cityName, url: canonical },
     ]),
+    faqLd,
   ];
   events.slice(0, 20).forEach(e =>
     ld.push(eventLd({
