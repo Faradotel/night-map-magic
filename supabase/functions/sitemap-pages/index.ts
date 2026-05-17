@@ -47,8 +47,11 @@ Deno.serve((req) => {
   // High-intent "sortir ce soir" pages (canonical for the target query)
   for (const c of CITIES) urls.push(urlEntry(`/sortir-ce-soir/${c}`, 'hourly', '0.95'));
 
-  // Category pages
-  for (const cat of CATEGORIES) urls.push(urlEntry(`/categories/${cat}`, 'daily', '0.7'));
+  // Category pages (national + per city)
+  for (const cat of CATEGORIES) {
+    urls.push(urlEntry(`/categories/${cat}`, 'daily', '0.7'));
+    for (const c of CITIES) urls.push(urlEntry(`/categories/${cat}/${c}`, 'hourly', '0.85'));
+  }
 
   // Genre pages (national + per city)
   for (const g of GENRES) {

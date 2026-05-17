@@ -36,6 +36,7 @@ Deno.serve(async (req) => {
         ...cities.map(c => `https://${HOST}/sortir-ce-soir/${c}`),
         ...cities.map(c => `https://${HOST}/villes/${c}`),
         ...categories.map(c => `https://${HOST}/categories/${c}`),
+        ...categories.flatMap(cat => cities.map(c => `https://${HOST}/categories/${cat}/${c}`)),
       ];
     }
 
