@@ -69,7 +69,7 @@ export default function TermsPage() {
         title="Terms of Service | PulseMap"
         description="Read the Terms of Service governing your use of PulseMap, the live event discovery map."
         canonical="/terms"
-        jsonLd={[orgJsonLd, jsonLd]}
+        jsonLd={[orgJsonLd, jsonLd, faqJsonLd]}
       />
 
       <div className="min-h-screen" style={{ background: 'hsl(var(--background))' }}>
