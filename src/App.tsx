@@ -62,7 +62,7 @@ const App = () => {
           <ThemeProvider>
             <TooltipProvider>
               <Toaster />
-              <Sonner position="top-center" offset="calc(env(safe-area-inset-top, 0px) + 96px)" />
+              <Sonner />
               <OAuthCallbackHandler />
               {showSplash && (
                 <SplashScreen
