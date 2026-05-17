@@ -64,7 +64,7 @@ export default function ContactLegalPage() {
         imageAlt="PulseMap logo"
       />
 
-      <div className="min-h-screen" style={{ background: 'hsl(var(--background))' }}>
+      <div className="h-full overflow-y-auto" style={{ background: 'hsl(var(--background))' }}>
         {/* Ambient glow */}
         <div
           className="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full pointer-events-none"

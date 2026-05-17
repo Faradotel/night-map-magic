@@ -88,7 +88,7 @@ export default function TermsPage() {
         imageAlt="PulseMap logo"
       />
 
-      <div className="min-h-screen" style={{ background: 'hsl(var(--background))' }}>
+      <div className="h-full overflow-y-auto" style={{ background: 'hsl(var(--background))' }}>
         <nav
           className="sticky top-0 z-50 border-b px-4 py-3"
           style={{
