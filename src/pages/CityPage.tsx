@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams, Navigate } from 'react-router-dom';
+import { Link, useParams, Navigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { SEO } from '@/components/SEO';
 import { breadcrumbLd, eventLd, placeLd } from '@/lib/seo/jsonld';
@@ -24,6 +24,7 @@ interface CachedEvent {
 
 export default function CityPage() {
   const { slug = '' } = useParams();
+  const location = useLocation();
   const cityName = CITY_SLUGS[slug.toLowerCase()];
   const [events, setEvents] = useState<CachedEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,10 +52,16 @@ export default function CityPage() {
 
   if (!cityName) return <Navigate to="/villes" replace />;
 
-  const canonical = `/villes/${slug.toLowerCase()}`;
-  const title = `Sortir ce soir à ${cityName} : que faire ? | PulseMap`;
-  const description = `Sortir ce soir à ${cityName} : la carte temps réel des concerts, soirées, clubs, festivals et bars ouverts ce soir à ${cityName}. Trouve où sortir en 1 clic.`;
-  const ogTitle = `Sortir ce soir à ${cityName} — Concerts, soirées & clubs live`;
+  // Canonical: always point to /sortir-ce-soir/<slug> — it's the URL we want
+  // Google to rank for the high-intent query "où sortir ce soir à <ville>".
+  // /villes/<slug> consolidates its signals into the canonical URL.
+  const canonical = `/sortir-ce-soir/${slug.toLowerCase()}`;
+  const isSortirRoute = location.pathname.startsWith('/sortir-ce-soir');
+  const title = isSortirRoute
+    ? `Où sortir ce soir à ${cityName} ? Concerts, soirées & bars`
+    : `Sortir ce soir à ${cityName} : que faire ? | PulseMap`;
+  const description = `Où sortir ce soir à ${cityName} ? Carte temps réel des concerts, soirées, clubs, festivals et bars animés ouverts ce soir à ${cityName}. Gratuit, sans inscription.`;
+  const ogTitle = `Où sortir ce soir à ${cityName} — Concerts, soirées & clubs live`;
   const ogDescription = `Tu cherches où sortir ce soir à ${cityName} ? PulseMap te montre tous les événements live ce soir sur une carte interactive. Gratuit, sans inscription.`;
 
   const faqs = [
@@ -132,7 +139,7 @@ export default function CityPage() {
           <span className="px-3 py-1.5 font-medium text-foreground">{cityName}</span>
         </nav>
 
-        <h1 className="text-3xl font-black mb-2">Sortir ce soir à {cityName}</h1>
+        <h1 className="text-3xl font-black mb-2">Où sortir ce soir à {cityName} ?</h1>
         <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
           Tu cherches <strong>où sortir ce soir à {cityName}</strong> ? PulseMap référence
           en temps réel tous les concerts, soirées, clubs, festivals et bars animés ouverts
