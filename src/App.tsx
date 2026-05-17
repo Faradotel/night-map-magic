@@ -84,6 +84,7 @@ const App = () => {
                     <Route path="/rgpd" element={<PrivacyPage />} />
                     <Route path="/privacy-policy" element={<PrivacyPage />} />
                     <Route path="/terms" element={<TermsPage />} />
+                    <Route path="/contact-legal" element={<ContactLegalPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
