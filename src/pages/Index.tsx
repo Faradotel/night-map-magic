@@ -168,7 +168,7 @@ export default function Index() {
           const label = locationMode === 'france' ? 'France' : locationMode === 'city' && selectedCityName ? selectedCityName : 'votre zone';
           toast.warning(`Aucun événement trouvé pour ${label} — données en cours de mise à jour`);
         } else {
-          showEventCountBadge(deduped.length);
+          toast.success(`${deduped.length} événement${deduped.length > 1 ? 's' : ''} chargé${deduped.length > 1 ? 's' : ''}`, { duration: 2000 });
         }
       } catch {
         if (myLoadId !== loadIdRef.current) return;
