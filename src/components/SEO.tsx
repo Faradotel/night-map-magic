@@ -10,6 +10,9 @@ interface SEOProps {
   description: string;
   canonical?: string;
   image?: string;
+  imageWidth?: number;
+  imageHeight?: number;
+  imageAlt?: string;
   type?: 'website' | 'article' | 'event';
   jsonLd?: object | object[];
   noindex?: boolean;
