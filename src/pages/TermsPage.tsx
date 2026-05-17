@@ -70,6 +70,8 @@ const jsonLd = {
 };
 
 export default function TermsPage() {
+  useSwipeBack();
+
   return (
     <>
       <SEO

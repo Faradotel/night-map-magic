@@ -47,6 +47,8 @@ const jsonLd = {
 };
 
 export default function ContactLegalPage() {
+  useSwipeBack();
+
   return (
     <>
       <SEO

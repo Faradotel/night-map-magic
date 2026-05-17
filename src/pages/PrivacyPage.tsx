@@ -74,6 +74,8 @@ const jsonLd = {
 };
 
 export default function PrivacyPage() {
+  useSwipeBack();
+
   return (
     <>
       <SEO
