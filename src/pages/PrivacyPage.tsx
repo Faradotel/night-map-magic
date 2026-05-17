@@ -1,6 +1,44 @@
-import { ArrowLeft, Shield, Database, Eye, Trash2, Mail, MapPin, Users, Cookie, Server, FileText } from 'lucide-react';
+import { ArrowLeft, Shield, Database, Eye, Trash2, Mail, MapPin, Users, Cookie, Server, FileText, HelpCircle } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 import { Link } from 'react-router-dom';
+import { openCookieBanner } from '@/components/CookieConsent';
+
+const faqs = [
+  {
+    q: 'PulseMap utilise-t-il des cookies de tracking ?',
+    a: "Non. PulseMap n'utilise aucun cookie tiers de tracking, publicitaire ou analytique. Seul le stockage local (localStorage) du navigateur est utilisé pour mémoriser ta session et tes préférences (thème, ville, unité de distance).",
+  },
+  {
+    q: 'Mes données sont-elles vendues ou partagées ?',
+    a: "Jamais. Aucune donnée personnelle n'est vendue, louée ou partagée avec des tiers à des fins commerciales. Tes données restent strictement utilisées pour le fonctionnement de l'application.",
+  },
+  {
+    q: 'Où sont hébergées mes données ?',
+    a: "Toutes les données sont hébergées sur des serveurs sécurisés situés au sein de l'Union Européenne, conformément au RGPD. Les communications sont chiffrées en HTTPS/TLS.",
+  },
+  {
+    q: 'Comment supprimer mon compte et mes données ?',
+    a: "Tu peux supprimer ton compte directement depuis ton profil dans l'application, ou en envoyant une demande à privacy@pulsemap.app. Toutes tes données personnelles sont supprimées définitivement dans un délai de 30 jours.",
+  },
+  {
+    q: 'Ma géolocalisation est-elle envoyée à PulseMap ?',
+    a: "Non. Ta position GPS est traitée uniquement localement dans ton navigateur pour afficher les événements proches. Elle n'est jamais transmise ni stockée sur nos serveurs.",
+  },
+  {
+    q: 'Comment exercer mes droits RGPD ?',
+    a: "Pour toute demande d'accès, de rectification, d'effacement, de portabilité ou d'opposition, écris-nous à privacy@pulsemap.app. Nous répondons sous 30 jours maximum. Tu peux aussi saisir la CNIL (www.cnil.fr).",
+  },
+];
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
 
 const orgJsonLd = {
   '@context': 'https://schema.org',
