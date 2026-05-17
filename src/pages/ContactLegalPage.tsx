@@ -1,6 +1,6 @@
-import { ArrowLeft, Mail, Shield, User, MapPin, Building } from 'lucide-react';
+import { Mail, Shield, User, MapPin, Building } from 'lucide-react';
 import { SEO } from '@/components/SEO';
-import { Link } from 'react-router-dom';
+import { BackButton, useSwipeBack } from '@/components/BackButton';
 
 const orgJsonLd = {
   '@context': 'https://schema.org',

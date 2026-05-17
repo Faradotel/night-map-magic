@@ -1,6 +1,6 @@
-import { ArrowLeft, Shield, Database, Eye, Trash2, Mail, MapPin, Users, Cookie, Server, FileText, HelpCircle } from 'lucide-react';
+import { Shield, Database, Eye, Trash2, Mail, MapPin, Users, Cookie, Server, FileText, HelpCircle } from 'lucide-react';
 import { SEO } from '@/components/SEO';
-import { Link } from 'react-router-dom';
+import { BackButton, useSwipeBack } from '@/components/BackButton';
 import { openCookieBanner } from '@/components/CookieConsent';
 
 const faqs = [
