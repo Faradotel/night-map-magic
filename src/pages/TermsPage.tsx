@@ -260,9 +260,10 @@ export default function TermsPage() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ id, title, children }: { id?: string; title: string; children: React.ReactNode }) {
   return (
     <section
+      id={id}
       className="rounded-2xl border p-5"
       style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
     >
