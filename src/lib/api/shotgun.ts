@@ -303,20 +303,67 @@ export function deduplicateEvents(events: NightEvent[]): NightEvent[] {
 /**
  * Load events for a city: try cache first, fallback to live scraping
  */
-export async function loadEventsForCity(city: string): Promise<NightEvent[]> {
+export async function loadEventsForCity(
+  city: string,
+  coords?: { lat: number; lng: number },
+  radiusKm = 50,
+): Promise<NightEvent[]> {
   const now = new Date().toISOString();
-  const { data, error } = await supabase
+
+  // City-tagged events
+  const cityQuery = supabase
     .from('cached_events')
     .select('*')
     .ilike('city', `${city}%`)
     .or(`start_time.gte.${now},end_time.gte.${now}`);
 
-  if (error) {
-    console.error('Error loading cached events:', error);
-    return [];
+  // Events geographically within radiusKm of the city center
+  let nearbyQuery: any = null;
+  if (coords) {
+    const latDelta = radiusKm / 111;
+    const lngDelta = radiusKm / (111 * Math.cos(coords.lat * Math.PI / 180));
+    nearbyQuery = supabase
+      .from('cached_events')
+      .select('*')
+      .gte('lat', coords.lat - latDelta)
+      .lte('lat', coords.lat + latDelta)
+      .gte('lng', coords.lng - lngDelta)
+      .lte('lng', coords.lng + lngDelta)
+      .or(`start_time.gte.${now},end_time.gte.${now}`);
   }
 
-  return (data || []).map(cachedToNightEvent);
+  const [cityRes, nearbyRes] = await Promise.all([
+    cityQuery,
+    nearbyQuery ?? Promise.resolve({ data: [], error: null } as any),
+  ]);
+
+  if (cityRes.error) {
+    console.error('Error loading cached events:', cityRes.error);
+  }
+  if (nearbyRes.error) {
+    console.error('Error loading nearby cached events:', nearbyRes.error);
+  }
+
+  const byId = new Map<string, any>();
+  for (const e of cityRes.data || []) byId.set(e.id, e);
+
+  if (coords && nearbyRes.data) {
+    for (const e of nearbyRes.data) {
+      // Precise haversine filter to clip the bounding box to a true radius
+      const R = 6371;
+      const dLat = (e.lat - coords.lat) * Math.PI / 180;
+      const dLng = (e.lng - coords.lng) * Math.PI / 180;
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(coords.lat * Math.PI / 180) *
+          Math.cos(e.lat * Math.PI / 180) *
+          Math.sin(dLng / 2) ** 2;
+      const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      if (dist <= radiusKm) byId.set(e.id, e);
+    }
+  }
+
+  return Array.from(byId.values()).map(cachedToNightEvent);
 }
 
 /**

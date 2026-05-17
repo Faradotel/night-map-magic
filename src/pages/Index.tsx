@@ -149,7 +149,12 @@ export default function Index() {
         if (locationMode === 'france') {
           events = await loadAllEvents();
         } else if (locationMode === 'city' && selectedCityName) {
-          events = await loadEventsForCity(selectedCityName);
+          const cityObj = CITIES.find(c => c.name === selectedCityName);
+          events = await loadEventsForCity(
+            selectedCityName,
+            cityObj ? { lat: cityObj.lat, lng: cityObj.lng } : undefined,
+            50,
+          );
         } else if (userLocation) {
           events = await loadEventsNearby(userLocation[0], userLocation[1], filters.radiusKm);
         } else {
