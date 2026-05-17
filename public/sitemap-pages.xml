@@ -39,4 +39,7 @@
   <url><loc>https://pulse-map.live/sortir-ce-soir/aix-en-provence</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/saint-etienne</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/villeurbanne</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://pulse-map.live/privacy-policy</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://pulse-map.live/terms</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://pulse-map.live/contact-legal</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
 </urlset>
