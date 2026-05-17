@@ -24,6 +24,7 @@ interface CachedEvent {
 
 export default function CityPage() {
   const { slug = '' } = useParams();
+  const location = useLocation();
   const cityName = CITY_SLUGS[slug.toLowerCase()];
   const [events, setEvents] = useState<CachedEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,10 +52,16 @@ export default function CityPage() {
 
   if (!cityName) return <Navigate to="/villes" replace />;
 
-  const canonical = `/villes/${slug.toLowerCase()}`;
-  const title = `Sortir ce soir à ${cityName} : que faire ? | PulseMap`;
-  const description = `Sortir ce soir à ${cityName} : la carte temps réel des concerts, soirées, clubs, festivals et bars ouverts ce soir à ${cityName}. Trouve où sortir en 1 clic.`;
-  const ogTitle = `Sortir ce soir à ${cityName} — Concerts, soirées & clubs live`;
+  // Canonical: always point to /sortir-ce-soir/<slug> — it's the URL we want
+  // Google to rank for the high-intent query "où sortir ce soir à <ville>".
+  // /villes/<slug> consolidates its signals into the canonical URL.
+  const canonical = `/sortir-ce-soir/${slug.toLowerCase()}`;
+  const isSortirRoute = location.pathname.startsWith('/sortir-ce-soir');
+  const title = isSortirRoute
+    ? `Où sortir ce soir à ${cityName} ? Concerts, soirées & bars`
+    : `Sortir ce soir à ${cityName} : que faire ? | PulseMap`;
+  const description = `Où sortir ce soir à ${cityName} ? Carte temps réel des concerts, soirées, clubs, festivals et bars animés ouverts ce soir à ${cityName}. Gratuit, sans inscription.`;
+  const ogTitle = `Où sortir ce soir à ${cityName} — Concerts, soirées & clubs live`;
   const ogDescription = `Tu cherches où sortir ce soir à ${cityName} ? PulseMap te montre tous les événements live ce soir sur une carte interactive. Gratuit, sans inscription.`;
 
   const faqs = [
