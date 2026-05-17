@@ -74,3 +74,24 @@ export const CATEGORY_SLUGS: Record<string, { label: string; types: string[]; de
     description: 'Brocantes, vide-greniers et puces ce week-end en France.',
   },
 };
+
+export const GENRE_SLUGS: Record<string, { label: string; dbValues: string[]; description: string }> = {
+  techno: { label: 'Techno', dbValues: ['techno'], description: 'Soirées techno, raves et clubs underground partout en France.' },
+  electro: { label: 'Électro', dbValues: ['electro', 'electronic'], description: 'Soirées électro, DJ sets et clubs branchés en France.' },
+  house: { label: 'House', dbValues: ['house'], description: 'Soirées house, deep house et club nights près de chez vous.' },
+  rock: { label: 'Rock', dbValues: ['rock'], description: 'Concerts rock, indie rock et lives en France.' },
+  pop: { label: 'Pop', dbValues: ['pop'], description: 'Concerts pop et lives grand public partout en France.' },
+  indie: { label: 'Indie', dbValues: ['indie'], description: 'Concerts indie, alternative et découvertes musicales.' },
+  jazz: { label: 'Jazz', dbValues: ['jazz'], description: 'Concerts jazz, clubs et jam sessions en France.' },
+  rnb: { label: 'R&B', dbValues: ['r&b', 'rnb'], description: 'Soirées R&B, hip-hop et concerts urbains en France.' },
+};
+
+export const VIBE_SLUGS: Record<string, { label: string; dbValue: string; description: string }> = {
+  rave: { label: 'Rave', dbValue: 'rave', description: 'Raves et soirées techno underground partout en France.' },
+  chill: { label: 'Chill', dbValue: 'chill', description: 'Sorties chill, lounges et ambiances détendues.' },
+  afterwork: { label: 'Afterwork', dbValue: 'afterwork', description: 'Afterworks, 5-à-7 et soirées bureaux en France.' },
+  cosy: { label: 'Cosy', dbValue: 'cosy', description: 'Bars cosy et lieux intimistes pour sortir ce soir.' },
+  concert: { label: 'Concert live', dbValue: 'concert', description: 'Concerts live tous genres dans toute la France.' },
+  culture: { label: 'Culture', dbValue: 'culture', description: 'Sorties culturelles, expos et spectacles.' },
+  sport: { label: 'Sport', dbValue: 'sport', description: 'Événements sportifs et matchs en direct.' },
+};
