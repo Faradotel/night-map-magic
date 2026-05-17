@@ -47,6 +47,10 @@ export default function ContactLegalPage() {
         description="Contact légal de PulseMap : DPO, responsable RGPD, informations de l'éditeur et moyens de contact pour exercer tes droits."
         canonical="/contact-legal"
         jsonLd={[orgJsonLd, jsonLd]}
+        hreflang={[
+          { lang: 'fr', path: '/contact-legal' },
+          { lang: 'x-default', path: '/contact-legal' },
+        ]}
       />
 
       <div className="min-h-screen" style={{ background: 'hsl(var(--background))' }}>
