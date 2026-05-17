@@ -209,6 +209,42 @@ export default function CityPage() {
           </ul>
         </section>
 
+        <section className="mt-10" aria-labelledby="genres-h2">
+          <h2 id="genres-h2" className="text-base font-bold text-foreground mb-3">
+            Par genre musical à {cityName}
+          </h2>
+          <ul className="flex flex-wrap gap-2">
+            {Object.entries(GENRE_SLUGS).map(([gSlug, g]) => (
+              <li key={gSlug}>
+                <Link
+                  to={`/genres/${gSlug}/${slug.toLowerCase()}`}
+                  className="inline-block px-3 py-1.5 rounded-lg border border-border bg-secondary hover:bg-accent/10 text-xs font-medium"
+                >
+                  {g.label} à {cityName}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="mt-10" aria-labelledby="vibes-h2">
+          <h2 id="vibes-h2" className="text-base font-bold text-foreground mb-3">
+            Par ambiance à {cityName}
+          </h2>
+          <ul className="flex flex-wrap gap-2">
+            {Object.entries(VIBE_SLUGS).map(([vSlug, v]) => (
+              <li key={vSlug}>
+                <Link
+                  to={`/ambiances/${vSlug}/${slug.toLowerCase()}`}
+                  className="inline-block px-3 py-1.5 rounded-lg border border-border bg-secondary hover:bg-accent/10 text-xs font-medium"
+                >
+                  {v.label} à {cityName}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+
         <section className="mt-10" aria-labelledby="other-cities-h2">
           <h2 id="other-cities-h2" className="text-base font-bold text-foreground mb-3">
             Sortir ce soir dans d'autres villes
