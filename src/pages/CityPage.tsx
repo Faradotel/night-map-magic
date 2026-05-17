@@ -3,7 +3,7 @@ import { Link, useParams, Navigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { SEO } from '@/components/SEO';
 import { breadcrumbLd, eventLd, placeLd } from '@/lib/seo/jsonld';
-import { CITY_SLUGS, eventSlug } from '@/lib/seo/slug';
+import { CITY_SLUGS, CATEGORY_SLUGS, eventSlug } from '@/lib/seo/slug';
 
 interface CachedEvent {
   id: string;
@@ -189,6 +189,42 @@ export default function CityPage() {
             billetterie. Plus besoin de jongler entre Shotgun, Ticketmaster ou Facebook — tout
             est centralisé pour trouver où sortir ce soir à {cityName} en quelques secondes.
           </p>
+        </section>
+
+        <section className="mt-10" aria-labelledby="cats-h2">
+          <h2 id="cats-h2" className="text-base font-bold text-foreground mb-3">
+            Par type de sortie à {cityName}
+          </h2>
+          <ul className="grid grid-cols-2 gap-2">
+            {Object.entries(CATEGORY_SLUGS).map(([catSlug, cat]) => (
+              <li key={catSlug}>
+                <Link
+                  to={`/categories/${catSlug}`}
+                  className="block px-3 py-2 rounded-lg border border-border bg-secondary hover:bg-accent/10 text-sm"
+                >
+                  <span className="font-semibold">{cat.label} à {cityName}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="mt-10" aria-labelledby="other-cities-h2">
+          <h2 id="other-cities-h2" className="text-base font-bold text-foreground mb-3">
+            Sortir ce soir dans d'autres villes
+          </h2>
+          <ul className="flex flex-wrap gap-2">
+            {Object.entries(CITY_SLUGS).filter(([s]) => s !== slug.toLowerCase()).map(([s, n]) => (
+              <li key={s}>
+                <Link
+                  to={`/sortir-ce-soir/${s}`}
+                  className="inline-block px-3 py-1.5 rounded-lg border border-border bg-secondary hover:bg-accent/10 text-xs font-medium"
+                >
+                  {n}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className="mt-10">

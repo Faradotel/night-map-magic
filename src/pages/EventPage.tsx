@@ -61,9 +61,10 @@ export default function EventPage() {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
   const timeLabel = new Date(event.start_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const cityLower = event.city.toLowerCase();
 
-  const title = `${event.name} — ${event.city} le ${dateLabel} | PulseMap`;
-  const description = (event.description || `${event.name} à ${event.venue}, ${event.city} le ${dateLabel} à ${timeLabel}. Billets et infos sur PulseMap.`).slice(0, 200);
+  const title = `${event.name} — ${event.city}, ${dateLabel} | PulseMap`;
+  const description = (event.description || `${event.name} à ${event.venue}, ${event.city} le ${dateLabel} à ${timeLabel}. Sortir ce soir à ${event.city} avec PulseMap : infos, lieu et billetterie.`).slice(0, 200);
 
   const ld = [
     eventLd({
@@ -83,7 +84,7 @@ export default function EventPage() {
     }, canonical),
     breadcrumbLd([
       { name: 'Accueil', url: '/' },
-      { name: event.city, url: `/villes/${event.city.toLowerCase()}` },
+      { name: `Sortir à ${event.city}`, url: `/sortir-ce-soir/${cityLower}` },
       { name: event.name, url: canonical },
     ]),
   ];
@@ -154,7 +155,9 @@ export default function EventPage() {
         </section>
 
         <p className="text-xs text-muted-foreground mt-10">
-          Plus d'événements à <Link to={`/villes/${event.city.toLowerCase()}`} className="underline">{event.city}</Link>.
+          Plus de sorties à <Link to={`/sortir-ce-soir/${cityLower}`} className="underline">{event.city}</Link>
+          {' · '}
+          <Link to="/villes" className="underline">Toutes les villes</Link>
         </p>
       </main>
     </>
