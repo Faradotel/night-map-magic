@@ -160,7 +160,7 @@ export default function Index() {
           const label = locationMode === 'france' ? 'France' : locationMode === 'city' && selectedCityName ? selectedCityName : 'votre zone';
           toast.warning(`Aucun événement trouvé pour ${label} — données en cours de mise à jour`);
         } else {
-          toast.success(`${deduped.length} événement${deduped.length > 1 ? 's' : ''} chargé${deduped.length > 1 ? 's' : ''}`);
+          // Count is now shown in the persistent badge above the BottomNav — no toast needed.
         }
       } catch {
         if (myLoadId !== loadIdRef.current) return;
@@ -665,18 +665,19 @@ export default function Index() {
 
       {/* ── Event count badge (above BottomNav) ── */}
       <div
-        className="absolute left-1/2 -translate-x-1/2 z-[450] px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider pointer-events-none whitespace-nowrap"
+        className="absolute left-1/2 -translate-x-1/2 z-[450] px-4 py-2 rounded-full text-xs font-bold tracking-wide pointer-events-none whitespace-nowrap flex items-center gap-2"
         style={{
-          bottom: 'calc(60px + env(safe-area-inset-bottom, 0px) + 8px)',
+          bottom: 'calc(60px + env(safe-area-inset-bottom, 0px) + 10px)',
           background: 'var(--controls-bg)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
+          backdropFilter: 'blur(14px)',
+          WebkitBackdropFilter: 'blur(14px)',
           border: '1px solid var(--controls-border)',
           boxShadow: 'var(--controls-shadow)',
-          color: 'hsl(var(--muted-foreground))',
+          color: 'hsl(var(--foreground))',
         }}
       >
-        {filteredEvents.length} événement{filteredEvents.length > 1 ? 's' : ''}
+        <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'hsl(142 71% 45%)', boxShadow: '0 0 8px hsl(142 71% 45%)' }} />
+        {filteredEvents.length} événement{filteredEvents.length > 1 ? 's' : ''} chargé{filteredEvents.length > 1 ? 's' : ''}
       </div>
 
       {/* ── BOTTOM NAV ── */}
