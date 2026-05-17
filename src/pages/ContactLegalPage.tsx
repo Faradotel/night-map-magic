@@ -57,6 +57,9 @@ export default function ContactLegalPage() {
           { lang: 'fr', path: '/contact-legal' },
           { lang: 'x-default', path: '/contact-legal' },
         ]}
+        imageWidth={512}
+        imageHeight={512}
+        imageAlt="PulseMap logo"
       />
 
       <div className="min-h-screen" style={{ background: 'hsl(var(--background))' }}>
