@@ -68,7 +68,19 @@ export function eventLd(e: EventLdInput, canonical: string) {
     e.priceRange === 'gratuit' ? '0'
     : e.priceRange === '€1-10' ? '5'
     : e.priceRange === '€10-20' ? '15'
-    : e.priceRange === '€20+' ? '25' : undefined;
+    : e.priceRange === '€20+' ? '25' : '0';
+
+  // endDate: si absent, on prend startTime + 3h (par défaut pour un événement)
+  const endDate = e.endTime || (() => {
+    const d = new Date(e.startTime);
+    d.setHours(d.getHours() + 3);
+    return d.toISOString();
+  })();
+
+  // validFrom: les billets sont valides dès maintenant (ou la date de création de l'événement)
+  const validFrom = new Date().toISOString();
+
+  const canonicalUrl = canonical.startsWith('http') ? canonical : `${SITE.url}${canonical}`;
 
   return {
     '@context': 'https://schema.org',
@@ -76,11 +88,11 @@ export function eventLd(e: EventLdInput, canonical: string) {
     name: e.name,
     description: e.description?.slice(0, 500) || `${e.name} — ${e.venue}, ${e.city}`,
     startDate: e.startTime,
-    endDate: e.endTime || undefined,
+    endDate,
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
     image: e.imageUrl ? [e.imageUrl] : [`${SITE.url}/icon-512.png`],
-    url: canonical.startsWith('http') ? canonical : `${SITE.url}${canonical}`,
+    url: canonicalUrl,
     location: {
       '@type': 'Place',
       name: e.venue,
@@ -96,15 +108,19 @@ export function eventLd(e: EventLdInput, canonical: string) {
         longitude: e.lng,
       },
     },
-    offers: offerPrice
-      ? {
-          '@type': 'Offer',
-          price: offerPrice,
-          priceCurrency: 'EUR',
-          availability: 'https://schema.org/InStock',
-          url: e.ticketUrl || canonical,
-        }
-      : undefined,
+    performer: {
+      '@type': 'PerformingGroup',
+      name: e.venue || e.name,
+    },
+    offers: {
+      '@type': 'Offer',
+      name: 'Billet',
+      price: offerPrice,
+      priceCurrency: 'EUR',
+      availability: 'https://schema.org/InStock',
+      url: e.ticketUrl || canonicalUrl,
+      validFrom,
+    },
     organizer: {
       '@type': 'Organization',
       name: 'PulseMap',
