@@ -68,7 +68,19 @@ export function eventLd(e: EventLdInput, canonical: string) {
     e.priceRange === 'gratuit' ? '0'
     : e.priceRange === '€1-10' ? '5'
     : e.priceRange === '€10-20' ? '15'
-    : e.priceRange === '€20+' ? '25' : undefined;
+    : e.priceRange === '€20+' ? '25' : '0';
+
+  // endDate: si absent, on prend startTime + 3h (par défaut pour un événement)
+  const endDate = e.endTime || (() => {
+    const d = new Date(e.startTime);
+    d.setHours(d.getHours() + 3);
+    return d.toISOString();
+  })();
+
+  // validFrom: les billets sont valides dès maintenant (ou la date de création de l'événement)
+  const validFrom = new Date().toISOString();
+
+  const canonicalUrl = canonical.startsWith('http') ? canonical : `${SITE.url}${canonical}`;
 
   return {
     '@context': 'https://schema.org',
