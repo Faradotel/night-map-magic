@@ -3,13 +3,10 @@
 export function LegalFooter() {
   return (
     <footer
-      className="absolute left-0 right-0 z-[399] flex items-center justify-center pointer-events-none select-none"
+      className="fixed left-0 right-0 flex items-center justify-center pointer-events-none select-none"
       style={{
-        bottom: 'calc(60px + env(safe-area-inset-bottom, 0px))',
-        paddingBottom: '6px',
-        paddingTop: '10px',
-        background:
-          'linear-gradient(to top, hsl(0 0% 0% / 0.7), hsl(0 0% 0% / 0))',
+        bottom: 'calc(60px + env(safe-area-inset-bottom, 0px) + 6px)',
+        zIndex: 401,
       }}
       aria-label="Liens légaux"
     >
