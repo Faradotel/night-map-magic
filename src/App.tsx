@@ -88,7 +88,7 @@ const App = () => {
                     <Route path="/ambiances/:slug/:city" element={<TagPage kind="vibe" />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
-                    <Route path="/rgpd" element={<PrivacyPage />} />
+                    <Route path="/rgpd" element={<Navigate to="/privacy-policy" replace />} />
                     <Route path="/privacy-policy" element={<PrivacyPage />} />
                     <Route path="/terms" element={<TermsPage />} />
                     <Route path="/contact-legal" element={<ContactLegalPage />} />
