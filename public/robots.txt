@@ -2,7 +2,5 @@ User-agent: *
 Allow: /
 Disallow: /auth/
 Disallow: /reset-password
-Disallow: /sitemap-pages
-Disallow: /sitemap-events
 
 Sitemap: https://pulse-map.live/sitemap.xml
