@@ -260,9 +260,19 @@ Deno.serve(async (req) => {
     }
 
     const cityLower = city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const slug = CITY_SLUGS[cityLower] || cityLower;
+    const slug = CITY_SLUGS[cityLower];
+
+    // Reject unknown cities — prevents arbitrary path scraping on shotgun.live
+    if (!slug) {
+      console.warn('scrape-shotgun: rejected unknown city', city);
+      return new Response(
+        JSON.stringify({ success: true, events: [], city }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const shotgunUrl = `https://shotgun.live/fr/cities/${slug}`;
+
 
     console.log('Scraping Shotgun URL:', shotgunUrl, 'for city:', city);
 

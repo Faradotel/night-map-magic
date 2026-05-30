@@ -44,6 +44,15 @@ Deno.serve(async (req) => {
   try {
     const { city, lat, lng, radius = 80 } = await req.json();
 
+    // Validate & cap inputs to prevent API quota abuse
+    const safeRadius = Math.min(Math.max(Number(radius) || 80, 1), 150);
+    const latNum = lat !== undefined ? Number(lat) : undefined;
+    const lngNum = lng !== undefined ? Number(lng) : undefined;
+    const hasCoords =
+      Number.isFinite(latNum) && Number.isFinite(lngNum) &&
+      (latNum as number) >= 41 && (latNum as number) <= 51 &&
+      (lngNum as number) >= -5 && (lngNum as number) <= 10;
+
     const apiKey = Deno.env.get('TICKETMASTER_API_KEY');
     if (!apiKey) {
       return new Response(
@@ -62,13 +71,19 @@ Deno.serve(async (req) => {
       sort: 'date,asc',
     });
 
-    if (lat && lng) {
-      baseParams.set('latlong', `${lat},${lng}`);
-      baseParams.set('radius', String(radius));
+    if (hasCoords) {
+      baseParams.set('latlong', `${latNum},${lngNum}`);
+      baseParams.set('radius', String(safeRadius));
       baseParams.set('unit', 'km');
-    } else if (city) {
+    } else if (typeof city === 'string' && city.length > 0 && city.length <= 80) {
       baseParams.set('city', city);
+    } else {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid location parameters' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+
 
     // Paginate to get all events (max 5 pages = 1000 events)
     const allRawEvents: any[] = [];
