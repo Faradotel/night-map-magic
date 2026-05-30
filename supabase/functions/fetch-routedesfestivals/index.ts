@@ -174,6 +174,25 @@ const FOREIGN_KEYWORDS = [
   'schweiz', 'switzerland', 'italia', 'italy', 'españa', 'belgique', 'luxembourg',
 ];
 
+// LLM hallucination placeholders — reject any field equal to these
+const PLACEHOLDER_RE = /^(unknown|n\/?a|not\s*available|non\s*sp[ée]cifi[ée]|à\s*confirmer|a\s*confirmer|tba|to\s*be\s*announced|unspecified|placeholder|none|null|undefined|inconnu|inconnue|—|-)$/i;
+
+function isPlaceholder(v: unknown): boolean {
+  if (typeof v !== 'string') return true;
+  const s = v.trim();
+  if (!s) return true;
+  if (PLACEHOLDER_RE.test(s)) return true;
+  // catch "Unknown Address", "Unknown City", "Unknown Venue", "Ecaussystème Venue", "X City"
+  if (/^unknown\s+\w+$/i.test(s)) return true;
+  if (/^\w+\s+(venue|city|address)$/i.test(s) && !/\d/.test(s)) return true;
+  return false;
+}
+
+function cleanField(v: unknown): string {
+  return isPlaceholder(v) ? '' : (v as string).trim();
+}
+
+
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === 'OPTIONS') {
