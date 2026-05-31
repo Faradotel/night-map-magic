@@ -1,12 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { lovable } from '@/integrations/lovable/index';
 import { Mail, Lock, User, ArrowLeft, Eye, EyeOff } from 'lucide-react';
-import { Capacitor } from '@capacitor/core';
-import { Browser } from '@capacitor/browser';
-
-const APP_URL = import.meta.env.VITE_APP_URL ?? window.location.origin;
 
 export function AuthScreen({ inline = false }: { inline?: boolean }) {
   const { signIn, signUp } = useAuth();
