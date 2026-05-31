@@ -432,7 +432,7 @@ Deno.serve(async (req) => {
         name,
         venue: venue || finalCity,
         address: finalAddress || finalCity,
-        city: finalCity || city,
+        city: finalCity,
         lat: coords.lat,
         lng: coords.lng,
         startTime,
