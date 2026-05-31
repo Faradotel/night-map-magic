@@ -325,7 +325,7 @@ Deno.serve(async (req) => {
           headers: { 'Authorization': `Bearer ${firecrawlKey}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
             url: festUrl,
-            formats: ['extract'],
+            formats: ['extract', 'markdown'],
             onlyMainContent: true,
             extract: { schema: festivalSchema, prompt: festivalPrompt },
             waitFor: 3000,
@@ -335,8 +335,18 @@ Deno.serve(async (req) => {
         if (!res.ok) return null;
         const data = await res.json();
         const extracted = data?.data?.extract || data?.extract || null;
+        const md: string = data?.data?.markdown || data?.markdown || '';
         if (!extracted) return null;
-        return { ...extracted, _sourceUrl: festUrl };
+        // Parse the authoritative "Ville :" link from the page markdown.
+        // Example: "Ville :\n[Saint Nolff (56)](https://www.routedesfestivals.com/ville/saint-nolff-2787.html ...)"
+        let pageCity = '';
+        const villeMatch = md.match(/Ville\s*:\s*\n?\s*\[([^\]]+)\]\(https?:\/\/www\.routedesfestivals\.com\/ville\/[^)]+\)/i);
+        if (villeMatch) {
+          const raw = villeMatch[1].trim();
+          const m = raw.match(/^(.+?)\s*\(\d{2,3}\)\s*$/);
+          pageCity = (m ? m[1] : raw).trim();
+        }
+        return { ...extracted, _sourceUrl: festUrl, _pageCity: pageCity };
       })
     );
 
@@ -362,20 +372,14 @@ Deno.serve(async (req) => {
 
       const name = cleanField(e.name);
       const venue = cleanField(e.venue);
-      const eventCity = cleanField(e.city);
+      const llmCity = cleanField(e.city);
       const rawAddress = cleanField(e.address);
       const postal = cleanField(e.postalCode);
+      const pageCity = cleanField(e._pageCity);
 
       if (!name || name.length <= 2) continue;
 
-      // HARD REQUIREMENT: must have at least a venue OR a real city+address.
-      // This is what fixes the "Unknown Venue / Unknown Address / Unknown City" bug.
-      if (!venue && !eventCity && !rawAddress) {
-        console.log(`[RDF] Skipped (no real location): "${name}"`);
-        continue;
-      }
-
-      const combined = `${rawAddress} ${venue} ${eventCity}`.toLowerCase();
+      const combined = `${rawAddress} ${venue} ${llmCity} ${pageCity}`.toLowerCase();
       if (FOREIGN_KEYWORDS.some(kw => combined.includes(kw))) continue;
 
       const endTime = e.endDate ? fixEventDate(e.endDate) || null : null;
@@ -388,20 +392,34 @@ Deno.serve(async (req) => {
       }
       if (!startTime) continue;
 
-      // Build the address string we'll geocode and store
-      const finalCity = eventCity || (rawAddress.match(/\b\d{5}\s+([^,]+)/)?.[1]?.trim() ?? '');
-      const addressParts = [rawAddress, postal, finalCity].filter(p => p && !rawAddress.includes(p));
-      const finalAddress = (rawAddress || [postal, finalCity].filter(Boolean).join(' ')).trim();
+      // Authoritative city: prefer the parsed "Ville :" link from the page itself.
+      // Fall back to LLM-extracted city or postal-code city. NEVER fall back to the searched city.
+      const finalCity =
+        pageCity ||
+        llmCity ||
+        (rawAddress.match(/\b\d{5}\s+([^,]+)/)?.[1]?.trim() ?? '');
 
-      if (!finalCity && !finalAddress) {
-        console.log(`[RDF] Skipped (no usable address): "${name}"`);
+      // HARD REQUIREMENT: we must know the real city. Otherwise we cannot place the pin reliably.
+      if (!finalCity) {
+        console.log(`[RDF] Skipped (no real city): "${name}"`);
         continue;
       }
 
-      // Geocode using the real festival location, NOT the searched city's coords
-      const coords = await geocode(finalAddress || finalCity, finalCity || 'France');
+      const finalAddress = (rawAddress || [postal, finalCity].filter(Boolean).join(' ')).trim();
+
+      // Geocode REQUIRING the real city — never default to 'France' alone.
+      const coords = await geocode(finalAddress || venue || finalCity, finalCity);
       if (!coords) {
         console.log(`[RDF] Skipped (geocode failed): "${name}" → ${finalAddress} / ${finalCity}`);
+        continue;
+      }
+
+      // Sanity check: RDF listing pages are département-scoped, so a festival
+      // should be reasonably close to the searched city. Reject if > 250km away
+      // (catches geocoder fallbacks to Paris/etc when location is ambiguous).
+      const dist = distanceKm(cityCoords.lat, cityCoords.lng, coords.lat, coords.lng);
+      if (dist > 250) {
+        console.log(`[RDF] Skipped (too far from "${city}": ${Math.round(dist)}km): "${name}" → ${finalCity}`);
         continue;
       }
 
@@ -414,7 +432,7 @@ Deno.serve(async (req) => {
         name,
         venue: venue || finalCity,
         address: finalAddress || finalCity,
-        city: finalCity || city,
+        city: finalCity,
         lat: coords.lat,
         lng: coords.lng,
         startTime,
