@@ -123,27 +123,6 @@ export function AuthScreen({ inline = false }: { inline?: boolean }) {
     </>
   );
 
-  const handleOAuth = async (provider: 'google' | 'apple') => {
-    setError(null);
-
-    if (Capacitor.isNativePlatform()) {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${APP_URL}/auth/callback`,
-          skipBrowserRedirect: true,
-        },
-      });
-      if (error) { setError(error.message); return; }
-      if (data?.url) await Browser.open({ url: data.url });
-      return;
-    }
-
-    const { error } = await lovable.auth.signInWithOAuth(provider, {
-      redirect_uri: window.location.origin,
-    });
-    if (error) setError(error instanceof Error ? error.message : String(error));
-  };
 
   if (inline) {
     return (
