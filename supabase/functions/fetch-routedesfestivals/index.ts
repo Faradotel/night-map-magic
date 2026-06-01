@@ -340,11 +340,18 @@ Deno.serve(async (req) => {
         // Parse the authoritative "Ville :" link from the page markdown.
         // Example: "Ville :\n[Saint Nolff (56)](https://www.routedesfestivals.com/ville/saint-nolff-2787.html ...)"
         let pageCity = '';
-        const villeMatch = md.match(/Ville\s*:\s*\n?\s*\[([^\]]+)\]\(https?:\/\/www\.routedesfestivals\.com\/ville\/[^)]+\)/i);
+        const villeMatch =
+          md.match(/Ville\s*:\s*\n?\s*\[([^\]]+)\]\(https?:\/\/www\.routedesfestivals\.com\/ville\/[^)]+\)/i) ||
+          md.match(/\[([^\]]+)\]\(https?:\/\/www\.routedesfestivals\.com\/ville\/[^)]+\)/i);
         if (villeMatch) {
           const raw = villeMatch[1].trim();
           const m = raw.match(/^(.+?)\s*\(\d{2,3}\)\s*$/);
           pageCity = (m ? m[1] : raw).trim();
+        }
+        // Also try to extract postal code + city from markdown directly (e.g. "75012 Paris")
+        if (!pageCity) {
+          const pcMatch = md.match(/\b(\d{5})\s+([A-ZÀ-Ÿ][A-Za-zÀ-ÿ' -]{2,40})\b/);
+          if (pcMatch) pageCity = pcMatch[2].trim();
         }
         return { ...extracted, _sourceUrl: festUrl, _pageCity: pageCity };
       })
