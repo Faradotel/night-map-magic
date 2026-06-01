@@ -175,7 +175,7 @@ const FOREIGN_KEYWORDS = [
 ];
 
 // LLM hallucination placeholders — reject any field equal to these
-const PLACEHOLDER_RE = /^(unknown|n\/?a|not\s*available|non\s*sp[ée]cifi[ée]|à\s*confirmer|a\s*confirmer|tba|to\s*be\s*announced|unspecified|placeholder|none|null|undefined|inconnu|inconnue|—|-)$/i;
+const PLACEHOLDER_RE = /^(unknown|n\/?a|not\s*(available|specified|provided|stated|listed|given)|non\s*sp[ée]cifi[ée]|non\s*renseign[ée]|à\s*confirmer|a\s*confirmer|à\s*d[ée]finir|a\s*d[ée]finir|to\s*be\s*(announced|defined|determined|confirmed)|tba|tbd|tbc|unspecified|undisclosed|placeholder|none|null|undefined|inconnu|inconnue|vide|empty|—|-+|\?+)$/i;
 
 function isPlaceholder(v: unknown): boolean {
   if (typeof v !== 'string') return true;
@@ -231,7 +231,7 @@ Deno.serve(async (req) => {
     // Strategy: Use RDF ville pages directly (more reliable than map search)
     // These pages list all upcoming festivals for a specific city
     const villeSlugs = CITY_RDF_VILLE[city] || [];
-    let festivalUrls: string[] = [];
+    
 
     // Build list of listing pages: ville pages + département page
     // Extract festival data DIRECTLY from listing pages (no per-festival scraping = much faster)
@@ -340,11 +340,18 @@ Deno.serve(async (req) => {
         // Parse the authoritative "Ville :" link from the page markdown.
         // Example: "Ville :\n[Saint Nolff (56)](https://www.routedesfestivals.com/ville/saint-nolff-2787.html ...)"
         let pageCity = '';
-        const villeMatch = md.match(/Ville\s*:\s*\n?\s*\[([^\]]+)\]\(https?:\/\/www\.routedesfestivals\.com\/ville\/[^)]+\)/i);
+        const villeMatch =
+          md.match(/Ville\s*:\s*\n?\s*\[([^\]]+)\]\(https?:\/\/www\.routedesfestivals\.com\/ville\/[^)]+\)/i) ||
+          md.match(/\[([^\]]+)\]\(https?:\/\/www\.routedesfestivals\.com\/ville\/[^)]+\)/i);
         if (villeMatch) {
           const raw = villeMatch[1].trim();
           const m = raw.match(/^(.+?)\s*\(\d{2,3}\)\s*$/);
           pageCity = (m ? m[1] : raw).trim();
+        }
+        // Also try to extract postal code + city from markdown directly (e.g. "75012 Paris")
+        if (!pageCity) {
+          const pcMatch = md.match(/\b(\d{5})\s+([A-ZÀ-Ÿ][A-Za-zÀ-ÿ' -]{2,40})\b/);
+          if (pcMatch) pageCity = pcMatch[2].trim();
         }
         return { ...extracted, _sourceUrl: festUrl, _pageCity: pageCity };
       })
