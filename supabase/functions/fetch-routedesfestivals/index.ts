@@ -231,7 +231,7 @@ Deno.serve(async (req) => {
     // Strategy: Use RDF ville pages directly (more reliable than map search)
     // These pages list all upcoming festivals for a specific city
     const villeSlugs = CITY_RDF_VILLE[city] || [];
-    let festivalUrls: string[] = [];
+    
 
     // Build list of listing pages: ville pages + département page
     // Extract festival data DIRECTLY from listing pages (no per-festival scraping = much faster)
