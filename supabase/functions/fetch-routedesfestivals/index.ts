@@ -175,7 +175,7 @@ const FOREIGN_KEYWORDS = [
 ];
 
 // LLM hallucination placeholders — reject any field equal to these
-const PLACEHOLDER_RE = /^(unknown|n\/?a|not\s*available|non\s*sp[ée]cifi[ée]|à\s*confirmer|a\s*confirmer|tba|to\s*be\s*announced|unspecified|placeholder|none|null|undefined|inconnu|inconnue|—|-)$/i;
+const PLACEHOLDER_RE = /^(unknown|n\/?a|not\s*(available|specified|provided|stated|listed|given)|non\s*sp[ée]cifi[ée]|non\s*renseign[ée]|à\s*confirmer|a\s*confirmer|à\s*d[ée]finir|a\s*d[ée]finir|to\s*be\s*(announced|defined|determined|confirmed)|tba|tbd|tbc|unspecified|undisclosed|placeholder|none|null|undefined|inconnu|inconnue|vide|empty|—|-+|\?+)$/i;
 
 function isPlaceholder(v: unknown): boolean {
   if (typeof v !== 'string') return true;
