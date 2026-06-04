@@ -340,15 +340,30 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
           zIndexOffset: -100,
         });
         const telDigits = place.phone ? place.phone.replace(/[^\d+]/g, '') : '';
+        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`;
+        const cardBg = isDark ? 'rgba(20,14,24,0.96)' : 'rgba(255,255,255,0.98)';
+        const textColor = isDark ? '#f5eef2' : '#1a1020';
+        const subColor = isDark ? 'rgba(245,238,242,0.65)' : 'rgba(26,16,32,0.6)';
+        const borderColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(20,14,24,0.08)';
+        const dividerColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(20,14,24,0.06)';
         const popupHtml = `
-          <div style="min-width:200px;max-width:240px;font-family:inherit;">
-            <div style="font-weight:700;font-size:13px;line-height:1.25;margin-bottom:2px;">${escape(place.name)}</div>
-            <div style="font-size:11px;color:${cfg.color};font-weight:600;margin-bottom:6px;">${cfg.emoji} ${cfg.label}</div>
-            ${place.address ? `<div style="font-size:11px;opacity:0.85;line-height:1.35;margin-bottom:6px;">${escape(place.address)}</div>` : ''}
-            ${place.phone ? `<a href="tel:${telDigits}" style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:${cfg.color};text-decoration:none;background:${cfg.color}1a;padding:5px 9px;border-radius:8px;margin-top:2px;">📞 ${escape(place.phone)}</a>` : ''}
-            ${place.hours ? `<div style="font-size:10px;opacity:0.7;margin-top:6px;line-height:1.3;">🕒 ${escape(place.hours)}</div>` : ''}
+          <div style="min-width:230px;max-width:270px;font-family:'Plus Jakarta Sans',sans-serif;background:${cardBg};color:${textColor};border:1px solid ${borderColor};border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.32),0 2px 8px rgba(0,0,0,.18);overflow:hidden;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);">
+            <div style="padding:12px 14px 10px 14px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:${cfg.color}22;font-size:14px;line-height:1;">${cfg.emoji}</span>
+                <span style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:${cfg.color};">${cfg.label}</span>
+              </div>
+              <div style="font-weight:700;font-size:14px;line-height:1.3;margin-bottom:${place.address ? '6px' : '0'};">${escape(place.name)}</div>
+              ${place.address ? `<div style="font-size:12px;line-height:1.4;color:${subColor};">${escape(place.address)}</div>` : ''}
+              ${place.hours ? `<div style="font-size:11px;line-height:1.35;color:${subColor};margin-top:6px;display:flex;gap:5px;"><span>🕒</span><span>${escape(place.hours)}</span></div>` : ''}
+            </div>
+            <div style="display:flex;gap:0;border-top:1px solid ${dividerColor};">
+              ${place.phone ? `<a href="tel:${telDigits}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 8px;font-size:12px;font-weight:700;color:${cfg.color};text-decoration:none;">📞 Appeler</a>` : ''}
+              ${place.phone ? `<div style="width:1px;background:${dividerColor};"></div>` : ''}
+              <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 8px;font-size:12px;font-weight:700;color:${textColor};text-decoration:none;">🧭 Itinéraire</a>
+            </div>
           </div>`;
-        marker.bindPopup(popupHtml, { closeButton: true, offset: [0, -10], maxWidth: 260 });
+        marker.bindPopup(popupHtml, { closeButton: false, offset: [0, -10], maxWidth: 280, className: 'safeplace-popup' });
         layer.addLayer(marker);
         if (++count >= MAX) break;
       }
