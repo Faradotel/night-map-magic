@@ -26,6 +26,7 @@ import { mapGenres, deduceVibe, deduceType, parsePriceRange } from '@/lib/api/sh
 import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
 import { MapPin, Locate, Sliders, Bell, Plus, Zap, Flame, ShieldCheck } from 'lucide-react';
 import { useSafePlaces } from '@/hooks/useSafePlaces';
+import safeShieldLogo from '@/assets/safe-shield.png';
 import { toast } from 'sonner';
 import { useLiveEvents } from '@/hooks/useLiveEvents';
 import { TonightsHotspotsBanner } from '@/components/TonightsHotspotsBanner';
@@ -588,7 +589,18 @@ export default function Index() {
                   color: showSafePlaces ? 'white' : 'hsl(142 55% 42%)',
                 }}
               >
-                <ShieldCheck size={13} className="shrink-0" />
+                <img
+                  src={safeShieldLogo}
+                  alt=""
+                  width={18}
+                  height={18}
+                  className={`shrink-0 transition-all duration-500 ${
+                    showSafePlaces
+                      ? 'opacity-100 drop-shadow-[0_0_8px_hsl(142_80%_55%/0.9)] animate-[live-breath_2.4s_ease-in-out_infinite]'
+                      : 'opacity-55 grayscale'
+                  }`}
+                  style={{ filter: showSafePlaces ? 'brightness(1.15)' : undefined }}
+                />
                 <span className="text-[11px] font-extrabold tracking-[0.08em] uppercase leading-none">
                   Safe
                 </span>
