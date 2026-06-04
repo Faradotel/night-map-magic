@@ -26,6 +26,7 @@ import { mapGenres, deduceVibe, deduceType, parsePriceRange } from '@/lib/api/sh
 import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
 import { MapPin, Locate, Sliders, Bell, Plus, Zap, Flame, ShieldCheck } from 'lucide-react';
 import { useSafePlaces } from '@/hooks/useSafePlaces';
+import safeShieldLogo from '@/assets/safe-shield.png';
 import { toast } from 'sonner';
 import { useLiveEvents } from '@/hooks/useLiveEvents';
 import { TonightsHotspotsBanner } from '@/components/TonightsHotspotsBanner';
