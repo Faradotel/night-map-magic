@@ -312,34 +312,54 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     prevSelectedRef.current = newId;
   }, [selectedEvent, events]);
 
-  // Safeplace markers — separate layer, not clustered
+  // Safeplace markers — separate layer, viewport-filtered for perf (50k+ points).
+  // Re-renders on map move/zoom; capped at 400 visible markers.
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    if (safePlaceLayerRef.current) {
-      map.removeLayer(safePlaceLayerRef.current);
-      safePlaceLayerRef.current = null;
-    }
+    const escape = (s: string) =>
+      s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 
-    if (!showSafePlaces || !safePlaces?.length) return;
+    const renderLayer = () => {
+      if (safePlaceLayerRef.current) {
+        map.removeLayer(safePlaceLayerRef.current);
+        safePlaceLayerRef.current = null;
+      }
+      if (!showSafePlaces || !safePlaces?.length) return;
 
-    const layer = L.layerGroup();
-    for (const place of safePlaces) {
-      const marker = L.marker([place.lat, place.lng], {
-        icon: createSafePlaceIcon(place.type, isDark),
-        zIndexOffset: -100,
-      });
-      const cfg = SAFE_PLACE_CONFIG[place.type];
-      marker.bindTooltip(
-        `<strong>${place.name}</strong><br/><span style="font-size:11px;opacity:0.8">${cfg.label}${place.address ? ' · ' + place.address : ''}</span>`,
-        { direction: 'top', offset: [0, -16], className: 'safeplace-tooltip' }
-      );
-      layer.addLayer(marker);
-    }
+      const bounds = map.getBounds();
+      const layer = L.layerGroup();
+      let count = 0;
+      const MAX = 400;
+      for (const place of safePlaces) {
+        if (!bounds.contains([place.lat, place.lng])) continue;
+        const cfg = SAFE_PLACE_CONFIG[place.type];
+        const marker = L.marker([place.lat, place.lng], {
+          icon: createSafePlaceIcon(place.type, isDark),
+          zIndexOffset: -100,
+        });
+        const telDigits = place.phone ? place.phone.replace(/[^\d+]/g, '') : '';
+        const popupHtml = `
+          <div style="min-width:200px;max-width:240px;font-family:inherit;">
+            <div style="font-weight:700;font-size:13px;line-height:1.25;margin-bottom:2px;">${escape(place.name)}</div>
+            <div style="font-size:11px;color:${cfg.color};font-weight:600;margin-bottom:6px;">${cfg.emoji} ${cfg.label}</div>
+            ${place.address ? `<div style="font-size:11px;opacity:0.85;line-height:1.35;margin-bottom:6px;">${escape(place.address)}</div>` : ''}
+            ${place.phone ? `<a href="tel:${telDigits}" style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:${cfg.color};text-decoration:none;background:${cfg.color}1a;padding:5px 9px;border-radius:8px;margin-top:2px;">📞 ${escape(place.phone)}</a>` : ''}
+            ${place.hours ? `<div style="font-size:10px;opacity:0.7;margin-top:6px;line-height:1.3;">🕒 ${escape(place.hours)}</div>` : ''}
+          </div>`;
+        marker.bindPopup(popupHtml, { closeButton: true, offset: [0, -10], maxWidth: 260 });
+        layer.addLayer(marker);
+        if (++count >= MAX) break;
+      }
+      layer.addTo(map);
+      safePlaceLayerRef.current = layer;
+    };
 
-    layer.addTo(map);
-    safePlaceLayerRef.current = layer;
+    renderLayer();
+    if (!showSafePlaces) return;
+    map.on('moveend', renderLayer);
+    return () => { map.off('moveend', renderLayer); };
   }, [safePlaces, showSafePlaces, isDark]);
 
   return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />;
