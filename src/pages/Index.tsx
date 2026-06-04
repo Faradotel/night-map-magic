@@ -24,7 +24,8 @@ import { useOfflineEvents } from '@/hooks/useOfflineEvents';
 import { loadEventsForCity, loadEventsNearby, loadAllEvents, deduplicateEvents } from '@/lib/api/shotgun';
 import { mapGenres, deduceVibe, deduceType, parsePriceRange } from '@/lib/api/shotgun';
 import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
-import { MapPin, Locate, Sliders, Bell, Plus, Zap, Flame } from 'lucide-react';
+import { MapPin, Locate, Sliders, Bell, Plus, Zap, Flame, ShieldCheck } from 'lucide-react';
+import { useSafePlaces } from '@/hooks/useSafePlaces';
 import { toast } from 'sonner';
 import { useLiveEvents } from '@/hooks/useLiveEvents';
 import { TonightsHotspotsBanner } from '@/components/TonightsHotspotsBanner';
@@ -85,6 +86,8 @@ export default function Index() {
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const loadIdRef = useRef(0);
   const [showLivePulse, setShowLivePulse] = useState(false);
+  const [showSafePlaces, setShowSafePlaces] = useState(false);
+  const { data: safePlaces } = useSafePlaces({ enabled: showSafePlaces });
   const [eventCountBadge, setEventCountBadge] = useState<number | null>(null);
   const eventCountTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showEventCountBadge = useCallback((count: number) => {
@@ -439,7 +442,9 @@ export default function Index() {
             userLocation={userLocation}
             radiusKm={filters.radiusKm}
             livePulseMap={livePulseMap}
-            liveMode={showLivePulse} />
+            liveMode={showLivePulse}
+            safePlaces={safePlaces}
+            showSafePlaces={showSafePlaces} />
           {/* Cinematic LIVE overlay */}
           {showLivePulse && (
             <>
@@ -562,6 +567,30 @@ export default function Index() {
                   {showLivePulse
                     ? (liveEvents.length > 0 ? `${liveEvents.length} LIVE NOW` : 'HOT TONIGHT')
                     : 'Live'}
+                </span>
+              </button>
+              <button
+                onClick={() => setShowSafePlaces(v => !v)}
+                aria-label={showSafePlaces ? 'Masquer les safeplaces' : 'Afficher les safeplaces'}
+                className="h-10 pl-2.5 pr-3.5 rounded-full flex items-center gap-2 shrink-0 transition-all active:scale-95"
+                style={{
+                  background: showSafePlaces
+                    ? 'linear-gradient(135deg, hsl(142 60% 35%), hsl(160 55% 42%))'
+                    : 'var(--controls-bg)',
+                  backdropFilter: 'blur(14px)',
+                  WebkitBackdropFilter: 'blur(14px)',
+                  border: showSafePlaces
+                    ? '1.5px solid hsl(142 60% 55% / 0.9)'
+                    : '1.5px solid hsl(142 60% 45% / 0.35)',
+                  boxShadow: showSafePlaces
+                    ? '0 0 0 3px hsl(142 60% 40% / 0.2), 0 0 18px hsl(142 60% 40% / 0.45)'
+                    : '0 4px 14px hsl(142 60% 40% / 0.12), var(--controls-shadow)',
+                  color: showSafePlaces ? 'white' : 'hsl(142 55% 42%)',
+                }}
+              >
+                <ShieldCheck size={13} className="shrink-0" />
+                <span className="text-[11px] font-extrabold tracking-[0.08em] uppercase leading-none">
+                  Safe
                 </span>
               </button>
             </div>

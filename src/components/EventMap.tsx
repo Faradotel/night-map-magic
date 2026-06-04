@@ -6,6 +6,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import { NightEvent, vibeConfig, typeConfig } from '@/data/mockEvents';
 import { useTheme } from '@/hooks/useTheme';
 import { getSourceEmoji } from '@/lib/sourceEmoji';
+import { SafePlace } from '@/hooks/useSafePlaces';
 
 interface EventMapProps {
   events: NightEvent[];
@@ -19,6 +20,8 @@ interface EventMapProps {
   livePulseMap?: Record<string, number>;
   /** Mode LIVE immersif : tous les markers gagnent un halo + glow renforcé. */
   liveMode?: boolean;
+  safePlaces?: SafePlace[];
+  showSafePlaces?: boolean;
 }
 
 function createEventIcon(
@@ -70,6 +73,28 @@ function createEventIcon(
   });
 }
 
+const SAFE_PLACE_CONFIG: Record<SafePlace['type'], { color: string; emoji: string; label: string }> = {
+  tabac:    { color: 'hsl(25,70%,45%)',  emoji: '🪧', label: 'Bureau de tabac' },
+  pharmacy: { color: 'hsl(142,60%,40%)', emoji: '⚕️', label: 'Pharmacie' },
+  police:   { color: 'hsl(220,80%,50%)', emoji: '🚔', label: 'Police / Gendarmerie' },
+  bar:      { color: 'hsl(45,90%,48%)',  emoji: '🤝', label: 'Bar partenaire' },
+};
+
+function createSafePlaceIcon(type: SafePlace['type'], isDark: boolean): L.DivIcon {
+  const cfg = SAFE_PLACE_CONFIG[type];
+  const size = 38;
+  const bg = isDark ? 'rgba(16,20,28,0.9)' : 'rgba(255,255,255,0.97)';
+  return L.divIcon({
+    className: '',
+    html: `<div style="position:relative;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;">
+      <div style="position:absolute;inset:-3px;border-radius:50%;background:radial-gradient(circle,${cfg.color}44 0%,transparent 70%);pointer-events:none;"></div>
+      <div style="width:${size - 4}px;height:${size - 4}px;border-radius:50%;background:${bg};backdrop-filter:blur(6px);border:2px solid ${cfg.color};display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 14px ${cfg.color}66,0 2px 8px rgba(0,0,0,.35);cursor:pointer;">${cfg.emoji}</div>
+    </div>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+}
+
 function createUserIcon(): L.DivIcon {
   return L.divIcon({
     className: '',
@@ -79,7 +104,7 @@ function createUserIcon(): L.DivIcon {
   });
 }
 
-export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, userLocation, radiusKm, livePulseMap, liveMode }: EventMapProps) {
+export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, userLocation, radiusKm, livePulseMap, liveMode, safePlaces, showSafePlaces }: EventMapProps) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const containerRef = useRef<HTMLDivElement>(null);
@@ -91,6 +116,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
   const userMarkerRef = useRef<L.Marker | null>(null);
   const radiusCircleRef = useRef<L.Circle | null>(null);
   const stackCountsRef = useRef<Map<string, number>>(new Map());
+  const safePlaceLayerRef = useRef<L.LayerGroup | null>(null);
 
   // Initialize map
   useEffect(() => {
@@ -285,6 +311,36 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
 
     prevSelectedRef.current = newId;
   }, [selectedEvent, events]);
+
+  // Safeplace markers — separate layer, not clustered
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (safePlaceLayerRef.current) {
+      map.removeLayer(safePlaceLayerRef.current);
+      safePlaceLayerRef.current = null;
+    }
+
+    if (!showSafePlaces || !safePlaces?.length) return;
+
+    const layer = L.layerGroup();
+    for (const place of safePlaces) {
+      const marker = L.marker([place.lat, place.lng], {
+        icon: createSafePlaceIcon(place.type, isDark),
+        zIndexOffset: -100,
+      });
+      const cfg = SAFE_PLACE_CONFIG[place.type];
+      marker.bindTooltip(
+        `<strong>${place.name}</strong><br/><span style="font-size:11px;opacity:0.8">${cfg.label}${place.address ? ' · ' + place.address : ''}</span>`,
+        { direction: 'top', offset: [0, -16], className: 'safeplace-tooltip' }
+      );
+      layer.addLayer(marker);
+    }
+
+    layer.addTo(map);
+    safePlaceLayerRef.current = layer;
+  }, [safePlaces, showSafePlaces, isDark]);
 
   return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />;
 }
