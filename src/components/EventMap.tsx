@@ -383,7 +383,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     if (!showSafePlaces) return;
     map.on('moveend', renderLayer);
     return () => { map.off('moveend', renderLayer); };
-  }, [safePlaces, showSafePlaces, isDark]);
+  }, [safePlaces, showSafePlaces, isDark, userLocation, radiusKm]);
 
   return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />;
 }
