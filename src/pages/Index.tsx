@@ -33,6 +33,7 @@ import { TonightsHotspotsBanner } from '@/components/TonightsHotspotsBanner';
 import { LiveTicker } from '@/components/LiveTicker';
 import { SEO } from '@/components/SEO';
 import { organizationLd, websiteLd } from '@/lib/seo/jsonld';
+import { OnboardingFlow, useShouldShowOnboarding } from '@/components/OnboardingFlow';
 
 type Tab = 'map' | 'search' | 'friends' | 'profile';
 
@@ -430,6 +431,7 @@ export default function Index() {
         jsonLd={[organizationLd(), websiteLd()]}
       />
       <h1 className="sr-only">Où sortir ce soir ? PulseMap — sorties, concerts & événements en direct près de chez vous</h1>
+      <OnboardingGate />
       {/* ── MAP SCREEN (always mounted, hidden via visibility) ── */}
       <div className="absolute inset-0" style={{ visibility: activeTab === 'map' ? 'visible' : 'hidden' }}>
         {/* Map */}
