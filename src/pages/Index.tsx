@@ -723,5 +723,12 @@ export default function Index() {
       {/* ── BOTTOM NAV ── */}
       <BottomNav activeTab={activeTab} onTabChange={(tab) => {setActiveTab(tab);setSelectedEvent(null);}} />
     </div>);
+}
+
+function OnboardingGate() {
+  const { show, close } = useShouldShowOnboarding();
+  if (!show) return null;
+  return <OnboardingFlow onClose={close} />;
+
 
 }
