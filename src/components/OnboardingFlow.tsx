@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MapPin, Zap, Sliders, Users, Heart, X, ChevronRight, Music, PartyPopper, Theater, Activity, ShoppingBag, UsersRound, ShieldCheck } from 'lucide-react';
 
-const STORAGE_KEY = 'pulse_onboarding_done_v1';
+const STORAGE_KEY = 'pulse_onboarding_done_v2';
 
 interface OnboardingFlowProps {
   onClose: () => void;
