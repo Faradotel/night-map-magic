@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Zap, Sliders, Users, Heart, X, ChevronRight, Music, PartyPopper, Theater, Activity, ShoppingBag, UsersRound } from 'lucide-react';
+import { MapPin, Zap, Sliders, Users, Heart, X, ChevronRight, Music, PartyPopper, Theater, Activity, ShoppingBag, UsersRound, ShieldCheck } from 'lucide-react';
 
-const STORAGE_KEY = 'pulse_onboarding_done_v1';
+const STORAGE_KEY = 'pulse_onboarding_done_v2';
 
 interface OnboardingFlowProps {
   onClose: () => void;
@@ -35,12 +35,14 @@ const iconRows = [
   { Icon: Activity, color: 'text-emerald-400', label: 'Sport & running' },
   { Icon: ShoppingBag, color: 'text-orange-400', label: 'Brocantes & marchés' },
   { Icon: UsersRound, color: 'text-sky-400', label: 'Meetups & rencontres' },
+  { Icon: ShieldCheck, color: 'text-green-400', label: 'SAFE — lieux refuges 24/7' },
   { Icon: Zap, color: 'text-red-500', label: 'LIVE — en ce moment' },
 ];
 
 const featureRows = [
   { Icon: MapPin, label: 'Près de moi', desc: 'Toutes les sorties autour de ta position' },
   { Icon: Zap, label: 'LIVE', desc: 'Ce qui se passe maintenant, en temps réel' },
+  { Icon: ShieldCheck, label: 'SAFE', desc: 'Pharmacies, tabacs, police, bars partenaires — un refuge proche en cas de pépin' },
   { Icon: Sliders, label: 'Filtres', desc: 'Type, ambiance, distance, prix — à ta sauce' },
   { Icon: Users, label: 'Amis', desc: 'Vois où vont tes amis et sortez ensemble' },
   { Icon: Heart, label: 'Favoris', desc: 'Sauvegarde les events qui te branchent' },
