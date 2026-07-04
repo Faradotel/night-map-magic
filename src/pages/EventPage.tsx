@@ -46,7 +46,16 @@ export default function EventPage() {
     return () => { cancel = true; };
   }, [id]);
 
-  if (notFound) return <Navigate to="/villes" replace />;
+  if (notFound) {
+    return (
+      <main className="min-h-screen bg-background text-foreground px-5 py-8 max-w-2xl mx-auto">
+        <SEO title="Événement introuvable | PulseMap" description="Cet événement n'est plus disponible." canonical={`/evenements/${slug}`} noindex />
+        <h1 className="text-2xl font-bold mb-3">Événement introuvable</h1>
+        <p className="text-sm text-muted-foreground mb-4">Cet événement n'est plus disponible ou a été retiré.</p>
+        <Link to="/villes" className="text-primary underline">Voir les villes</Link>
+      </main>
+    );
+  }
 
   if (loading || !event) {
     return (
