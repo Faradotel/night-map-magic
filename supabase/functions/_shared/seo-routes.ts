@@ -8,6 +8,9 @@ export const CITIES = [
   'paris', 'lyon', 'marseille', 'toulouse', 'nice', 'nantes', 'bordeaux',
   'grenoble', 'lille', 'strasbourg', 'rennes', 'montpellier',
   'aix-en-provence', 'saint-etienne', 'villeurbanne',
+  'reims', 'toulon', 'le-havre', 'angers', 'dijon', 'brest', 'nimes',
+  'clermont-ferrand', 'le-mans', 'tours', 'limoges', 'perpignan',
+  'metz', 'besancon', 'orleans', 'rouen', 'mulhouse', 'caen', 'nancy',
 ];
 
 export const CATEGORIES = [
@@ -35,18 +38,21 @@ export function getAllSeoRoutes(): SeoRoute[] {
   routes.push({ path: '/', changefreq: 'hourly', priority: '1.0' });
   routes.push({ path: '/villes', changefreq: 'daily', priority: '0.8' });
 
-  // Primary city pages — main intent
-  for (const c of CITIES) routes.push({ path: `/villes/${c}`, changefreq: 'daily', priority: '0.9' });
+  // Primary city pages — CANONICAL is /sortir-ce-soir/<slug> (see CityPage.tsx).
+  // Sitemap MUST list the canonical URL, otherwise Google sees a mismatch and
+  // demotes both. /villes/<slug> is intentionally excluded from the sitemap
+  // (kept reachable in-app + as internal links so signals consolidate on the canonical).
+  for (const c of CITIES) routes.push({ path: `/sortir-ce-soir/${c}`, changefreq: 'daily', priority: '0.9' });
 
-  // Category index + category × city
+  // Category index + category × city (canonical URL for "soirée <ville>", "concert <ville>", etc.)
   for (const cat of CATEGORIES) {
     routes.push({ path: `/categories/${cat}`, changefreq: 'daily', priority: '0.7' });
-    for (const c of CITIES) routes.push({ path: `/categories/${cat}/${c}`, changefreq: 'daily', priority: '0.6' });
+    for (const c of CITIES) routes.push({ path: `/categories/${cat}/${c}`, changefreq: 'daily', priority: '0.7' });
   }
 
-  // /sortir-ce-soir/*, /ambiances/*, /genres/* intentionally excluded from sitemap.
+  // /ambiances/*, /genres/* intentionally excluded from sitemap.
   // Low-authority site + too many near-duplicate programmatic pages caused
-  // "Détectée, actuellement non indexée" on ~1380 URLs. Pages remain reachable in-app
+  // "Détectée, actuellement non indexée". Pages remain reachable in-app
   // but are no longer pushed to Google. Re-add once domain authority grows.
 
   for (const l of LEGAL) routes.push({ path: `/${l}`, changefreq: 'monthly', priority: '0.3' });
