@@ -8,6 +8,9 @@ export const CITIES = [
   'paris', 'lyon', 'marseille', 'toulouse', 'nice', 'nantes', 'bordeaux',
   'grenoble', 'lille', 'strasbourg', 'rennes', 'montpellier',
   'aix-en-provence', 'saint-etienne', 'villeurbanne',
+  'reims', 'toulon', 'le-havre', 'angers', 'dijon', 'brest', 'nimes',
+  'clermont-ferrand', 'le-mans', 'tours', 'limoges', 'perpignan',
+  'metz', 'besancon', 'orleans', 'rouen', 'mulhouse', 'caen', 'nancy',
 ];
 
 export const CATEGORIES = [
