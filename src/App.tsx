@@ -21,6 +21,8 @@ const TagPage = lazy(() => import("./pages/TagPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
 const ContactLegalPage = lazy(() => import("./pages/ContactLegalPage"));
+const IndexationDashboard = lazy(() => import("./pages/admin/IndexationDashboard"));
+import { RetiredPageGuard } from "@/components/RetiredPageGuard";
 import { Capacitor } from "@capacitor/core";
 import { App as CapacitorApp } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
@@ -80,12 +82,13 @@ const App = () => {
                     <Route path="/villes/:slug" element={<CityPage />} />
                     <Route path="/sortir-ce-soir/:slug" element={<CityPage />} />
                     <Route path="/evenements/:slug" element={<EventPage />} />
-                    <Route path="/categories/:slug" element={<CategoryPage />} />
-                    <Route path="/categories/:slug/:city" element={<CategoryPage />} />
-                    <Route path="/genres/:slug" element={<TagPage kind="genre" />} />
-                    <Route path="/genres/:slug/:city" element={<TagPage kind="genre" />} />
-                    <Route path="/ambiances/:slug" element={<TagPage kind="vibe" />} />
-                    <Route path="/ambiances/:slug/:city" element={<TagPage kind="vibe" />} />
+                    <Route path="/categories/:slug" element={<RetiredPageGuard><CategoryPage /></RetiredPageGuard>} />
+                    <Route path="/categories/:slug/:city" element={<RetiredPageGuard><CategoryPage /></RetiredPageGuard>} />
+                    <Route path="/genres/:slug" element={<RetiredPageGuard><TagPage kind="genre" /></RetiredPageGuard>} />
+                    <Route path="/genres/:slug/:city" element={<RetiredPageGuard><TagPage kind="genre" /></RetiredPageGuard>} />
+                    <Route path="/ambiances/:slug" element={<RetiredPageGuard><TagPage kind="vibe" /></RetiredPageGuard>} />
+                    <Route path="/ambiances/:slug/:city" element={<RetiredPageGuard><TagPage kind="vibe" /></RetiredPageGuard>} />
+                    <Route path="/admin/indexation" element={<IndexationDashboard />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
                     <Route path="/rgpd" element={<Navigate to="/privacy-policy" replace />} />
