@@ -57,10 +57,17 @@ export function getAllSeoRoutes(): SeoRoute[] {
     for (const c of CITIES) routes.push({ path: `/categories/${cat}/${c}`, changefreq: 'daily', priority: '0.7' });
   }
 
-  // /ambiances/*, /genres/* intentionally excluded from sitemap.
-  // Low-authority site + too many near-duplicate programmatic pages caused
-  // "Détectée, actuellement non indexée". Pages remain reachable in-app
-  // but are no longer pushed to Google. Re-add once domain authority grows.
+  // Genres × villes — soirée <genre> <ville> (techno paris, electro lyon, etc.)
+  for (const g of GENRES) {
+    routes.push({ path: `/genres/${g}`, changefreq: 'weekly', priority: '0.6' });
+    for (const c of CITIES) routes.push({ path: `/genres/${g}/${c}`, changefreq: 'weekly', priority: '0.6' });
+  }
+
+  // Ambiances × villes — rave <ville>, afterwork <ville>, etc.
+  for (const v of VIBES) {
+    routes.push({ path: `/ambiances/${v}`, changefreq: 'weekly', priority: '0.6' });
+    for (const c of CITIES) routes.push({ path: `/ambiances/${v}/${c}`, changefreq: 'weekly', priority: '0.6' });
+  }
 
   for (const l of LEGAL) routes.push({ path: `/${l}`, changefreq: 'monthly', priority: '0.3' });
 
