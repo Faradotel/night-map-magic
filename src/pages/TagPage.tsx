@@ -90,17 +90,19 @@ export default function TagPage({ kind }: { kind: Kind }) {
     ? `/${prefix}/${tagSlug}/${citySlug}`
     : `/${prefix}/${tagSlug}`;
 
+  const kindKeyword = kind === 'genre' ? tagLower : `soirée ${tagLower}`;
+
   const title = cityName
-    ? `${tag.label} à ${cityName} : sortir ce soir | PulseMap`
-    : `${tag.label} en France : sortir ce soir | PulseMap`;
+    ? `Soirée ${tag.label} à ${cityName} ce soir : où sortir ?`
+    : `Soirée ${tag.label} ce soir en France : agenda live`;
 
   const description = cityName
-    ? `Soirées et événements ${tagLower} à ${cityName} ce soir. PulseMap affiche en temps réel toutes les sorties ${tagLower} à ${cityName} sur une carte interactive.`
-    : `Soirées et événements ${tagLower} ce soir en France. PulseMap référence tous les événements ${tagLower} géolocalisés sur une carte temps réel.`;
+    ? `Où sortir en soirée ${tagLower} à ${cityName} ce soir ? PulseMap liste tous les clubs, DJ sets et events ${tagLower} à ${cityName} ce soir sur une carte temps réel. ${tag.description}`
+    : `Toutes les soirées ${tagLower} ce soir en France : clubs, DJ sets, raves et events ${tagLower} géolocalisés sur une carte temps réel. ${tag.description}`;
 
   const h1 = cityName
-    ? `${tag.label} à ${cityName} ce soir`
-    : `${tag.label} en France ce soir`;
+    ? `Soirée ${tag.label} à ${cityName} ce soir`
+    : `Soirée ${tag.label} ce soir en France`;
 
   const cities = Object.entries(CITY_SLUGS);
 
@@ -117,13 +119,47 @@ export default function TagPage({ kind }: { kind: Kind }) {
         { name: tag.label, url: canonical },
       ];
 
+  const faqs = cityName ? [
+    {
+      q: `Où trouver une soirée ${tagLower} à ${cityName} ce soir ?`,
+      a: `PulseMap référence en temps réel tous les clubs, DJ sets et events ${tagLower} à ${cityName} ce soir sur une carte interactive avec horaires, lieux et billetterie.`,
+    },
+    {
+      q: `Y a-t-il une soirée ${tagLower} ce week-end à ${cityName} ?`,
+      a: `Oui. Sélectionne « ${tag.label} » sur PulseMap et filtre ${cityName} pour voir toutes les soirées ${tagLower} du week-end à ${cityName}.`,
+    },
+    {
+      q: `Quels clubs ${tagLower} à ${cityName} ?`,
+      a: `PulseMap affiche les clubs et lieux ${tagLower} actifs ce soir à ${cityName}, avec les DJ programmés, l'adresse exacte et le lien vers la billetterie.`,
+    },
+  ] : [
+    {
+      q: `Où trouver une soirée ${tagLower} en France ce soir ?`,
+      a: `PulseMap référence en temps réel toutes les soirées ${tagLower} partout en France sur une carte interactive. Filtre par ville pour trouver un event ${tagLower} près de toi.`,
+    },
+    {
+      q: `Comment voir les soirées ${tagLower} sur une carte ?`,
+      a: `Ouvre PulseMap, active le filtre « ${tag.label} » : tous les events ${tagLower} apparaissent géolocalisés en temps réel avec horaires et lieux.`,
+    },
+  ];
+
+  const faqLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(f => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  };
+
   return (
     <>
       <SEO
         title={title}
         description={description}
         canonical={canonical}
-        jsonLd={[breadcrumbLd(breadcrumbs)]}
+        jsonLd={[breadcrumbLd(breadcrumbs), faqLd]}
       />
       <main className="h-full overflow-y-auto bg-background text-foreground px-5 py-6 max-w-3xl mx-auto">
         <nav aria-label="Fil d'ariane" className="flex items-center gap-2 text-sm text-muted-foreground mb-5">
@@ -142,16 +178,21 @@ export default function TagPage({ kind }: { kind: Kind }) {
         <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
           {cityName ? (
             <>
-              Tu cherches une soirée <strong>{tagLower} à {cityName}</strong> ? PulseMap référence
-              en temps réel tous les événements {tagLower} ouverts ce soir à {cityName}.
+              Tu cherches <strong>où sortir en soirée {tagLower} à {cityName}</strong> ce soir ?
+              PulseMap regroupe en temps réel tous les clubs, DJ sets, raves et events {tagLower}
+              ouverts ce soir à {cityName}, géolocalisés sur une carte interactive avec horaires,
+              lieux exacts et billetterie. La façon la plus rapide de trouver une soirée {tagLower}
+              à {cityName} sans jongler entre Shotgun, Resident Advisor et Facebook.
             </>
           ) : (
             <>
-              Tous les événements <strong>{tagLower}</strong> ce soir en France, en direct sur une
-              carte interactive. Filtre par ville pour trouver une sortie {tagLower} près de toi.
+              Tous les <strong>events {tagLower}</strong> ce soir en France, en direct sur une
+              carte interactive. Clubs, raves, DJ sets et soirées {tagLower} filtrables par ville,
+              horaire et distance. Choisis ta ville ci-dessous pour trouver ta soirée {tagLower}.
             </>
           )}
         </p>
+
 
         <Link
           to={`/?${kind === 'genre' ? 'genre' : 'vibe'}=${tagSlug}${cityName ? `&city=${encodeURIComponent(cityName)}` : ''}`}
