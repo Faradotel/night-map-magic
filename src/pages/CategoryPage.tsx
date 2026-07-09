@@ -45,19 +45,52 @@ export default function CategoryPage() {
     : `/categories/${slug.toLowerCase()}`;
   const labelLower = cat.label.toLowerCase();
   const singular = cat.label.replace(/s$/, '').toLowerCase();
+  const isSoirees = slug.toLowerCase() === 'soirees';
 
-  const title = cityName
-    ? `${cat.label} ce soir à ${cityName} — agenda live | PulseMap`
-    : `${cat.label} ce soir en France — agenda live | PulseMap`;
-  const description = cityName
-    ? `Tous les ${labelLower} ce soir à ${cityName} : carte temps réel, horaires, lieux et billetterie. Gratuit, sans inscription.`
-    : `${cat.description} Carte temps réel des ${labelLower} ce soir partout en France. Gratuit, sans inscription.`;
+  // Copy dédié "soirées" — cible "soirée <ville>", "où sortir ce soir <ville>",
+  // "sortie ce soir <ville>". Les autres catégories gardent le copy générique.
+  const title = isSoirees
+    ? (cityName
+        ? `Soirée ${cityName} ce soir : où sortir ? Clubs, DJ & bars`
+        : `Soirée ce soir en France : où sortir ? Clubs, DJ & bars`)
+    : (cityName
+        ? `${cat.label} ce soir à ${cityName} — agenda live | PulseMap`
+        : `${cat.label} ce soir en France — agenda live | PulseMap`);
 
-  const h1 = cityName
-    ? `${cat.label} ce soir à ${cityName}`
-    : `${cat.label} ce soir en France`;
+  const description = isSoirees
+    ? (cityName
+        ? `Où sortir ce soir à ${cityName} ? Toutes les soirées ${cityName} ce soir : clubs, DJ sets, techno, électro, afterworks et bars animés sur une carte temps réel. Gratuit, sans inscription.`
+        : `Où sortir ce soir ? Toutes les soirées en France ce soir : clubs, DJ sets, techno, électro, afterworks et bars animés sur une carte temps réel. Gratuit, sans inscription.`)
+    : (cityName
+        ? `Tous les ${labelLower} ce soir à ${cityName} : carte temps réel, horaires, lieux et billetterie. Gratuit, sans inscription.`
+        : `${cat.description} Carte temps réel des ${labelLower} ce soir partout en France. Gratuit, sans inscription.`);
 
-  const faqs = cityName ? [
+  const h1 = isSoirees
+    ? (cityName
+        ? `Soirée ${cityName} ce soir : où sortir ?`
+        : `Soirée ce soir en France : où sortir ?`)
+    : (cityName
+        ? `${cat.label} ce soir à ${cityName}`
+        : `${cat.label} ce soir en France`);
+
+  const faqs = isSoirees && cityName ? [
+    {
+      q: `Où sortir ce soir à ${cityName} ?`,
+      a: `Pour trouver où sortir ce soir à ${cityName}, PulseMap affiche en direct toutes les soirées, clubs, DJ sets, afterworks et bars animés ouverts ce soir à ${cityName} sur une carte interactive — avec horaires, lieux et billetterie.`,
+    },
+    {
+      q: `Quelles soirées ce soir à ${cityName} ?`,
+      a: `Ce soir à ${cityName}, tu trouveras des soirées techno, électro, house, hip-hop, généralistes, afterworks et clubs. PulseMap regroupe tous les events actifs ce soir à ${cityName} en un coup d'œil.`,
+    },
+    {
+      q: `Comment trouver une soirée près de moi à ${cityName} ?`,
+      a: `Ouvre PulseMap, active la catégorie « Soirées & Clubs », centre la carte sur ${cityName} : toutes les soirées ${cityName} apparaissent géolocalisées, triées par distance et horaire.`,
+    },
+    {
+      q: `Y a-t-il une soirée ${cityName} ce week-end ?`,
+      a: `Oui. Sélectionne la catégorie « Soirées & Clubs » sur PulseMap et filtre ${cityName} pour voir toutes les soirées ${cityName} du vendredi au dimanche, mises à jour en temps réel.`,
+    },
+  ] : cityName ? [
     {
       q: `Où trouver un ${singular} ce soir à ${cityName} ?`,
       a: `PulseMap affiche en direct tous les ${labelLower} qui ont lieu ce soir à ${cityName} sur une carte interactive. Horaires, lieux exacts et liens de billetterie inclus.`,
@@ -140,12 +173,17 @@ export default function CategoryPage() {
 
         <h1 className="text-3xl font-black mb-2">{h1}</h1>
         <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-          {cityName ? (
+          {isSoirees && cityName ? (
+            <>Tu cherches <strong>où sortir ce soir à {cityName}</strong> ? PulseMap regroupe toutes les <strong>soirées {cityName}</strong> de ce soir : clubs, DJ sets, techno, électro, house, hip-hop, afterworks et bars animés — géolocalisés sur une carte temps réel, avec horaires et billetterie. La façon la plus rapide de trouver une soirée à {cityName} ce soir.</>
+          ) : isSoirees ? (
+            <>Tu cherches <strong>où sortir ce soir</strong> ? PulseMap regroupe toutes les <strong>soirées</strong> de ce soir en France : clubs, DJ sets, techno, électro, afterworks et bars animés géolocalisés sur une carte temps réel, avec horaires et billetterie.</>
+          ) : cityName ? (
             <>Découvrez tous les <strong>{labelLower} ce soir à {cityName}</strong> sur PulseMap : carte temps réel, horaires précis, lieux et billetterie. Mis à jour en direct.</>
           ) : (
             <>{cat.description} <strong>PulseMap</strong> affiche en direct tous les {labelLower} disponibles ce soir partout en France, géolocalisés sur une carte interactive.</>
           )}
         </p>
+
 
         <Link
           to={mapHref}
