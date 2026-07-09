@@ -11,6 +11,13 @@ export const CITIES = [
   'reims', 'toulon', 'le-havre', 'angers', 'dijon', 'brest', 'nimes',
   'clermont-ferrand', 'le-mans', 'tours', 'limoges', 'perpignan',
   'metz', 'besancon', 'orleans', 'rouen', 'mulhouse', 'caen', 'nancy',
+  // Vague 2
+  'amiens', 'avignon', 'poitiers', 'la-rochelle', 'annecy', 'chambery',
+  'pau', 'bayonne', 'biarritz', 'valence', 'cannes', 'antibes',
+  'ajaccio', 'bastia', 'colmar', 'troyes', 'bourges', 'chartres',
+  'niort', 'angouleme', 'beziers', 'narbonne', 'dunkerque', 'roubaix',
+  'tourcoing', 'lorient', 'vannes', 'quimper', 'saint-nazaire',
+  'cherbourg', 'versailles',
 ];
 
 export const CATEGORIES = [
