@@ -18,6 +18,18 @@ export const CITIES = [
   'niort', 'angouleme', 'beziers', 'narbonne', 'dunkerque', 'roubaix',
   'tourcoing', 'lorient', 'vannes', 'quimper', 'saint-nazaire',
   'cherbourg', 'versailles',
+  // Vague 3 — banlieue parisienne + préfectures + villes touristiques
+  'boulogne-billancourt', 'saint-denis', 'montreuil', 'argenteuil', 'nanterre',
+  'creteil', 'courbevoie', 'aubervilliers', 'neuilly-sur-seine',
+  'issy-les-moulineaux', 'levallois-perret', 'asnieres-sur-seine',
+  'rueil-malmaison', 'antony', 'ivry-sur-seine',
+  'cholet', 'la-roche-sur-yon', 'blois', 'saint-malo', 'saint-brieuc',
+  'arras', 'valenciennes', 'calais', 'boulogne-sur-mer', 'beauvais',
+  'compiegne', 'auxerre', 'nevers', 'vichy', 'macon', 'chalon-sur-saone',
+  'annemasse', 'thonon-les-bains', 'chamonix', 'menton', 'frejus', 'hyeres',
+  'martigues', 'arles', 'carcassonne', 'sete', 'montauban', 'albi',
+  'castres', 'tarbes', 'perigueux', 'brive-la-gaillarde', 'evreux',
+  'rodez', 'epinal',
 ];
 
 export const CATEGORIES = [
