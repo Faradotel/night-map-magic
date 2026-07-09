@@ -239,6 +239,46 @@ export default function CategoryPage() {
           </section>
         ) : null}
 
+        {isSoirees && cityName && (
+          <>
+            <section className="mt-10" aria-labelledby="genres-h2">
+              <h2 id="genres-h2" className="text-base font-bold text-foreground mb-3">
+                Soirées par genre musical à {cityName}
+              </h2>
+              <ul className="flex flex-wrap gap-2">
+                {Object.entries(GENRE_SLUGS).map(([gSlug, g]) => (
+                  <li key={gSlug}>
+                    <Link
+                      to={`/genres/${gSlug}/${citySlug}`}
+                      className="inline-block px-3 py-1.5 rounded-lg border border-border bg-secondary hover:bg-accent/10 text-xs font-medium"
+                    >
+                      Soirée {g.label} {cityName}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            <section className="mt-10" aria-labelledby="vibes-h2">
+              <h2 id="vibes-h2" className="text-base font-bold text-foreground mb-3">
+                Soirées par ambiance à {cityName}
+              </h2>
+              <ul className="flex flex-wrap gap-2">
+                {Object.entries(VIBE_SLUGS).map(([vSlug, v]) => (
+                  <li key={vSlug}>
+                    <Link
+                      to={`/ambiances/${vSlug}/${citySlug}`}
+                      className="inline-block px-3 py-1.5 rounded-lg border border-border bg-secondary hover:bg-accent/10 text-xs font-medium"
+                    >
+                      {v.label} {cityName}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </>
+        )}
+
         <section className="mt-10" aria-labelledby="cities-h2">
           <h2 id="cities-h2" className="text-base font-bold text-foreground mb-3">
             {cat.label} par ville
