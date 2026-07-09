@@ -1,95 +1,77 @@
-## Pulse SEO Optimization Plan
 
-Pulse is a Vite SPA, so we'll combine **client-side dynamic metadata** (react-helmet-async) with **build-time prerendering** for key public routes (home, city pages, event pages) so Google sees real HTML. The premium map UI stays untouched — SEO content lives in dedicated routes and a discreet section below the map.
+## Objectif
 
----
+Suivre le statut d'indexation Google de chaque page SEO programmatique et retirer automatiquement (410-like) celles qui restent "Detected, not indexed" après 6 semaines.
 
-### 1. Metadata infrastructure
+## ⚠️ Limite honnête à connaître
 
-- Install `react-helmet-async` and wrap `<App />` in `<HelmetProvider>`.
-- Create `src/components/SEO.tsx`: reusable component for `<title>`, `<meta description>`, OG, Twitter, canonical, JSON-LD.
-- Default site-wide tags (already in `index.html`) become fallbacks.
+Lovable héberge en SPA statique : on **ne peut pas renvoyer un vrai HTTP 410**. Le "410 Gone" sera émulé par :
+- retrait immédiat du sitemap
+- `<meta robots="noindex">` sur la page
+- redirection client vers la ville parente (ex : `/genres/techno/nimes` retiré → redirect vers `/sortir-ce-soir/nimes`)
+- `X-Robots-Tag` impossible sans SSR
 
-### 2. New indexable routes
+C'est le maximum atteignable sans migrer vers du SSR. Googlebot désindexe en 2-4 semaines avec ce combo.
 
-Add React Router routes (no UI disruption to the map experience):
+## Composants
 
-```text
-/                       → home (current map)
-/villes                 → index of all cities
-/villes/:slug           → city landing page (e.g. /villes/grenoble)
-/evenements/:slug-:id   → SEO event detail page
-/categories/:slug       → category page (concerts, nightlife, festivals…)
-```
+### 1. Table `page_index_status`
+Suit chaque URL SEO : `url`, `first_tracked_at`, `last_checked_at`, `coverage_state` (Submitted and indexed / Crawled - currently not indexed / Discovered - not indexed / URL is unknown to Google), `last_crawl_time`, `is_indexed`, `retired_at`, `retire_reason`. RLS admin-only.
 
-- City pages: H1 "Événements à {City} ce soir", intro paragraph, list of upcoming events from `cached_events` filtered by city, internal links to event pages, mini-map preview.
-- Event pages: full event info, structured data, "Voir sur la carte" CTA back to `/?event={id}`.
-- Category pages: aggregated events of that type across France.
-- All pages reuse existing components/data fetching; no new business logic.
+### 2. Edge function `gsc-check-index-status` (cron quotidien)
+- Récupère 500 URLs (LRU sur `last_checked_at`) depuis `page_index_status`
+- Pour chaque : appelle `POST /v1/urlInspection/index:inspect` via le connecteur Google Search Console déjà connecté (utilise `GOOGLE_SEARCH_CONSOLE_API_KEY`)
+- Upsert `coverage_state`, `is_indexed`, `last_crawl_time`, `last_checked_at`
+- Rate limit : 60 req/min, batch séquentiel avec délai
+- Bootstrap : au premier run, insère toutes les URLs de `getAllSeoUrls()` avec `first_tracked_at = now()`
+- Cron pg_cron : `0 3 * * *` (3h du matin)
 
-### 3. Structured data (JSON-LD)
+### 3. Edge function `retire-underperforming-pages` (cron hebdomadaire)
+Règles de retrait (dimanche 4h) :
+- Page a `first_tracked_at` > 42 jours (6 semaines)
+- `coverage_state` ∈ ("Discovered - currently not indexed", "Crawled - currently not indexed", "URL is unknown to Google")
+- `retired_at IS NULL`
+- **Exception** : jamais retirer les 15 villes Tier 1 (Paris, Lyon…) même si non indexées
+- → set `retired_at = now()`, `retire_reason = coverage_state`
 
-Inject via `<SEO>`:
+### 4. Génération sitemap
+`scripts/generate-sitemap.ts` : au build, fetch les URLs `retired_at IS NOT NULL` via la clé service et les exclut des `sitemap-tier{1,2,3}.xml`.
 
-- **Event** schema on event pages (name, startDate, location.Place, offers, image, eventStatus, eventAttendanceMode).
-- **Place** + **LocalBusiness** on city pages.
-- **Organization** + **WebSite** with SearchAction on home.
-- **BreadcrumbList** on city/event/category pages.
+### 5. Front — pages retirées
+Nouveau hook `useRetiredPageRedirect(pathname)` :
+- Query `page_index_status` par `url = pathname`
+- Si `retired_at != null` :
+  - injecte `<Helmet><meta name="robots" content="noindex,nofollow" /></Helmet>`
+  - redirige (React Router `<Navigate replace>`) vers la ville parente extraite du path
+- Branché dans `CategoryPage`, `TagPage` (genres/ambiances), et pages ville
 
-### 4. Crawlability
+### 6. Page admin `/admin/indexation`
+Dashboard simple protégé par `has_role(admin)` :
+- KPIs : total tracked / indexed / not indexed / retired
+- Table filtrable (par tier, par coverage_state, par âge)
+- Bouton "vérifier maintenant" (invoque l'edge function pour une URL)
+- Bouton "restaurer" une page retirée
 
-- Generate `public/sitemap.xml` at build time via a Vite plugin script that queries `cached_events` (anon key) and writes URLs for home, all cities, all events, categories. Re-runs on build.
-- Update `public/robots.txt` to add `Sitemap:` directive.
-- Add canonical tags via `<SEO>` on every route.
-- Add `react-snap` (or simple Puppeteer prerender script) post-build to prerender `/`, `/villes`, `/villes/*`, `/evenements/*` into static HTML so crawlers see content without JS.
+## Fichiers touchés
 
-### 5. Content sections (elegant, below the map on home)
+**Créés**
+- `supabase/functions/gsc-check-index-status/index.ts`
+- `supabase/functions/retire-underperforming-pages/index.ts`
+- `src/hooks/useRetiredPageRedirect.ts`
+- `src/pages/admin/IndexationDashboard.tsx`
+- Migration : table + RLS + pg_cron jobs
 
-A collapsible/secondary section under the map (hidden behind a subtle scroll), containing:
+**Modifiés**
+- `scripts/generate-sitemap.ts` : exclusion des retired
+- `src/pages/CategoryPage.tsx`, `src/pages/TagPage.tsx`, `src/pages/CityPage.tsx` : hook redirect
+- `src/App.tsx` : route `/admin/indexation`
 
-- "Sorties populaires ce soir" — list of 6 trending events with links.
-- "Meilleures soirées à {detected city}" — local angle.
-- Short editorial paragraph per main category.
+## Quota GSC
 
-Styled minimal, dark, integrated into the existing theme — does not interfere with the map-first UX.
+URL Inspection = 2000 req/jour / propriété. Avec 500/jour on tourne chaque URL tous les ~6 jours (3272 URLs / 500 ≈ 6.5 jours). Suffisant pour un signal hebdomadaire.
 
-### 6. Performance & Core Web Vitals
+## Ce qui n'est PAS inclus
 
-- Add `loading="lazy"` + `decoding="async"` to all event images.
-- Code-split city/event/category pages with `React.lazy`.
-- Defer non-critical scripts (impact.com STAT) with `defer`.
-- Preload key fonts; add `<link rel="preconnect">` for Supabase + tiles host.
-- Memoize heavy map computations already in place; verify no regressions.
-
-### 7. Semantic HTML pass
-
-- Replace top-level `div`s wrapping page content with `<main>`, `<section>`, `<article>`, `<nav>`.
-- Single `<h1>` per route, proper `<h2>`/`<h3>` hierarchy.
-- Alt text on all images (event name + city).
-
-### 8. Social sharing
-
-- Per-event OG image: use existing `image_url` from `cached_events` when present, fallback to a branded default at `/og-default.jpg`.
-- Twitter `summary_large_image` cards.
-- OG title/description from event data.
-
----
-
-### Technical details
-
-- **No SSR framework swap**: staying on Vite + React Router. Prerendering covers SEO; runtime stays SPA.
-- **Slug strategy**: `slugify(name) + '-' + shortId` for events; city slug = lowercased ASCII city name. Slugs are derived deterministically so links are stable.
-- **Data source**: existing `cached_events` table via the Supabase anon client — no schema changes.
-- **Routing**: SPA fallback already handled by Lovable hosting; deep links work.
-
-### Out of scope
-
-- Migrating to Next.js/Remix.
-- New backend tables or auth changes.
-- AI-generated editorial content (keeping copy hand-written + templated for quality).
-
-### Deliverables
-
-New files: `src/components/SEO.tsx`, `src/pages/CityPage.tsx`, `src/pages/CitiesIndex.tsx`, `src/pages/EventPage.tsx`, `src/pages/CategoryPage.tsx`, `src/lib/seo/slug.ts`, `src/lib/seo/jsonld.ts`, `scripts/generate-sitemap.mjs`, `scripts/prerender.mjs`, `public/og-default.jpg`.
-
-Edited: `src/App.tsx` (Helmet provider + new routes + lazy imports), `index.html` (preconnects, defer pixel), `public/robots.txt` (sitemap), `package.json` (build script chain), `vite.config.ts` (post-build hooks).
+- Vrai HTTP 410 (impossible sans SSR — dit plus haut)
+- Notification email quand une page est retirée (peut être ajouté après)
+- A/B test contenu avant retrait

@@ -377,6 +377,63 @@ export type Database = {
         }
         Relationships: []
       }
+      page_index_status: {
+        Row: {
+          check_error: string | null
+          coverage_state: string | null
+          created_at: string
+          first_tracked_at: string
+          google_canonical: string | null
+          id: string
+          is_indexed: boolean
+          last_checked_at: string | null
+          last_crawl_time: string | null
+          retire_reason: string | null
+          retired_at: string | null
+          tier: number | null
+          updated_at: string
+          url: string
+          user_canonical: string | null
+          verdict: string | null
+        }
+        Insert: {
+          check_error?: string | null
+          coverage_state?: string | null
+          created_at?: string
+          first_tracked_at?: string
+          google_canonical?: string | null
+          id?: string
+          is_indexed?: boolean
+          last_checked_at?: string | null
+          last_crawl_time?: string | null
+          retire_reason?: string | null
+          retired_at?: string | null
+          tier?: number | null
+          updated_at?: string
+          url: string
+          user_canonical?: string | null
+          verdict?: string | null
+        }
+        Update: {
+          check_error?: string | null
+          coverage_state?: string | null
+          created_at?: string
+          first_tracked_at?: string
+          google_canonical?: string | null
+          id?: string
+          is_indexed?: boolean
+          last_checked_at?: string | null
+          last_crawl_time?: string | null
+          retire_reason?: string | null
+          retired_at?: string | null
+          tier?: number | null
+          updated_at?: string
+          url?: string
+          user_canonical?: string | null
+          verdict?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
