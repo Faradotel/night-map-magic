@@ -21,6 +21,8 @@ const TagPage = lazy(() => import("./pages/TagPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
 const ContactLegalPage = lazy(() => import("./pages/ContactLegalPage"));
+const IndexationDashboard = lazy(() => import("./pages/admin/IndexationDashboard"));
+import { RetiredPageGuard } from "@/components/RetiredPageGuard";
 import { Capacitor } from "@capacitor/core";
 import { App as CapacitorApp } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
