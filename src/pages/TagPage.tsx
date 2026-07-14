@@ -79,8 +79,28 @@ export default function TagPage({ kind }: { kind: Kind }) {
     return () => { cancel = true; };
   }, [tagSlug, citySlug, kind]);
 
-  if (cityMissing) return <Navigate to={`/${kind === 'genre' ? 'genres' : 'ambiances'}/${tagSlug}`} replace />;
-  if (!tag) return <Navigate to="/villes" replace />;
+  // URLs invalides (mauvaise ville, mauvais tag) : on renvoie une page noindex
+  // au lieu de rediriger. Google supprime ces URLs de son index au lieu de les
+  // classer "Page avec redirection" et de les recrawler indéfiniment.
+  if (cityMissing || !tag) {
+    return (
+      <>
+        <SEO
+          title="Page introuvable | PulseMap"
+          description="Cette page n'existe pas ou plus."
+          canonical={location.pathname}
+          noindex
+        />
+        <main className="min-h-screen flex flex-col items-center justify-center px-6 text-center bg-background text-foreground">
+          <h1 className="text-2xl font-black mb-3">Page introuvable</h1>
+          <p className="text-sm text-muted-foreground mb-6">Cette page n'existe pas ou plus.</p>
+          <Link to="/villes" className="px-4 py-2 rounded-xl bg-accent text-accent-foreground font-bold text-sm">
+            Explorer les villes
+          </Link>
+        </main>
+      </>
+    );
+  }
 
   const prefix = kind === 'genre' ? 'genres' : 'ambiances';
   const kindLabel = kind === 'genre' ? 'Genre' : 'Ambiance';
