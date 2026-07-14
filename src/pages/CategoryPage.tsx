@@ -175,7 +175,7 @@ export default function CategoryPage() {
         title={title}
         description={description}
         canonical={canonical}
-        jsonLd={[breadcrumbLd(breadcrumbs), faqLd]}
+        jsonLd={itemListLd ? [breadcrumbLd(breadcrumbs), faqLd, itemListLd] : [breadcrumbLd(breadcrumbs), faqLd]}
       />
       <main className="h-full overflow-y-auto bg-background text-foreground px-5 py-6 max-w-3xl mx-auto">
         <nav aria-label="Fil d'ariane" className="flex items-center gap-2 text-sm text-muted-foreground mb-5 flex-wrap">
@@ -193,9 +193,13 @@ export default function CategoryPage() {
         </nav>
 
         <h1 className="text-3xl font-black mb-2">{h1}</h1>
+        {/* Signal de fraîcheur : Google adore les pages datées. */}
+        <p className="text-xs text-accent font-semibold uppercase tracking-wider mb-3">
+          Mis à jour · {todayFr}
+        </p>
         <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
           {isSoirees && cityName ? (
-            <>Tu cherches <strong>où sortir ce soir à {cityName}</strong> ? PulseMap regroupe toutes les <strong>soirées {cityName}</strong> de ce soir : clubs, DJ sets, techno, électro, house, hip-hop, afterworks et bars animés — géolocalisés sur une carte temps réel, avec horaires et billetterie. La façon la plus rapide de trouver une soirée à {cityName} ce soir.</>
+            <><strong>Soirée {cityName}</strong> ce soir : PulseMap regroupe toutes les soirées, clubs, DJ sets, techno, électro, house, hip-hop, afterworks et bars animés à {cityName} — géolocalisés sur une carte temps réel, avec horaires et billetterie. La façon la plus rapide de trouver <strong>où sortir ce soir à {cityName}</strong>.</>
           ) : isSoirees ? (
             <>Tu cherches <strong>où sortir ce soir</strong> ? PulseMap regroupe toutes les <strong>soirées</strong> de ce soir en France : clubs, DJ sets, techno, électro, afterworks et bars animés géolocalisés sur une carte temps réel, avec horaires et billetterie.</>
           ) : cityName ? (
@@ -215,8 +219,11 @@ export default function CategoryPage() {
 
         <section aria-labelledby="evts-h2">
           <h2 id="evts-h2" className="text-xl font-bold mb-3">
-            Prochains {labelLower}{cityName ? ` à ${cityName}` : ''}
+            {isSoirees && cityName
+              ? `Soirée ${cityName} : les prochains events`
+              : `Prochains ${labelLower}${cityName ? ` à ${cityName}` : ''}`}
           </h2>
+
           {loading && <p className="text-sm text-muted-foreground">Chargement…</p>}
           {!loading && events.length === 0 && (
             <p className="text-sm text-muted-foreground">Aucun événement référencé pour le moment.</p>
