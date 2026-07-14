@@ -48,19 +48,18 @@ export default function CategoryPage() {
   const singular = cat.label.replace(/s$/, '').toLowerCase();
   const isSoirees = slug.toLowerCase() === 'soirees';
 
-  // Copy dédié "soirées" — cible "soirée <ville>", "où sortir ce soir <ville>",
-  // "sortie ce soir <ville>". Les autres catégories gardent le copy générique.
+  // Titre optimisé : le mot-clé exact "Soirée <ville>" en tout début (positions 1-2 = poids max SEO).
   const title = isSoirees
     ? (cityName
-        ? `Soirée ${cityName} ce soir : où sortir ? Clubs, DJ & bars`
+        ? `Soirée ${cityName} ce soir : agenda live | PulseMap`
         : `Soirée ce soir en France : où sortir ? Clubs, DJ & bars`)
     : (cityName
-        ? `${cat.label} ce soir à ${cityName} — agenda live | PulseMap`
+        ? `${cat.label} ${cityName} ce soir — agenda live | PulseMap`
         : `${cat.label} ce soir en France — agenda live | PulseMap`);
 
   const description = isSoirees
     ? (cityName
-        ? `Où sortir ce soir à ${cityName} ? Toutes les soirées ${cityName} ce soir : clubs, DJ sets, techno, électro, afterworks et bars animés sur une carte temps réel. Gratuit, sans inscription.`
+        ? `Soirée ${cityName} ce soir : toutes les soirées, clubs, DJ sets et bars animés à ${cityName} sur une carte temps réel. Mis à jour en direct, gratuit, sans inscription.`
         : `Où sortir ce soir ? Toutes les soirées en France ce soir : clubs, DJ sets, techno, électro, afterworks et bars animés sur une carte temps réel. Gratuit, sans inscription.`)
     : (cityName
         ? `Tous les ${labelLower} ce soir à ${cityName} : carte temps réel, horaires, lieux et billetterie. Gratuit, sans inscription.`
@@ -68,11 +67,12 @@ export default function CategoryPage() {
 
   const h1 = isSoirees
     ? (cityName
-        ? `Soirée ${cityName} ce soir : où sortir ?`
+        ? `Soirée ${cityName} — Que faire ce soir à ${cityName} ?`
         : `Soirée ce soir en France : où sortir ?`)
     : (cityName
-        ? `${cat.label} ce soir à ${cityName}`
+        ? `${cat.label} ${cityName} ce soir`
         : `${cat.label} ce soir en France`);
+
 
   const faqs = isSoirees && cityName ? [
     {
