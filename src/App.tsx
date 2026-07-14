@@ -83,6 +83,7 @@ const App = () => {
                     <Route path="/villes/:slug" element={<CityPage />} />
                     <Route path="/sortir-ce-soir/:slug" element={<CityPage />} />
                     <Route path="/evenements/:slug" element={<EventPage />} />
+                    <Route path="/en/nightlife/:slug" element={<NightlifePage />} />
                     <Route path="/categories/:slug" element={<RetiredPageGuard><CategoryPage /></RetiredPageGuard>} />
                     <Route path="/categories/:slug/:city" element={<RetiredPageGuard><CategoryPage /></RetiredPageGuard>} />
                     <Route path="/genres/:slug" element={<RetiredPageGuard><TagPage kind="genre" /></RetiredPageGuard>} />
