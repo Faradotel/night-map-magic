@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { SEO } from '@/components/SEO';
 import { breadcrumbLd } from '@/lib/seo/jsonld';
 import { CATEGORY_SLUGS, CITY_SLUGS, GENRE_SLUGS, VIBE_SLUGS, eventSlug } from '@/lib/seo/slug';
+import { SITE } from '@/components/SEO';
 
 interface CachedEvent {
   id: string; name: string; city: string; venue: string;
@@ -47,19 +48,18 @@ export default function CategoryPage() {
   const singular = cat.label.replace(/s$/, '').toLowerCase();
   const isSoirees = slug.toLowerCase() === 'soirees';
 
-  // Copy dédié "soirées" — cible "soirée <ville>", "où sortir ce soir <ville>",
-  // "sortie ce soir <ville>". Les autres catégories gardent le copy générique.
+  // Titre optimisé : le mot-clé exact "Soirée <ville>" en tout début (positions 1-2 = poids max SEO).
   const title = isSoirees
     ? (cityName
-        ? `Soirée ${cityName} ce soir : où sortir ? Clubs, DJ & bars`
+        ? `Soirée ${cityName} ce soir : agenda live | PulseMap`
         : `Soirée ce soir en France : où sortir ? Clubs, DJ & bars`)
     : (cityName
-        ? `${cat.label} ce soir à ${cityName} — agenda live | PulseMap`
+        ? `${cat.label} ${cityName} ce soir — agenda live | PulseMap`
         : `${cat.label} ce soir en France — agenda live | PulseMap`);
 
   const description = isSoirees
     ? (cityName
-        ? `Où sortir ce soir à ${cityName} ? Toutes les soirées ${cityName} ce soir : clubs, DJ sets, techno, électro, afterworks et bars animés sur une carte temps réel. Gratuit, sans inscription.`
+        ? `Soirée ${cityName} ce soir : toutes les soirées, clubs, DJ sets et bars animés à ${cityName} sur une carte temps réel. Mis à jour en direct, gratuit, sans inscription.`
         : `Où sortir ce soir ? Toutes les soirées en France ce soir : clubs, DJ sets, techno, électro, afterworks et bars animés sur une carte temps réel. Gratuit, sans inscription.`)
     : (cityName
         ? `Tous les ${labelLower} ce soir à ${cityName} : carte temps réel, horaires, lieux et billetterie. Gratuit, sans inscription.`
@@ -67,11 +67,12 @@ export default function CategoryPage() {
 
   const h1 = isSoirees
     ? (cityName
-        ? `Soirée ${cityName} ce soir : où sortir ?`
+        ? `Soirée ${cityName} — Que faire ce soir à ${cityName} ?`
         : `Soirée ce soir en France : où sortir ?`)
     : (cityName
-        ? `${cat.label} ce soir à ${cityName}`
+        ? `${cat.label} ${cityName} ce soir`
         : `${cat.label} ce soir en France`);
+
 
   const faqs = isSoirees && cityName ? [
     {
@@ -128,6 +129,26 @@ export default function CategoryPage() {
     })),
   };
 
+  // ItemList JSON-LD des prochains évènements — améliore les rich results
+  // et signale à Google la fraîcheur + le volume de contenu réel de la page.
+  const itemListLd = events.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: cityName ? `${cat.label} à ${cityName}` : `${cat.label} en France`,
+    numberOfItems: events.length,
+    itemListElement: events.slice(0, 20).map((e, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      url: `${SITE.url}/evenements/${eventSlug(e.name, e.id)}`,
+      name: e.name,
+    })),
+  } : null;
+
+  const todayFr = new Date().toLocaleDateString('fr-FR', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  });
+
+
   const breadcrumbs = cityName
     ? [
         { name: 'Accueil', url: '/' },
@@ -154,7 +175,7 @@ export default function CategoryPage() {
         title={title}
         description={description}
         canonical={canonical}
-        jsonLd={[breadcrumbLd(breadcrumbs), faqLd]}
+        jsonLd={itemListLd ? [breadcrumbLd(breadcrumbs), faqLd, itemListLd] : [breadcrumbLd(breadcrumbs), faqLd]}
       />
       <main className="h-full overflow-y-auto bg-background text-foreground px-5 py-6 max-w-3xl mx-auto">
         <nav aria-label="Fil d'ariane" className="flex items-center gap-2 text-sm text-muted-foreground mb-5 flex-wrap">
@@ -172,9 +193,13 @@ export default function CategoryPage() {
         </nav>
 
         <h1 className="text-3xl font-black mb-2">{h1}</h1>
+        {/* Signal de fraîcheur : Google adore les pages datées. */}
+        <p className="text-xs text-accent font-semibold uppercase tracking-wider mb-3">
+          Mis à jour · {todayFr}
+        </p>
         <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
           {isSoirees && cityName ? (
-            <>Tu cherches <strong>où sortir ce soir à {cityName}</strong> ? PulseMap regroupe toutes les <strong>soirées {cityName}</strong> de ce soir : clubs, DJ sets, techno, électro, house, hip-hop, afterworks et bars animés — géolocalisés sur une carte temps réel, avec horaires et billetterie. La façon la plus rapide de trouver une soirée à {cityName} ce soir.</>
+            <><strong>Soirée {cityName}</strong> ce soir : PulseMap regroupe toutes les soirées, clubs, DJ sets, techno, électro, house, hip-hop, afterworks et bars animés à {cityName} — géolocalisés sur une carte temps réel, avec horaires et billetterie. La façon la plus rapide de trouver <strong>où sortir ce soir à {cityName}</strong>.</>
           ) : isSoirees ? (
             <>Tu cherches <strong>où sortir ce soir</strong> ? PulseMap regroupe toutes les <strong>soirées</strong> de ce soir en France : clubs, DJ sets, techno, électro, afterworks et bars animés géolocalisés sur une carte temps réel, avec horaires et billetterie.</>
           ) : cityName ? (
@@ -194,8 +219,11 @@ export default function CategoryPage() {
 
         <section aria-labelledby="evts-h2">
           <h2 id="evts-h2" className="text-xl font-bold mb-3">
-            Prochains {labelLower}{cityName ? ` à ${cityName}` : ''}
+            {isSoirees && cityName
+              ? `Soirée ${cityName} : les prochains events`
+              : `Prochains ${labelLower}${cityName ? ` à ${cityName}` : ''}`}
           </h2>
+
           {loading && <p className="text-sm text-muted-foreground">Chargement…</p>}
           {!loading && events.length === 0 && (
             <p className="text-sm text-muted-foreground">Aucun événement référencé pour le moment.</p>
