@@ -129,6 +129,11 @@ export default function CityPage() {
         ogDescription={ogDescription}
         canonical={canonical}
         jsonLd={ld}
+        hreflang={[
+          { lang: 'fr', path: canonical },
+          { lang: 'en', path: `/en/nightlife/${slug.toLowerCase()}` },
+          { lang: 'x-default', path: canonical },
+        ]}
       />
       <main className="h-full overflow-y-auto bg-background text-foreground px-5 py-6 max-w-3xl mx-auto">
         <nav aria-label="Fil d'ariane" className="flex items-center gap-2 text-sm text-muted-foreground mb-5">
