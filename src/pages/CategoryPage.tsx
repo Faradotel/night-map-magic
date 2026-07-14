@@ -39,7 +39,28 @@ export default function CategoryPage() {
     return () => { cancel = true; };
   }, [slug, cat, cityName, cityValid]);
 
-  if (!cat || !cityValid) return <Navigate to="/villes" replace />;
+  if (!cat || !cityValid) {
+    const pathname = citySlug
+      ? `/categories/${slug.toLowerCase()}/${citySlug}`
+      : `/categories/${slug.toLowerCase()}`;
+    return (
+      <>
+        <SEO
+          title="Page introuvable | PulseMap"
+          description="Cette page n'existe pas ou plus."
+          canonical={pathname}
+          noindex
+        />
+        <main className="min-h-screen flex flex-col items-center justify-center px-6 text-center bg-background text-foreground">
+          <h1 className="text-2xl font-black mb-3">Page introuvable</h1>
+          <p className="text-sm text-muted-foreground mb-6">Cette page n'existe pas ou plus.</p>
+          <Link to="/villes" className="px-4 py-2 rounded-xl bg-accent text-accent-foreground font-bold text-sm">
+            Explorer les villes
+          </Link>
+        </main>
+      </>
+    );
+  }
 
   const canonical = cityName
     ? `/categories/${slug.toLowerCase()}/${citySlug}`
