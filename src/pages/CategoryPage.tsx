@@ -129,6 +129,26 @@ export default function CategoryPage() {
     })),
   };
 
+  // ItemList JSON-LD des prochains évènements — améliore les rich results
+  // et signale à Google la fraîcheur + le volume de contenu réel de la page.
+  const itemListLd = events.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: cityName ? `${cat.label} à ${cityName}` : `${cat.label} en France`,
+    numberOfItems: events.length,
+    itemListElement: events.slice(0, 20).map((e, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      url: `${SITE.url}/evenements/${eventSlug(e.name, e.id)}`,
+      name: e.name,
+    })),
+  } : null;
+
+  const todayFr = new Date().toLocaleDateString('fr-FR', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  });
+
+
   const breadcrumbs = cityName
     ? [
         { name: 'Accueil', url: '/' },
