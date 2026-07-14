@@ -17,6 +17,7 @@ const CitiesIndex = lazy(() => import("./pages/CitiesIndex"));
 const CityPage = lazy(() => import("./pages/CityPage"));
 const EventPage = lazy(() => import("./pages/EventPage"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));
+const NightlifePage = lazy(() => import("./pages/NightlifePage"));
 const TagPage = lazy(() => import("./pages/TagPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
@@ -82,6 +83,7 @@ const App = () => {
                     <Route path="/villes/:slug" element={<CityPage />} />
                     <Route path="/sortir-ce-soir/:slug" element={<CityPage />} />
                     <Route path="/evenements/:slug" element={<EventPage />} />
+                    <Route path="/en/nightlife/:slug" element={<NightlifePage />} />
                     <Route path="/categories/:slug" element={<RetiredPageGuard><CategoryPage /></RetiredPageGuard>} />
                     <Route path="/categories/:slug/:city" element={<RetiredPageGuard><CategoryPage /></RetiredPageGuard>} />
                     <Route path="/genres/:slug" element={<RetiredPageGuard><TagPage kind="genre" /></RetiredPageGuard>} />
