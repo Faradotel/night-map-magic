@@ -2,6 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://pulse-map.live/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>
   <url><loc>https://pulse-map.live/villes</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/en/nightlife/paris</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/en/nightlife/lyon</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/en/nightlife/marseille</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/en/nightlife/nice</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/en/nightlife/bordeaux</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/en/nightlife/toulouse</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/en/nightlife/nantes</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/en/nightlife/strasbourg</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/en/nightlife/lille</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/en/nightlife/montpellier</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/categories/concerts</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/categories/soirees</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/categories/festivals</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
