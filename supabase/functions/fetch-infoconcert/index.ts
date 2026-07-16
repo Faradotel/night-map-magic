@@ -196,123 +196,79 @@ interface RawCard {
   id: string;
 }
 
-// New: parse concerts directly from the React-Server-Components payload
-// embedded in `self.__next_f.push([..., "<json-string>"])` chunks.
-// This is the authoritative data source — works for ALL cities (including
-// the big ones where the static HTML only shows skeletons).
-function parseRscPayload(html: string, expectedCity: string): RawCard[] {
-  const cards: RawCard[] = [];
-  // Unescape the JS-string-encoded JSON
-  const unesc = html
-    .replace(/\\"/g, '"')
-    .replace(/\\\//g, '/')
-    .replace(/\\u0026/g, '&')
-    .replace(/\\n/g, '\n');
-
-  const expected = expectedCity.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  const seen = new Set<string>();
-  const idRe = /\{"id":"(\d{6,8})","iri":"\/api\/concerts\/\1","status"/g;
-  let mm: RegExpExecArray | null;
-  while ((mm = idRe.exec(unesc)) !== null) {
-    const cid = mm[1];
-    if (seen.has(cid)) continue;
-
-    // Brace-match to find the full concert object
-    let depth = 0, i = mm.index, inStr = false;
-    for (; i < unesc.length; i++) {
-      const ch = unesc[i];
-      if (inStr) {
-        if (ch === '\\') { i++; continue; }
-        if (ch === '"') inStr = false;
-        continue;
-      }
-      if (ch === '"') inStr = true;
-      else if (ch === '{') depth++;
-      else if (ch === '}') { depth--; if (depth === 0) break; }
-    }
-    if (depth !== 0) continue;
-    const block = unesc.slice(mm.index, i + 1);
-
-    let obj: any;
-    try { obj = JSON.parse(block); } catch { continue; }
-    const lineUp = obj.lineUp?.[0]?.name || obj.firstPart?.[0]?.name;
-    if (!lineUp) continue;
-    const venueName = obj.venue?.name || '';
-    const cityName = obj.venue?.city?.name || '';
-    if (!cityName) continue;
-    // Only keep events whose venue city matches the requested city
-    const cn = cityName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    if (cn !== expected) continue;
-    const rawDate: string | undefined = obj.dates?.[0]?.date;
-    if (!rawDate) continue;
-    const isoDate = rawDate.replace(/^\$D/, ''); // already ISO
-
-    seen.add(cid);
-    cards.push({
-      name: lineUp,
-      url: `https://www.infoconcert.com/concerts/${cid}`,
-      date: isoDate,        // pre-parsed ISO — parseFrenchDate will detect and return as-is
-      venue: venueName,
-      ville: cityName,
-      id: cid,
-    });
-  }
-  return cards;
-}
-
-function parsePage(html: string, citySlug: string, expectedCity?: string): RawCard[] {
-  // Prefer the structured RSC payload (works on modern InfoConcert pages)
-  if (expectedCity) {
-    const rsc = parseRscPayload(html, expectedCity);
-    if (rsc.length) return rsc;
-  }
+// Parse concerts from Firecrawl markdown of a /ville/ page.
+// Format observed: chaque concert contient un lien vers /concerts/concert-...-<id>
+// entouré (dans une fenêtre de quelques lignes) par: image, [ARTIST](/artiste/...),
+// date, [VENUE](/salle/...). Deux layouts coexistent (carrousel top + liste),
+// on découpe par occurrence du lien concert et on scanne la fenêtre.
+function parseMarkdownCards(md: string, citySlug: string): RawCard[] {
   const cards: RawCard[] = [];
   const seen = new Set<string>();
-  const urlRe = /href="(\/concerts\/concert-[a-z0-9-]+-(\d+))"/gi;
+  const concertRe = /https?:\/\/www\.infoconcert\.com\/concerts\/concert-[a-z0-9-]+-(\d+)/gi;
+  const hits: { id: string; idx: number; url: string }[] = [];
   let m: RegExpExecArray | null;
-  while ((m = urlRe.exec(html)) !== null) {
-    const path = m[1];
-    const id = m[2];
+  while ((m = concertRe.exec(md)) !== null) {
+    const id = m[1];
     if (seen.has(id)) continue;
     seen.add(id);
+    hits.push({ id, idx: m.index, url: m[0] });
+  }
 
-    const start = Math.max(0, m.index - 3500);
-    const block = html.slice(start, m.index + 200);
+  for (let i = 0; i < hits.length; i++) {
+    const h = hits[i];
+    // Fenêtre : depuis la fin du bloc précédent (ou 800 chars avant) jusqu'à 400 chars après.
+    const winStart = i > 0 ? hits[i - 1].idx : Math.max(0, h.idx - 800);
+    const winEnd = Math.min(md.length, h.idx + 500);
+    const win = md.slice(winStart, winEnd);
 
-    const artistM = block.match(/<a\s+href="\/artiste\/[^"]+">([^<]+)<\/a>/i);
-    const name = artistM ? stripTags(artistM[1]) : '';
-
-    const dateM = block.match(/(Lundi|Mardi|Mercredi|Jeudi|Vendredi|Samedi|Dimanche|Du)\s+[^<]*?\d{4}[^<]*/i);
-    const date = dateM ? stripTags(dateM[0]) : '';
-
-    const venueM = block.match(/<a\s+href="\/salle\/[^"]+">([^<]+)<\/a>/i);
-    const venue = venueM ? stripTags(venueM[1]) : '';
-
-    const villeM = block.match(/<a\s+href="\/ville\/([a-z0-9-]+)"/i);
-    const ville = villeM ? villeM[1] : citySlug;
-
+    // Nom artiste : premier [X](/artiste/...) de la fenêtre.
+    const artistM = win.match(/\[([^\]]+)\]\(https?:\/\/www\.infoconcert\.com\/artiste\/[^)]+\)/);
+    const name = artistM ? artistM[1].trim() : '';
     if (!name) continue;
-    cards.push({ name, url: `https://www.infoconcert.com${path}`, date, venue, ville, id });
+
+    // Salle : premier [X](/salle/...) de la fenêtre.
+    const venueM = win.match(/\[([^\]]+)\]\(https?:\/\/www\.infoconcert\.com\/salle\/[^)]+\)/);
+    const venue = venueM ? venueM[1].trim() : '';
+
+    // Date : première date trouvée (deux formats possibles).
+    // "Samedi 12 septembre 2026 à 20h00"  ou  "12 fév. 2027 | 20h00"
+    const dateM =
+      win.match(/(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\s+\d{1,2}\s+[a-zéûô]+\s+\d{4}(?:\s+à\s+\d{1,2}h\d{0,2})?/i) ||
+      win.match(/\d{1,2}\s+[a-zéûô]{3,10}\.?\s+\d{4}(?:\s*[|]\s*\d{1,2}h\d{0,2})?/i);
+    const date = dateM ? dateM[0].replace(/\\/g, '').trim() : '';
+    if (!date) continue;
+
+    cards.push({ name, url: h.url, date, venue, ville: citySlug, id: h.id });
   }
   return cards;
 }
 
-
-async function fetchPage(url: string): Promise<string> {
+async function scrapeCityViaFirecrawl(url: string, firecrawlKey: string): Promise<string> {
   try {
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml',
-        'Accept-Language': 'fr-FR,fr;q=0.9',
-      },
+    const res = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${firecrawlKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        url,
+        formats: ['markdown'],
+        onlyMainContent: true,
+        waitFor: 3000,
+        location: { country: 'FR', languages: ['fr'] },
+      }),
     });
-    if (!res.ok) return '';
-    return await res.text();
-  } catch {
+    if (!res.ok) {
+      console.log(`[InfoConcert] Firecrawl ${url} failed: ${res.status}`);
+      return '';
+    }
+    const data = await res.json();
+    return data?.data?.markdown || data?.markdown || '';
+  } catch (e) {
+    console.log(`[InfoConcert] Firecrawl ${url} error:`, e);
     return '';
   }
 }
+
+
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
