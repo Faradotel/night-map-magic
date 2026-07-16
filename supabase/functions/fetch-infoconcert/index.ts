@@ -214,38 +214,32 @@ function parseMarkdownCards(md: string, citySlug: string): RawCard[] {
     hits.push({ id, idx: m.index, url: m[0] });
   }
 
-  // Trouve l'occurrence d'un pattern dans une fenêtre la plus proche d'un point d'ancrage.
-  const nearestMatch = (scope: string, scopeStart: number, anchorAbs: number, re: RegExp): RegExpExecArray | null => {
-    let best: RegExpExecArray | null = null;
-    let bestDist = Infinity;
-    const g = new RegExp(re.source, re.flags.includes('g') ? re.flags : re.flags + 'g');
-    let mm: RegExpExecArray | null;
-    while ((mm = g.exec(scope)) !== null) {
-      const d = Math.abs((scopeStart + mm.index) - anchorAbs);
-      if (d < bestDist) { bestDist = d; best = mm; }
-    }
-    return best;
-  };
+  // Positions des délimiteurs de bloc : image d'affiche (carrousel) OU header ## [
+  // (liste). Chaque concert est encadré par deux délimiteurs consécutifs.
+  const delimRe = /(?:!\[Affiche\]|^##\s+\[)/gm;
+  const delims: number[] = [];
+  let d: RegExpExecArray | null;
+  while ((d = delimRe.exec(md)) !== null) delims.push(d.index);
 
-  for (let i = 0; i < hits.length; i++) {
-    const h = hits[i];
-    // Fenêtre = tout le gap entre concert précédent et concert suivant (les métadonnées
-    // peuvent être avant OU après le lien "+d'infos" selon le layout). Cap ±1200 chars
-    // pour éviter d'englober tout le doc quand il n'y a qu'un seul concert.
-    const winStart = i > 0 ? hits[i - 1].idx + hits[i - 1].url.length : Math.max(0, h.idx - 1200);
-    const winEnd = i + 1 < hits.length ? hits[i + 1].idx : Math.min(md.length, h.idx + 1200);
-    const win = md.slice(winStart, winEnd);
+  for (const h of hits) {
+    // Bloc = [dernier délimiteur avant l'URL, premier délimiteur après l'URL)
+    let blockStart = 0;
+    for (const dpos of delims) { if (dpos <= h.idx) blockStart = dpos; else break; }
+    let blockEnd = md.length;
+    for (const dpos of delims) { if (dpos > h.idx) { blockEnd = dpos; break; } }
+    const block = md.slice(blockStart, blockEnd);
 
-    const artistM = nearestMatch(win, winStart, h.idx, /\[([^\]]+)\]\(https?:\/\/www\.infoconcert\.com\/artiste\/[^)]+\)/);
+    const artistM = block.match(/\[([^\]]+)\]\(https?:\/\/www\.infoconcert\.com\/artiste\/[^)]+\)/);
     const name = artistM ? artistM[1].trim() : '';
     if (!name) continue;
 
-    const venueM = nearestMatch(win, winStart, h.idx, /\[([^\]]+)\]\(https?:\/\/www\.infoconcert\.com\/salle\/[^)]+\)/);
+    const venueM = block.match(/\[([^\]]+)\]\(https?:\/\/www\.infoconcert\.com\/salle\/[^)]+\)/);
     const venue = venueM ? venueM[1].trim() : '';
 
+    // Date : "Samedi 12 septembre 2026 à 20h00" (liste) ou "12 fév. 2027 | 20h00" (carrousel).
     const dateM =
-      nearestMatch(win, winStart, h.idx, /(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\s+\d{1,2}\s+[a-zéûô]+\s+\d{4}(?:\s+à\s+\d{1,2}h\d{0,2})?/i) ||
-      nearestMatch(win, winStart, h.idx, /\d{1,2}\s+[a-zéûô]{3,10}\.?\s+\d{4}(?:\s*[|]\s*\d{1,2}h\d{0,2})?/i);
+      block.match(/(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\s+\d{1,2}\s+[a-zéûô]+\s+\d{4}(?:\s+à\s+\d{1,2}h\d{0,2})?/i) ||
+      block.match(/\d{1,2}\s+[a-zéûô]{3,10}\.?\s+\d{4}(?:\s*[|]\s*\d{1,2}h\d{0,2})?/i);
     const date = dateM ? dateM[0].replace(/\\/g, '').trim() : '';
     if (!date) continue;
 
@@ -253,6 +247,7 @@ function parseMarkdownCards(md: string, citySlug: string): RawCard[] {
   }
   return cards;
 }
+
 
 
 async function scrapeCityViaFirecrawl(url: string, firecrawlKey: string): Promise<string> {
