@@ -39,10 +39,13 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    // Require service-role bearer token (cron job or trusted server only)
+    // Require service-role bearer token OR a shared refresh secret (cron / trusted server only)
     const authHeader = req.headers.get('authorization') || '';
-    const expected = `Bearer ${supabaseKey}`;
-    if (authHeader !== expected) {
+    const refreshSecret = Deno.env.get('REFRESH_EVENTS_SECRET') || '';
+    const providedSecret = req.headers.get('x-refresh-secret') || '';
+    const okBearer = authHeader === `Bearer ${supabaseKey}`;
+    const okSecret = refreshSecret !== '' && providedSecret === refreshSecret;
+    if (!okBearer && !okSecret) {
       return new Response(
         JSON.stringify({ success: false, error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -54,10 +57,12 @@ Deno.serve(async (req) => {
 
     // Accept optional "city" param to refresh a single city
     let citiesToRefresh = CITIES;
+    let singleCity = false;
     try {
       const body = await req.json();
       if (body?.city) {
         citiesToRefresh = [body.city];
+        singleCity = true;
       }
     } catch { /* no body = refresh all */ }
 
@@ -364,7 +369,7 @@ Deno.serve(async (req) => {
       '80','81','82','83','84','85','86','87','88','89',
       '90','91','92','93','94','95',
     ];
-    const missingDepts = ALL_DEPTS.filter(d => !coveredDepts.has(d));
+    const missingDepts = singleCity ? [] : ALL_DEPTS.filter(d => !coveredDepts.has(d));
     console.log(`Brocabrac extra: scraping ${missingDepts.length} uncovered departments...`);
 
     const BB_BATCH = 5;
@@ -429,7 +434,10 @@ Deno.serve(async (req) => {
         180000
       );
       const icfData = await icfRes.json();
-      const byCity: Record<string, any[]> = icfData?.byCity || {};
+      const rawByCity: Record<string, any[]> = icfData?.byCity || {};
+      const byCity: Record<string, any[]> = singleCity
+        ? Object.fromEntries(Object.entries(rawByCity).filter(([c]) => citiesToRefresh.includes(c)))
+        : rawByCity;
       const cityNames = Object.keys(byCity);
       if (cityNames.length > 0) {
         const normName = (s: string) => (s || '').toLowerCase()
