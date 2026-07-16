@@ -60,23 +60,25 @@ const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
 };
 
 const MONTHS_FR: Record<string, number> = {
-  'janvier': 0, 'février': 1, 'fevrier': 1, 'mars': 2, 'avril': 3, 'mai': 4,
-  'juin': 5, 'juillet': 6, 'août': 7, 'aout': 7, 'septembre': 8,
-  'octobre': 9, 'novembre': 10, 'décembre': 11, 'decembre': 11,
+  'janvier': 0, 'janv': 0, 'février': 1, 'fevrier': 1, 'févr': 1, 'fév': 1, 'fev': 1,
+  'mars': 2, 'avril': 3, 'avr': 3, 'mai': 4, 'juin': 5,
+  'juillet': 6, 'juil': 6, 'août': 7, 'aout': 7, 'septembre': 8, 'sept': 8,
+  'octobre': 9, 'oct': 9, 'novembre': 10, 'nov': 10, 'décembre': 11, 'decembre': 11, 'déc': 11, 'dec': 11,
 };
 
 function parseFrenchDate(s: string): string {
-  // e.g. "Lundi 11 mai 2026 à 20h00" or "Du 11 mai 2026 au 15 mai 2026" — or already ISO
   if (!s) return '';
-  // ISO passthrough (RSC payload already gives us "2026-07-04T19:00:00.000Z")
+  // ISO passthrough
   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s)) {
     const d = new Date(s);
     return isNaN(d.getTime()) ? '' : d.toISOString();
   }
-  const m = s.match(/(\d{1,2})\s+(janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|septembre|octobre|novembre|décembre|decembre)\s+(\d{4})(?:[^0-9]+(\d{1,2})h(\d{2})?)?/i);
+  // Full ("Samedi 12 septembre 2026 à 20h00") or short ("12 fév. 2027 | 20h00" / "12 sept. 2026")
+  const m = s.match(/(\d{1,2})\s+([a-zéûôA-Z]{3,10})\.?\s+(\d{4})(?:[^0-9]+(\d{1,2})h(\d{2})?)?/i);
   if (!m) return '';
   const day = parseInt(m[1], 10);
-  const month = MONTHS_FR[m[2].toLowerCase()];
+  const monthKey = m[2].toLowerCase().replace(/\.$/, '');
+  const month = MONTHS_FR[monthKey];
   const year = parseInt(m[3], 10);
   const hour = m[4] ? parseInt(m[4], 10) : 20;
   const min = m[5] ? parseInt(m[5], 10) : 0;
@@ -85,6 +87,7 @@ function parseFrenchDate(s: string): string {
   if (isNaN(d.getTime())) return '';
   return d.toISOString();
 }
+
 
 function decodeHtml(s: string): string {
   return s
@@ -193,123 +196,86 @@ interface RawCard {
   id: string;
 }
 
-// New: parse concerts directly from the React-Server-Components payload
-// embedded in `self.__next_f.push([..., "<json-string>"])` chunks.
-// This is the authoritative data source — works for ALL cities (including
-// the big ones where the static HTML only shows skeletons).
-function parseRscPayload(html: string, expectedCity: string): RawCard[] {
-  const cards: RawCard[] = [];
-  // Unescape the JS-string-encoded JSON
-  const unesc = html
-    .replace(/\\"/g, '"')
-    .replace(/\\\//g, '/')
-    .replace(/\\u0026/g, '&')
-    .replace(/\\n/g, '\n');
-
-  const expected = expectedCity.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  const seen = new Set<string>();
-  const idRe = /\{"id":"(\d{6,8})","iri":"\/api\/concerts\/\1","status"/g;
-  let mm: RegExpExecArray | null;
-  while ((mm = idRe.exec(unesc)) !== null) {
-    const cid = mm[1];
-    if (seen.has(cid)) continue;
-
-    // Brace-match to find the full concert object
-    let depth = 0, i = mm.index, inStr = false;
-    for (; i < unesc.length; i++) {
-      const ch = unesc[i];
-      if (inStr) {
-        if (ch === '\\') { i++; continue; }
-        if (ch === '"') inStr = false;
-        continue;
-      }
-      if (ch === '"') inStr = true;
-      else if (ch === '{') depth++;
-      else if (ch === '}') { depth--; if (depth === 0) break; }
-    }
-    if (depth !== 0) continue;
-    const block = unesc.slice(mm.index, i + 1);
-
-    let obj: any;
-    try { obj = JSON.parse(block); } catch { continue; }
-    const lineUp = obj.lineUp?.[0]?.name || obj.firstPart?.[0]?.name;
-    if (!lineUp) continue;
-    const venueName = obj.venue?.name || '';
-    const cityName = obj.venue?.city?.name || '';
-    if (!cityName) continue;
-    // Only keep events whose venue city matches the requested city
-    const cn = cityName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    if (cn !== expected) continue;
-    const rawDate: string | undefined = obj.dates?.[0]?.date;
-    if (!rawDate) continue;
-    const isoDate = rawDate.replace(/^\$D/, ''); // already ISO
-
-    seen.add(cid);
-    cards.push({
-      name: lineUp,
-      url: `https://www.infoconcert.com/concerts/${cid}`,
-      date: isoDate,        // pre-parsed ISO — parseFrenchDate will detect and return as-is
-      venue: venueName,
-      ville: cityName,
-      id: cid,
-    });
-  }
-  return cards;
-}
-
-function parsePage(html: string, citySlug: string, expectedCity?: string): RawCard[] {
-  // Prefer the structured RSC payload (works on modern InfoConcert pages)
-  if (expectedCity) {
-    const rsc = parseRscPayload(html, expectedCity);
-    if (rsc.length) return rsc;
-  }
+// Parse concerts from Firecrawl markdown of a /ville/ page.
+// Format observed: chaque concert contient un lien vers /concerts/concert-...-<id>
+// entouré (dans une fenêtre de quelques lignes) par: image, [ARTIST](/artiste/...),
+// date, [VENUE](/salle/...). Deux layouts coexistent (carrousel top + liste),
+// on découpe par occurrence du lien concert et on scanne la fenêtre.
+function parseMarkdownCards(md: string, citySlug: string): RawCard[] {
   const cards: RawCard[] = [];
   const seen = new Set<string>();
-  const urlRe = /href="(\/concerts\/concert-[a-z0-9-]+-(\d+))"/gi;
+  const concertRe = /https?:\/\/www\.infoconcert\.com\/concerts\/concert-[a-z0-9-]+-(\d+)/gi;
+  const hits: { id: string; idx: number; url: string }[] = [];
   let m: RegExpExecArray | null;
-  while ((m = urlRe.exec(html)) !== null) {
-    const path = m[1];
-    const id = m[2];
+  while ((m = concertRe.exec(md)) !== null) {
+    const id = m[1];
     if (seen.has(id)) continue;
     seen.add(id);
+    hits.push({ id, idx: m.index, url: m[0] });
+  }
 
-    const start = Math.max(0, m.index - 3500);
-    const block = html.slice(start, m.index + 200);
+  // Positions des délimiteurs de bloc : image d'affiche (carrousel) OU header ## [
+  // (liste). Chaque concert est encadré par deux délimiteurs consécutifs.
+  const delimRe = /(?:!\[Affiche\]|^##\s+\[)/gm;
+  const delims: number[] = [];
+  let d: RegExpExecArray | null;
+  while ((d = delimRe.exec(md)) !== null) delims.push(d.index);
 
-    const artistM = block.match(/<a\s+href="\/artiste\/[^"]+">([^<]+)<\/a>/i);
-    const name = artistM ? stripTags(artistM[1]) : '';
+  for (const h of hits) {
+    // Bloc = [dernier délimiteur avant l'URL, premier délimiteur après l'URL)
+    let blockStart = 0;
+    for (const dpos of delims) { if (dpos <= h.idx) blockStart = dpos; else break; }
+    let blockEnd = md.length;
+    for (const dpos of delims) { if (dpos > h.idx) { blockEnd = dpos; break; } }
+    const block = md.slice(blockStart, blockEnd);
 
-    const dateM = block.match(/(Lundi|Mardi|Mercredi|Jeudi|Vendredi|Samedi|Dimanche|Du)\s+[^<]*?\d{4}[^<]*/i);
-    const date = dateM ? stripTags(dateM[0]) : '';
-
-    const venueM = block.match(/<a\s+href="\/salle\/[^"]+">([^<]+)<\/a>/i);
-    const venue = venueM ? stripTags(venueM[1]) : '';
-
-    const villeM = block.match(/<a\s+href="\/ville\/([a-z0-9-]+)"/i);
-    const ville = villeM ? villeM[1] : citySlug;
-
+    const artistM = block.match(/\[([^\]]+)\]\(https?:\/\/www\.infoconcert\.com\/artiste\/[^)]+\)/);
+    const name = artistM ? artistM[1].trim() : '';
     if (!name) continue;
-    cards.push({ name, url: `https://www.infoconcert.com${path}`, date, venue, ville, id });
+
+    const venueM = block.match(/\[([^\]]+)\]\(https?:\/\/www\.infoconcert\.com\/salle\/[^)]+\)/);
+    const venue = venueM ? venueM[1].trim() : '';
+
+    // Date : "Samedi 12 septembre 2026 à 20h00" (liste) ou "12 fév. 2027 | 20h00" (carrousel).
+    const dateM =
+      block.match(/(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\s+\d{1,2}\s+[a-zéûô]+\s+\d{4}(?:\s+à\s+\d{1,2}h\d{0,2})?/i) ||
+      block.match(/\d{1,2}\s+[a-zéûô]{3,10}\.?\s+\d{4}(?:\s*[|]\s*\d{1,2}h\d{0,2})?/i);
+    const date = dateM ? dateM[0].replace(/\\/g, '').trim() : '';
+    if (!date) continue;
+
+    cards.push({ name, url: h.url, date, venue, ville: citySlug, id: h.id });
   }
   return cards;
 }
 
 
-async function fetchPage(url: string): Promise<string> {
+
+async function scrapeCityViaFirecrawl(url: string, firecrawlKey: string): Promise<string> {
   try {
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml',
-        'Accept-Language': 'fr-FR,fr;q=0.9',
-      },
+    const res = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${firecrawlKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        url,
+        formats: ['markdown'],
+        onlyMainContent: true,
+        waitFor: 3000,
+        location: { country: 'FR', languages: ['fr'] },
+      }),
     });
-    if (!res.ok) return '';
-    return await res.text();
-  } catch {
+    if (!res.ok) {
+      console.log(`[InfoConcert] Firecrawl ${url} failed: ${res.status}`);
+      return '';
+    }
+    const data = await res.json();
+    return data?.data?.markdown || data?.markdown || '';
+  } catch (e) {
+    console.log(`[InfoConcert] Firecrawl ${url} error:`, e);
     return '';
   }
 }
+
+
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -333,30 +299,31 @@ Deno.serve(async (req) => {
     const MAX_DISTANCE_KM = 35;
     const baseUrl = `https://www.infoconcert.com/ville/${slug}`;
 
-    // Page 1 first to discover total pages from the pagination
-    const firstHtml = await fetchPage(baseUrl);
-    if (!firstHtml) {
+    const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY');
+    if (!firecrawlKey) {
+      console.log('[InfoConcert] FIRECRAWL_API_KEY manquant — scraper ville désactivé');
       return new Response(JSON.stringify({ success: true, events: [] }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // Detect max page from `?page=NN` links
-    const pageNums = [...firstHtml.matchAll(/\?page=(\d+)/g)].map(m => parseInt(m[1], 10));
-    const maxPage = pageNums.length ? Math.min(Math.max(...pageNums), 25) : 1;
-    console.log(`[InfoConcert] ${city} – detected ${maxPage} pages`);
+    // InfoConcert est protégé par Cloudflare → Firecrawl obligatoire.
+    // Pagination : la page 1 liste ~30 concerts, on tente jusqu'à MAX_PAGES pour
+    // couvrir les villes très actives (Paris, Lyon...). Cap conservateur pour
+    // maîtriser les crédits Firecrawl.
+    const MAX_PAGES = 3;
+    const pageUrls = [baseUrl, ...Array.from({ length: MAX_PAGES - 1 }, (_, i) => `${baseUrl}?page=${i + 2}`)];
 
-    let allCards: RawCard[] = parsePage(firstHtml, slug, city);
-
-    if (maxPage > 1) {
-      const urls: string[] = [];
-      for (let p = 2; p <= maxPage; p++) urls.push(`${baseUrl}?page=${p}`);
-      // Parallel fetch (8 concurrent)
-      const CONCURRENCY = 8;
-      for (let i = 0; i < urls.length; i += CONCURRENCY) {
-        const chunk = urls.slice(i, i + CONCURRENCY);
-        const htmls = await Promise.all(chunk.map(fetchPage));
-        htmls.forEach(h => h && allCards.push(...parsePage(h, slug, city)));
-      }
+    let allCards: RawCard[] = [];
+    // Scrape parallèle des pages (max 3 → 3 requêtes Firecrawl simultanées)
+    const markdowns = await Promise.all(pageUrls.map(u => scrapeCityViaFirecrawl(u, firecrawlKey)));
+    for (let i = 0; i < markdowns.length; i++) {
+      const md = markdowns[i];
+      if (!md) continue;
+      const pageCards = parseMarkdownCards(md, slug);
+      console.log(`[InfoConcert] ${city} page ${i + 1} — ${pageCards.length} cards parsées`);
+      allCards.push(...pageCards);
+      // Si une page renvoie 0 concert, les suivantes seront vides aussi (pagination épuisée)
+      if (i > 0 && pageCards.length === 0) break;
     }
 
     // Dedup by id
@@ -365,6 +332,7 @@ Deno.serve(async (req) => {
     allCards = [...byId.values()];
 
     console.log(`[InfoConcert] ${city} – ${allCards.length} unique cards`);
+
 
     // Geocode unique venue KEYS (collapses variants like "Alpexpo - Salle X" + "Auditorium Alpexpo")
     const venueToKey = new Map<string, string>();
