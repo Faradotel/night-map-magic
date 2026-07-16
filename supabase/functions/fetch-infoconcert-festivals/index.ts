@@ -165,6 +165,108 @@ async function scrapeSeason(year: number, firecrawlKey: string): Promise<string>
   }
 }
 
+// ---------------------------------------------------------------------------
+// Festival → internal concerts scrape
+// ---------------------------------------------------------------------------
+
+interface InnerConcert {
+  concertId: string;      // numeric id from /concerts/concert-...-<id>
+  artists: string[];      // artist names
+  startTime: string;      // ISO
+  venue: string;          // e.g. "Jardin De La Ville De Grenoble"
+  detailUrl: string;      // https://www.infoconcert.com/concerts/concert-...
+  free: boolean;
+}
+
+async function scrapeFestivalConcerts(festivalUrl: string, firecrawlKey: string): Promise<string> {
+  try {
+    const res = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${firecrawlKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        url: festivalUrl,
+        formats: ['markdown'],
+        onlyMainContent: true,
+        waitFor: 3000,
+        location: { country: 'FR', languages: ['fr'] },
+      }),
+    });
+    if (!res.ok) {
+      console.log(`[ICF-inner] ${festivalUrl} scrape failed: ${res.status}`);
+      return '';
+    }
+    const data = await res.json();
+    return data?.data?.markdown || data?.markdown || '';
+  } catch (e) {
+    console.log(`[ICF-inner] ${festivalUrl} error:`, e);
+    return '';
+  }
+}
+
+const DAYS_FR = 'lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche';
+const MONTHS_RE = 'janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|septembre|octobre|novembre|décembre|decembre';
+
+function parseInnerConcertDate(text: string): string | null {
+  // "Jeudi 16 juillet 2026 à 19h00"
+  const re = new RegExp(`(?:${DAYS_FR}\\s+)?(\\d{1,2})\\s+(${MONTHS_RE})\\s+(\\d{4})(?:\\s+à\\s+(\\d{1,2})h(\\d{2})?)?`, 'i');
+  const m = text.match(re);
+  if (!m) return null;
+  const [, d, mo, y, h, mi] = m;
+  const moIdx = MONTHS_FR[mo.toLowerCase()];
+  if (moIdx === undefined) return null;
+  const hour = h ? parseInt(h) : 20;
+  const min = mi ? parseInt(mi) : 0;
+  const dt = new Date(Date.UTC(parseInt(y), moIdx, parseInt(d), hour, min));
+  if (isNaN(dt.getTime())) return null;
+  return dt.toISOString();
+}
+
+function parseFestivalInnerConcerts(markdown: string): InnerConcert[] {
+  const out: InnerConcert[] = [];
+  // Trouver l'ancre "Les concerts du" et ne parser que ce qui suit.
+  const anchor = markdown.search(/##\s+Les concerts du/i);
+  const scope = anchor >= 0 ? markdown.slice(anchor) : markdown;
+
+  // Chaque concert commence par "## [ARTIST](url)" — on splitte sur ce pattern
+  // en gardant la ligne comme début de bloc.
+  const blocks = scope.split(/\n(?=##\s+\[)/);
+  for (const block of blocks) {
+    // Le bloc doit contenir le marqueur "Dans le cadre du festival" pour être un concert du festival.
+    if (!/Dans le cadre du festival/i.test(block)) continue;
+
+    // Artistes: tous les [NAME](/artiste/...) sur la ligne ##
+    const headerMatch = block.match(/^##\s+(.+)$/m);
+    if (!headerMatch) continue;
+    const artistRe = /\[([^\]]+)\]\(https?:\/\/www\.infoconcert\.com\/artiste\/[^)]+\)/g;
+    const artists: string[] = [];
+    let am: RegExpExecArray | null;
+    while ((am = artistRe.exec(headerMatch[1])) !== null) artists.push(am[1].trim());
+    if (artists.length === 0) continue;
+
+    // Date
+    const startTime = parseInnerConcertDate(block);
+    if (!startTime) continue;
+    // Skip passé
+    if (new Date(startTime).getTime() < Date.now() - 86400000) continue;
+
+    // Salle: premier lien /salle/
+    const venueMatch = block.match(/\[([^\]]+)\]\(https?:\/\/www\.infoconcert\.com\/salle\/[^)]+\)/);
+    const venue = venueMatch ? venueMatch[1].trim() : '';
+
+    // Detail URL + id
+    const detailMatch = block.match(/\((https:\/\/www\.infoconcert\.com\/concerts\/concert-[a-z0-9-]+-(\d+))\)/i);
+    if (!detailMatch) continue;
+    const detailUrl = detailMatch[1];
+    const concertId = detailMatch[2];
+
+    const free = /\[Gratuit\]/i.test(block);
+
+    out.push({ concertId, artists, startTime, venue, detailUrl, free });
+  }
+  return out;
+}
+
+
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
@@ -203,13 +305,41 @@ Deno.serve(async (req) => {
     });
     console.log(`[ICF] Parsed ${allRaw.length} unique upcoming festivals`);
 
-    // Geocode each festival: "<name>, <city>, France" — Nominatim rate ~1 req/s
+    // Fenêtre "concerts internes" : festivals démarrant dans les 30 prochains jours
+    const INNER_WINDOW_MS = 30 * 86400000;
+    const now = Date.now();
+    const innerTargets = allRaw.filter(f => {
+      const start = new Date(f.startTime).getTime();
+      return start >= now - 86400000 && start <= now + INNER_WINDOW_MS;
+    });
+    console.log(`[ICF] Scraping inner concerts for ${innerTargets.length} festivals (fenêtre 30j)`);
+
+    // Scrape parallèle des pages festival (limité à 5 concurrents pour ménager Firecrawl)
+    const innerByFestivalUrl = new Map<string, InnerConcert[]>();
+    const CONCURRENCY = 5;
+    for (let i = 0; i < innerTargets.length; i += CONCURRENCY) {
+      const batch = innerTargets.slice(i, i + CONCURRENCY);
+      const results = await Promise.all(batch.map(async (f) => {
+        const md = await scrapeFestivalConcerts(f.url, firecrawlKey);
+        if (!md) return { url: f.url, concerts: [] as InnerConcert[] };
+        const concerts = parseFestivalInnerConcerts(md);
+        console.log(`[ICF-inner] ${f.name}: ${concerts.length} concerts extraits`);
+        return { url: f.url, concerts };
+      }));
+      for (const r of results) innerByFestivalUrl.set(r.url, r.concerts);
+    }
+
+    // Émission des events : concerts internes prioritaires, ombrelle en fallback
     const byCity: Record<string, any[]> = {};
+    let umbrellaEmitted = 0;
+    let innerEmitted = 0;
+
     for (let i = 0; i < allRaw.length; i++) {
       const f = allRaw[i];
-      // 1) Try festival name + city (often resolves to the actual venue)
+      const inner = innerByFestivalUrl.get(f.url) ?? [];
+
+      // Geocoder une seule fois par festival (partagé par ombrelle + concerts internes fallback)
       let geo = await geocode(`${f.name}, ${f.city}, France`);
-      // 2) Fall back to city + dept
       if (!geo) geo = await geocode(`${f.city} ${f.dept}, France`);
       if (!geo) {
         console.log(`[ICF] geocode failed: ${f.name} / ${f.city}`);
@@ -217,29 +347,63 @@ Deno.serve(async (req) => {
       }
 
       const cityNorm = f.city.replace(/\s*\(\d+\)\s*$/, '').trim();
-      const idBase = `icf-${f.url.match(/festival\/([a-z0-9-]+)\/concerts/)?.[1] || 'x'}`;
+      const festSlug = f.url.match(/festival\/([a-z0-9-]+)\/concerts/)?.[1] || 'x';
 
-      const event = {
-        id: idBase,
-        name: f.name,
-        venue: cityNorm,
-        address: geo.address || `${cityNorm} (${f.dept})`,
-        city: cityNorm,
-        lat: geo.lat,
-        lng: geo.lng,
-        startTime: f.startTime,
-        endTime: f.endTime,
-        description: '• via InfoConcert',
-        ticketUrl: f.url,
-        price: null,
-        genres: [],
-        externalAttendees: null,
-      };
-      (byCity[cityNorm] ??= []).push(event);
+      if (inner.length > 0) {
+        // Un event par concert interne — ombrelle supprimée (choix utilisateur).
+        for (const c of inner) {
+          // Geocode salle si nom présent ; fallback au geocode festival
+          let venueGeo = geo;
+          if (c.venue) {
+            const vg = await geocode(`${c.venue}, ${cityNorm}, France`);
+            if (vg) venueGeo = vg;
+          }
+          const artistsLabel = c.artists.slice(0, 4).join(' / ');
+          byCity[cityNorm] ??= [];
+          byCity[cityNorm].push({
+            id: `icf-c-${c.concertId}`,
+            name: artistsLabel || f.name,
+            venue: c.venue || cityNorm,
+            address: venueGeo.address || `${cityNorm} (${f.dept})`,
+            city: cityNorm,
+            lat: venueGeo.lat,
+            lng: venueGeo.lng,
+            startTime: c.startTime,
+            endTime: null,
+            description: `Dans le cadre de ${f.name}${c.free ? ' • Gratuit' : ''} • via InfoConcert`,
+            ticketUrl: c.detailUrl,
+            price: c.free ? 'Gratuit' : null,
+            genres: [],
+            externalAttendees: null,
+          });
+          innerEmitted++;
+        }
+      } else {
+        // Aucun concert interne trouvé (hors fenêtre 30j OU festival sans détail) → ombrelle
+        byCity[cityNorm] ??= [];
+        byCity[cityNorm].push({
+          id: `icf-${festSlug}`,
+          name: f.name,
+          venue: cityNorm,
+          address: geo.address || `${cityNorm} (${f.dept})`,
+          city: cityNorm,
+          lat: geo.lat,
+          lng: geo.lng,
+          startTime: f.startTime,
+          endTime: f.endTime,
+          description: '• via InfoConcert',
+          ticketUrl: f.url,
+          price: null,
+          genres: [],
+          externalAttendees: null,
+        });
+        umbrellaEmitted++;
+      }
     }
 
     const total = Object.values(byCity).reduce((s, arr) => s + arr.length, 0);
-    console.log(`[ICF] Returning ${total} festivals across ${Object.keys(byCity).length} cities`);
+    console.log(`[ICF] Returning ${total} events (${innerEmitted} concerts internes + ${umbrellaEmitted} ombrelles) across ${Object.keys(byCity).length} cities`);
+
 
     return new Response(JSON.stringify({ success: true, byCity }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
