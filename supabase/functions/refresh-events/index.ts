@@ -420,8 +420,92 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ── InfoConcert Festivals: bulk scrape (1 call, all cities) ──
+    try {
+      console.log('[ICF] Bulk scraping InfoConcert festivals...');
+      const icfRes = await fetchWithTimeout(
+        `${supabaseUrl}/functions/v1/fetch-infoconcert-festivals`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${anonKey}` }, body: '{}' },
+        180000
+      );
+      const icfData = await icfRes.json();
+      const byCity: Record<string, any[]> = icfData?.byCity || {};
+      const cityNames = Object.keys(byCity);
+      if (cityNames.length > 0) {
+        const normName = (s: string) => (s || '').toLowerCase()
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+
+        // Fetch existing RDF festivals across the same cities in one query
+        const { data: existingRdf } = await supabase
+          .from('cached_events')
+          .select('name, city, start_time')
+          .eq('source', 'routedesfestivals')
+          .in('city', cityNames);
+
+        const rdfByCity = new Map<string, { n: string; ts: number }[]>();
+        for (const r of existingRdf || []) {
+          const arr = rdfByCity.get(r.city) || [];
+          arr.push({ n: normName(r.name), ts: new Date(r.start_time).getTime() });
+          rdfByCity.set(r.city, arr);
+        }
+
+        const allIcfBatch: any[] = [];
+        for (const [city, evs] of Object.entries(byCity)) {
+          const rdfList = rdfByCity.get(city) || [];
+          for (const e of evs) {
+            const en = normName(e.name);
+            const ets = new Date(e.startTime).getTime();
+            const dup = rdfList.some(r =>
+              (r.n === en || (r.n.length > 4 && en.length > 4 && (r.n.includes(en) || en.includes(r.n)))) &&
+              Math.abs(r.ts - ets) < 3 * 86400000
+            );
+            if (dup) continue;
+            const override = applyVenueOverride(e.venue || '', e.address || '');
+            allIcfBatch.push({
+              id: e.id,
+              name: e.name,
+              type: 'festival',
+              vibe: 'concert',
+              genres: e.genres || [],
+              lat: override?.lat ?? e.lat ?? 0,
+              lng: override?.lng ?? e.lng ?? 0,
+              address: e.address || '',
+              city,
+              start_time: e.startTime,
+              end_time: e.endTime || null,
+              price_range: 'Voir billet',
+              description: e.description || '',
+              venue: e.venue || city,
+              ticket_url: e.ticketUrl || null,
+              source: 'infoconcert-festivals',
+              updated_at: new Date().toISOString(),
+              external_attendees: null,
+            });
+          }
+        }
+
+        if (allIcfBatch.length > 0) {
+          // Chunk upsert (Postgrest handles up to ~1000 easily, but be safe)
+          const CHUNK = 500;
+          for (let i = 0; i < allIcfBatch.length; i += CHUNK) {
+            const slice = allIcfBatch.slice(i, i + CHUNK);
+            const { error: icfErr } = await supabase
+              .from('cached_events')
+              .upsert(slice, { onConflict: 'id' });
+            if (icfErr) console.error('[ICF] upsert error:', icfErr.message);
+          }
+          console.log(`[ICF] Upserted ${allIcfBatch.length} festivals (after dedup vs RDF)`);
+          totalInserted += allIcfBatch.length;
+        } else {
+          console.log('[ICF] No new festivals after dedup');
+        }
+      }
+    } catch (e) {
+      console.error('[ICF] Bulk fetch failed:', e);
+    }
 
     console.log(`Total: ${totalInserted} events cached`);
+
 
     // Ping IndexNow (Bing/Yandex) so new events are discovered ASAP — fire-and-forget
     if (totalInserted > 0) {
