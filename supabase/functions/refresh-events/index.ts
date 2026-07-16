@@ -179,6 +179,7 @@ Deno.serve(async (req) => {
       if (id.startsWith('rt-')) return { type: 'sport', vibe: 'sport' };
       if (id.startsWith('sf-')) return { type: 'sport', vibe: 'sport' };
       if (id.startsWith('rdf-')) return { type: 'festival', vibe: 'concert' };
+      if (id.startsWith('icf-')) return { type: 'festival', vibe: 'concert' };
       if (id.startsWith('oa-')) {
         // Use oaType from scraper if available, fallback to spectacle
         const oaType = e.oaType || 'spectacle';
@@ -416,6 +417,89 @@ Deno.serve(async (req) => {
       for (const r of bbResults) {
         if (r.status === 'fulfilled') totalInserted += r.value;
       }
+    }
+
+    // ── InfoConcert Festivals: bulk scrape (single call, all cities) ──
+    try {
+      console.log('[ICF] Bulk scraping InfoConcert festivals...');
+      const icfRes = await fetchWithTimeout(
+        `${supabaseUrl}/functions/v1/fetch-infoconcert-festivals`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${anonKey}` }, body: '{}' },
+        120000
+      );
+      const icfData = await icfRes.json();
+      const byCity: Record<string, any[]> = icfData?.byCity || {};
+      const cityNames = Object.keys(byCity);
+      if (cityNames.length > 0) {
+        // Dedup vs existing RDF festivals: same city + similar name + within 3 days
+        const normName = (s: string) => (s || '').toLowerCase()
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]/g, '');
+
+        const { data: existingRdf } = await supabase
+          .from('cached_events')
+          .select('name, city, start_time')
+          .eq('source', 'routedesfestivals')
+          .in('city', cityNames);
+
+        const rdfIndex = new Map<string, { name: string; ts: number }[]>();
+        for (const r of existingRdf || []) {
+          const key = r.city;
+          const arr = rdfIndex.get(key) || [];
+          arr.push({ name: normName(r.name), ts: new Date(r.start_time).getTime() });
+          rdfIndex.set(key, arr);
+        }
+
+        const allIcfBatch: any[] = [];
+        for (const [city, events] of Object.entries(byCity)) {
+          const rdfList = rdfIndex.get(city) || [];
+          for (const e of events) {
+            const eName = normName(e.name);
+            const eTs = new Date(e.startTime).getTime();
+            const dup = rdfList.some(r =>
+              (r.name === eName || r.name.includes(eName) || eName.includes(r.name)) &&
+              Math.abs(r.ts - eTs) < 3 * 86400000
+            );
+            if (dup) continue;
+            const override = applyVenueOverride(e.venue || '', e.address || '');
+            allIcfBatch.push({
+              id: e.id,
+              name: e.name,
+              type: 'festival',
+              vibe: 'concert',
+              genres: e.genres || [],
+              lat: override?.lat ?? e.lat ?? 0,
+              lng: override?.lng ?? e.lng ?? 0,
+              address: e.address || '',
+              city,
+              start_time: e.startTime,
+              end_time: e.endTime || null,
+              price_range: e.price || 'Voir billet',
+              description: e.description || '',
+              venue: e.venue || '',
+              ticket_url: e.ticketUrl || null,
+              source: 'infoconcert',
+              updated_at: new Date().toISOString(),
+              external_attendees: null,
+            });
+          }
+        }
+
+        if (allIcfBatch.length > 0) {
+          const { error: icfErr } = await supabase
+            .from('cached_events')
+            .upsert(allIcfBatch, { onConflict: 'id' });
+          if (icfErr) console.error('[ICF] upsert error:', icfErr.message);
+          else {
+            console.log(`[ICF] Upserted ${allIcfBatch.length} festivals (after dedup vs RDF)`);
+            totalInserted += allIcfBatch.length;
+          }
+        } else {
+          console.log('[ICF] No new festivals after dedup');
+        }
+      }
+    } catch (e) {
+      console.error('[ICF] Bulk fetch failed:', e);
     }
 
     console.log(`Total: ${totalInserted} events cached`);
