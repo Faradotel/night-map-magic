@@ -5,6 +5,13 @@
 
 export const SITE = 'https://pulse-map.live';
 
+// Active des logs détaillés (généré / exclu) pour genres × villes et ambiances × villes.
+// Activer via `SEO_ROUTES_DEBUG=1` (Node/build) ou la même var dans Deno.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _g: any = globalThis as any;
+const SEO_DEBUG: boolean =
+  (_g?.process?.env?.SEO_ROUTES_DEBUG ?? _g?.Deno?.env?.get?.('SEO_ROUTES_DEBUG')) ? true : false;
+
 // ---------------------------------------------------------------------------
 // 3-tier city segmentation
 // Tier 1 = grandes villes (métropoles nationales) — crawl prioritaire
