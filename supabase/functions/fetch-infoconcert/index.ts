@@ -292,30 +292,31 @@ Deno.serve(async (req) => {
     const MAX_DISTANCE_KM = 35;
     const baseUrl = `https://www.infoconcert.com/ville/${slug}`;
 
-    // Page 1 first to discover total pages from the pagination
-    const firstHtml = await fetchPage(baseUrl);
-    if (!firstHtml) {
+    const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY');
+    if (!firecrawlKey) {
+      console.log('[InfoConcert] FIRECRAWL_API_KEY manquant — scraper ville désactivé');
       return new Response(JSON.stringify({ success: true, events: [] }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // Detect max page from `?page=NN` links
-    const pageNums = [...firstHtml.matchAll(/\?page=(\d+)/g)].map(m => parseInt(m[1], 10));
-    const maxPage = pageNums.length ? Math.min(Math.max(...pageNums), 25) : 1;
-    console.log(`[InfoConcert] ${city} – detected ${maxPage} pages`);
+    // InfoConcert est protégé par Cloudflare → Firecrawl obligatoire.
+    // Pagination : la page 1 liste ~30 concerts, on tente jusqu'à MAX_PAGES pour
+    // couvrir les villes très actives (Paris, Lyon...). Cap conservateur pour
+    // maîtriser les crédits Firecrawl.
+    const MAX_PAGES = 3;
+    const pageUrls = [baseUrl, ...Array.from({ length: MAX_PAGES - 1 }, (_, i) => `${baseUrl}?page=${i + 2}`)];
 
-    let allCards: RawCard[] = parsePage(firstHtml, slug, city);
-
-    if (maxPage > 1) {
-      const urls: string[] = [];
-      for (let p = 2; p <= maxPage; p++) urls.push(`${baseUrl}?page=${p}`);
-      // Parallel fetch (8 concurrent)
-      const CONCURRENCY = 8;
-      for (let i = 0; i < urls.length; i += CONCURRENCY) {
-        const chunk = urls.slice(i, i + CONCURRENCY);
-        const htmls = await Promise.all(chunk.map(fetchPage));
-        htmls.forEach(h => h && allCards.push(...parsePage(h, slug, city)));
-      }
+    let allCards: RawCard[] = [];
+    // Scrape parallèle des pages (max 3 → 3 requêtes Firecrawl simultanées)
+    const markdowns = await Promise.all(pageUrls.map(u => scrapeCityViaFirecrawl(u, firecrawlKey)));
+    for (let i = 0; i < markdowns.length; i++) {
+      const md = markdowns[i];
+      if (!md) continue;
+      const pageCards = parseMarkdownCards(md, slug);
+      console.log(`[InfoConcert] ${city} page ${i + 1} — ${pageCards.length} cards parsées`);
+      allCards.push(...pageCards);
+      // Si une page renvoie 0 concert, les suivantes seront vides aussi (pagination épuisée)
+      if (i > 0 && pageCards.length === 0) break;
     }
 
     // Dedup by id
@@ -324,6 +325,7 @@ Deno.serve(async (req) => {
     allCards = [...byId.values()];
 
     console.log(`[InfoConcert] ${city} – ${allCards.length} unique cards`);
+
 
     // Geocode unique venue KEYS (collapses variants like "Alpexpo - Salle X" + "Auditorium Alpexpo")
     const venueToKey = new Map<string, string>();
