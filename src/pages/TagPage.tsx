@@ -173,14 +173,20 @@ export default function TagPage({ kind }: { kind: Kind }) {
     })),
   };
 
+  // Auto-noindex des pages tag×ville vides : Google marque sinon la page
+  // "Explorée, actuellement non indexée" et la recrawle indéfiniment.
+  const emptyCityPage = !!cityName && !loading && events.length === 0;
+
   return (
     <>
       <SEO
         title={title}
         description={description}
         canonical={canonical}
+        noindex={emptyCityPage}
         jsonLd={[breadcrumbLd(breadcrumbs), faqLd]}
       />
+
       <main className="h-full overflow-y-auto bg-background text-foreground px-5 py-6 max-w-3xl mx-auto">
         <nav aria-label="Fil d'ariane" className="flex items-center gap-2 text-sm text-muted-foreground mb-5">
           <Link to="/" className="px-3 py-1.5 rounded-lg bg-secondary hover:bg-accent/10 font-medium transition-colors">Accueil</Link>
