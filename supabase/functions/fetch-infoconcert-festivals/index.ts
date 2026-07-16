@@ -1,8 +1,6 @@
-// InfoConcert festival scraper — bulk mode.
-// InfoConcert is Cloudflare-protected, so we go through Firecrawl.
-// Called ONCE per refresh cycle (no city param) — scrapes the /festival/
-// index across several pages, extracts festivals with LLM, geocodes them,
-// and returns events grouped by city.
+// InfoConcert festival scraper — per-city.
+// URL pattern: https://www.infoconcert.com/festival/ville/<slug>
+// InfoConcert is Cloudflare-protected → we go through Firecrawl.
 
 const ALLOWED_ORIGINS = [
   'https://pulse-map.live',
@@ -20,6 +18,27 @@ function getCorsHeaders(req: Request) {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
   };
 }
+
+// Same slugs as fetch-infoconcert (concerts) — reused for /festival/ville/<slug>
+const CITY_SLUGS: Record<string, string> = {
+  'Paris': 'paris-5133', 'Marseille': 'marseille-5132', 'Lyon': 'lyon-5131',
+  'Toulouse': 'toulouse-2991', 'Nice': 'nice-2336', 'Nantes': 'nantes-2306',
+  'Montpellier': 'montpellier-2271', 'Strasbourg': 'strasbourg-2950',
+  'Bordeaux': 'bordeaux-1098', 'Lille': 'lille-2078', 'Rennes': 'rennes-2569',
+  'Reims': 'reims-2567', 'Grenoble': 'grenoble-1842', 'Dijon': 'dijon-1721',
+  'Tours': 'tours-2998', 'Rouen': 'rouen-2610', 'Metz': 'metz-1907',
+  'Nancy': 'nancy-1914', 'Avignon': 'avignon-427', 'Poitiers': 'poitiers-1962',
+  'Besançon': 'besancon-1786', 'Caen': 'caen-1284', 'Orléans': 'orleans-1934',
+  'Angers': 'angers-200', 'Brest': 'brest-1796', 'Limoges': 'limoges-1886',
+  'Amiens': 'amiens-1765', 'Perpignan': 'perpignan-1952',
+  'La Rochelle': 'la-rochelle-1871', 'Pau': 'pau-1944',
+  'Clermont-Ferrand': 'clermont-ferrand-3180', 'Monaco': 'monaco-1909',
+  'Aix-en-Provence': 'aix-en-provence-48', 'Toulon': 'toulon-2990',
+  'Saint-Étienne': 'saint-etienne-2676', 'Nîmes': 'nimes-2340',
+  'Valence': 'valence-2098', 'Mulhouse': 'mulhouse-1912',
+  'Dunkerque': 'dunkerque-1831', 'Le Mans': 'le-mans-2007',
+  'Le Havre': 'le-havre-1875',
+};
 
 const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
   'Paris': { lat: 48.8566, lng: 2.3522 }, 'Marseille': { lat: 43.2965, lng: 5.3698 },
@@ -45,28 +64,6 @@ const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
   'Le Mans': { lat: 48.0061, lng: 0.1996 },
 };
 
-const KNOWN_CITIES = Object.keys(CITY_COORDS);
-
-function normalizeCity(s: string): string {
-  return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]/g, '').trim();
-}
-
-// Map any city string returned by the LLM to one of our known cities
-function matchKnownCity(rawCity: string): string | null {
-  const n = normalizeCity(rawCity);
-  if (!n) return null;
-  for (const c of KNOWN_CITIES) {
-    if (normalizeCity(c) === n) return c;
-  }
-  // partial contains (e.g. "Paris 12", "Nice Cedex")
-  for (const c of KNOWN_CITIES) {
-    const cn = normalizeCity(c);
-    if (n.startsWith(cn) || n.includes(cn)) return c;
-  }
-  return null;
-}
-
 const PLACEHOLDER_RE = /^(unknown|n\/?a|non\s*sp[ée]cifi[ée]|à\s*confirmer|tba|tbd|tbc|none|null|undefined|inconnu|—|-+|\?+)$/i;
 function isPlaceholder(v: unknown): boolean {
   if (typeof v !== 'string') return true;
@@ -75,6 +72,9 @@ function isPlaceholder(v: unknown): boolean {
 }
 function cleanField(v: unknown): string {
   return isPlaceholder(v) ? '' : (v as string).trim();
+}
+function normalize(s: string): string {
+  return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
 }
 
 function fixEventDate(dateStr: string): string {
@@ -116,10 +116,10 @@ const festivalSchema = {
         type: 'object',
         properties: {
           name: { type: 'string', description: 'Official festival name' },
-          startDate: { type: 'string', description: 'Start date ISO YYYY-MM-DD (assume current or next year if not stated)' },
+          startDate: { type: 'string', description: 'Start date ISO YYYY-MM-DD' },
           endDate: { type: 'string', description: 'End date ISO YYYY-MM-DD or empty' },
-          city: { type: 'string', description: 'French city literally printed on the card — leave empty if absent' },
           venue: { type: 'string', description: 'Venue name if printed, else empty' },
+          city: { type: 'string', description: 'City where it takes place (must match the page context)' },
           genre: { type: 'string', description: 'Music genre if printed, else empty' },
           url: { type: 'string', description: 'Absolute URL to festival page on infoconcert.com' },
         },
@@ -129,36 +129,6 @@ const festivalSchema = {
   },
   required: ['festivals'],
 };
-
-async function scrapeIndexPage(pageUrl: string, apiKey: string): Promise<any[]> {
-  try {
-    const res = await fetch('https://api.firecrawl.dev/v1/scrape', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        url: pageUrl,
-        formats: ['extract'],
-        onlyMainContent: true,
-        extract: {
-          schema: festivalSchema,
-          prompt: `Extract EVERY festival card on this page. Today is ${new Date().toISOString().slice(0, 10)}. Use ONLY info literally printed. If a field is missing, return empty string. Include the full URL to each festival's dedicated page. Only list festivals that take place in FRANCE (or Monaco).`,
-        },
-        waitFor: 3500,
-        location: { country: 'FR', languages: ['fr'] },
-      }),
-    });
-    if (!res.ok) {
-      console.log(`[ICF] scrape ${pageUrl} failed: ${res.status}`);
-      return [];
-    }
-    const data = await res.json();
-    const extracted = data?.data?.extract || data?.extract || null;
-    return Array.isArray(extracted?.festivals) ? extracted.festivals : [];
-  } catch (e) {
-    console.log(`[ICF] scrape ${pageUrl} error:`, e);
-    return [];
-  }
-}
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -174,94 +144,106 @@ Deno.serve(async (req) => {
 
   const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY');
   if (!firecrawlKey) {
-    return new Response(JSON.stringify({ success: true, byCity: {} }),
+    return new Response(JSON.stringify({ success: true, events: [] }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 
   try {
-    // Scrape multiple pages of the /festival/ index. Firecrawl bypasses CF.
-    const pages = [
-      'https://www.infoconcert.com/festival/',
-      'https://www.infoconcert.com/festival/?page=2',
-      'https://www.infoconcert.com/festival/?page=3',
-      'https://www.infoconcert.com/festival/?page=4',
-      'https://www.infoconcert.com/festival/?page=5',
-      'https://www.infoconcert.com/festival/?page=6',
-    ];
+    const { city } = await req.json();
+    if (!city) {
+      return new Response(JSON.stringify({ success: false, error: 'Missing city' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
 
-    console.log(`[ICF] Scraping ${pages.length} festival index pages via Firecrawl...`);
-    const results = await Promise.allSettled(pages.map(p => scrapeIndexPage(p, firecrawlKey)));
-    const allFestivals: any[] = [];
-    for (const r of results) if (r.status === 'fulfilled') allFestivals.push(...r.value);
+    const slug = CITY_SLUGS[city];
+    if (!slug) {
+      return new Response(JSON.stringify({ success: true, events: [] }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    const cityCoords = CITY_COORDS[city] || { lat: 48.8566, lng: 2.3522 };
+    const pageUrl = `https://www.infoconcert.com/festival/ville/${slug}`;
 
-    console.log(`[ICF] Raw extracted: ${allFestivals.length}`);
+    console.log(`[ICF] ${city} → ${pageUrl}`);
 
-    // Dedup by name+startDate
+    const res = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${firecrawlKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        url: pageUrl,
+        formats: ['extract'],
+        onlyMainContent: true,
+        extract: {
+          schema: festivalSchema,
+          prompt: `Extract EVERY festival card listed on this page for ${city}. Today is ${new Date().toISOString().slice(0, 10)}. Use ONLY info literally printed. Skip past festivals. If a field is missing, return empty string. Include the full absolute URL to each festival's dedicated page.`,
+        },
+        waitFor: 3500,
+        location: { country: 'FR', languages: ['fr'] },
+      }),
+    });
+
+    if (!res.ok) {
+      console.log(`[ICF] ${city} scrape failed: ${res.status}`);
+      return new Response(JSON.stringify({ success: true, events: [] }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    const data = await res.json();
+    const extracted = data?.data?.extract || data?.extract || null;
+    const rawFestivals: any[] = Array.isArray(extracted?.festivals) ? extracted.festivals : [];
+    console.log(`[ICF] ${city} extracted ${rawFestivals.length} festivals`);
+
+    // Dedup within page
     const seen = new Set<string>();
-    const deduped = allFestivals.filter(f => {
+    const deduped = rawFestivals.filter(f => {
       const key = `${(f.name || '').toLowerCase().trim()}|${(f.startDate || '').slice(0, 10)}`;
       if (!key || seen.has(key)) return false;
       seen.add(key);
       return true;
     });
 
-    const byCity: Record<string, any[]> = {};
-
-    // Sequential geocoding to respect Nominatim rate limits (~1 req/s)
-    for (let i = 0; i < deduped.length; i++) {
-      const f = deduped[i];
+    const events: any[] = [];
+    for (const f of deduped) {
       const name = cleanField(f.name);
       if (!name || name.length < 3) continue;
-
-      const rawCity = cleanField(f.city);
-      const knownCity = matchKnownCity(rawCity);
-      if (!knownCity) continue; // outside our supported cities
 
       const startTime = fixEventDate(f.startDate || '');
       if (!startTime) continue;
       const endTime = fixEventDate(f.endDate || '') || null;
 
       const venue = cleanField(f.venue);
-      const cityCoords = CITY_COORDS[knownCity];
-
-      // Try venue geocoding, fall back to festival name in city, else city center
       let coords: { lat: number; lng: number } | null = null;
-      if (venue) coords = await geocode(`${venue}, ${knownCity}, France`);
-      if (!coords) coords = await geocode(`${name}, ${knownCity}, France`);
+      if (venue) coords = await geocode(`${venue}, ${city}, France`);
+      if (!coords) coords = await geocode(`${name}, ${city}, France`);
       if (!coords) coords = cityCoords;
 
       const genre = cleanField(f.genre);
       const url = cleanField(f.url);
-      const id = `icf-${normalizeCity(knownCity)}-${normalizeCity(name).slice(0, 24)}-${startTime.slice(0, 10)}`;
+      const id = `icf-${normalize(city)}-${normalize(name).slice(0, 24)}-${startTime.slice(0, 10)}`;
 
-      const event = {
+      events.push({
         id,
         name,
-        venue: venue || knownCity,
-        address: venue ? `${venue}, ${knownCity}` : knownCity,
-        city: knownCity,
+        venue: venue || city,
+        address: venue ? `${venue}, ${city}` : city,
+        city,
         lat: coords.lat,
         lng: coords.lng,
         startTime,
         endTime,
         description: (genre ? `[${genre}] ` : '') + '• via InfoConcert',
-        ticketUrl: url && url.startsWith('http') ? url : 'https://www.infoconcert.com/festival/',
+        ticketUrl: url && url.startsWith('http') ? url : pageUrl,
         price: null,
         genres: genre ? [genre.toLowerCase()] : [],
         externalAttendees: null,
-      };
-
-      (byCity[knownCity] ??= []).push(event);
+      });
     }
 
-    const total = Object.values(byCity).reduce((s, arr) => s + arr.length, 0);
-    console.log(`[ICF] Returning ${total} festivals across ${Object.keys(byCity).length} cities`);
-
-    return new Response(JSON.stringify({ success: true, byCity }),
+    console.log(`[ICF] ${city} returning ${events.length} festivals`);
+    return new Response(JSON.stringify({ success: true, events }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (err) {
     console.error('[ICF] Error:', err);
-    return new Response(JSON.stringify({ success: true, byCity: {} }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ success: true, events: [] }),
+      { status: 200, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
   }
 });
