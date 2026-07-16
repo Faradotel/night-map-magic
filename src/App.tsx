@@ -14,6 +14,7 @@ import AuthCallback from "./pages/AuthCallback";
 import NotFound from "./pages/NotFound";
 import { CookieConsent } from "./components/CookieConsent";
 const CitiesIndex = lazy(() => import("./pages/CitiesIndex"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 const CityPage = lazy(() => import("./pages/CityPage"));
 const EventPage = lazy(() => import("./pages/EventPage"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));
@@ -93,6 +94,7 @@ const App = () => {
                     <Route path="/admin/indexation" element={<IndexationDashboard />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
+                    <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
                     <Route path="/rgpd" element={<Navigate to="/privacy-policy" replace />} />
                     <Route path="/privacy-policy" element={<PrivacyPage />} />
                     <Route path="/terms" element={<TermsPage />} />
