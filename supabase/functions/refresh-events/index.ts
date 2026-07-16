@@ -39,10 +39,13 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    // Require service-role bearer token (cron job or trusted server only)
+    // Require service-role bearer token OR a shared refresh secret (cron / trusted server only)
     const authHeader = req.headers.get('authorization') || '';
-    const expected = `Bearer ${supabaseKey}`;
-    if (authHeader !== expected) {
+    const refreshSecret = Deno.env.get('REFRESH_EVENTS_SECRET') || '';
+    const providedSecret = req.headers.get('x-refresh-secret') || '';
+    const okBearer = authHeader === `Bearer ${supabaseKey}`;
+    const okSecret = refreshSecret !== '' && providedSecret === refreshSecret;
+    if (!okBearer && !okSecret) {
       return new Response(
         JSON.stringify({ success: false, error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
