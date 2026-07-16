@@ -104,14 +104,18 @@ export function getSeoRoutesForTier(tier: Tier): SeoRoute[] {
     for (const c of cities) routes.push({ path: `/categories/${cat}/${c}`, changefreq: cfg.cf, priority: cfg.catPr });
   }
 
-  // Genres × villes (longue traîne)
-  for (const g of GENRES) {
-    for (const c of cities) routes.push({ path: `/genres/${g}/${c}`, changefreq: 'weekly', priority: cfg.tagPr });
-  }
+  // Genres × villes et Ambiances × villes (longue traîne) — Tier 1 uniquement.
+  // Sur Tier 2/3 ces pages sont quasi vides (peu ou pas d'events tagués), donc
+  // Google les marque "Explorée, actuellement non indexée" et pollue le crawl
+  // budget. On les garde uniquement pour les métropoles où il y a du volume.
+  if (tier === 1) {
+    for (const g of GENRES) {
+      for (const c of cities) routes.push({ path: `/genres/${g}/${c}`, changefreq: 'weekly', priority: cfg.tagPr });
+    }
 
-  // Ambiances × villes (longue traîne)
-  for (const v of VIBES) {
-    for (const c of cities) routes.push({ path: `/ambiances/${v}/${c}`, changefreq: 'weekly', priority: cfg.tagPr });
+    for (const v of VIBES) {
+      for (const c of cities) routes.push({ path: `/ambiances/${v}/${c}`, changefreq: 'weekly', priority: cfg.tagPr });
+    }
   }
 
   return routes;

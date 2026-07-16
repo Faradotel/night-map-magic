@@ -190,14 +190,20 @@ export default function CategoryPage() {
     ? `/?category=${slug.toLowerCase()}&city=${citySlug}`
     : `/?category=${slug.toLowerCase()}`;
 
+  // Auto-noindex des pages catégorie×ville vides pour éviter le statut Google
+  // "Explorée, actuellement non indexée" qui gaspille le crawl budget.
+  const emptyCityPage = !!cityName && !loading && events.length === 0;
+
   return (
     <>
       <SEO
         title={title}
         description={description}
         canonical={canonical}
+        noindex={emptyCityPage}
         jsonLd={itemListLd ? [breadcrumbLd(breadcrumbs), faqLd, itemListLd] : [breadcrumbLd(breadcrumbs), faqLd]}
       />
+
       <main className="h-full overflow-y-auto bg-background text-foreground px-5 py-6 max-w-3xl mx-auto">
         <nav aria-label="Fil d'ariane" className="flex items-center gap-2 text-sm text-muted-foreground mb-5 flex-wrap">
           <Link to="/" className="px-3 py-1.5 rounded-lg bg-secondary hover:bg-accent/10 font-medium transition-colors">Accueil</Link>
