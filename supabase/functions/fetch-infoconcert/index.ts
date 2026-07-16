@@ -216,9 +216,14 @@ function parseMarkdownCards(md: string, citySlug: string): RawCard[] {
 
   for (let i = 0; i < hits.length; i++) {
     const h = hits[i];
-    // Fenêtre : depuis la fin du bloc précédent (ou 800 chars avant) jusqu'à 400 chars après.
-    const winStart = i > 0 ? hits[i - 1].idx : Math.max(0, h.idx - 800);
-    const winEnd = Math.min(md.length, h.idx + 500);
+    // Borne la fenêtre au milieu entre concert précédent et suivant pour éviter
+    // le décalage : les métadonnées (artiste/date/salle) peuvent être avant OU
+    // après le lien "+d'infos" selon le layout (carrousel vs liste).
+    const prev = i > 0 ? hits[i - 1].idx : Math.max(0, h.idx - 800);
+    const next = i + 1 < hits.length ? hits[i + 1].idx : Math.min(md.length, h.idx + 500);
+    const winStart = Math.floor((prev + h.idx) / 2);
+    const winEnd = Math.floor((h.idx + next) / 2);
+
     const win = md.slice(winStart, winEnd);
 
     // Nom artiste : premier [X](/artiste/...) de la fenêtre.
