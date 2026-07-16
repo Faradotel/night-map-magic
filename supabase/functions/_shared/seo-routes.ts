@@ -107,16 +107,46 @@ export function getSeoRoutesForTier(tier: Tier): SeoRoute[] {
   // Genres × villes et Ambiances × villes (longue traîne) — Tier 1 & 2.
   // Tier 3 exclu : trop peu d'events tagués, Google marque ces pages
   // "Explorée, actuellement non indexée" et pollue le crawl budget.
-  if (tier === 1 || tier === 2) {
+  const longTailEligible = tier === 1 || tier === 2;
+  let genresGenerated = 0;
+  let vibesGenerated = 0;
+
+  if (longTailEligible) {
     for (const g of GENRES) {
-      for (const c of cities) routes.push({ path: `/genres/${g}/${c}`, changefreq: 'weekly', priority: cfg.tagPr });
+      for (const c of cities) {
+        routes.push({ path: `/genres/${g}/${c}`, changefreq: 'weekly', priority: cfg.tagPr });
+        genresGenerated++;
+        if (SEO_DEBUG) console.log(`[seo-routes][tier${tier}][GEN] genre  ${g} × ${c} → /genres/${g}/${c}`);
+      }
     }
 
     for (const v of VIBES) {
-      for (const c of cities) routes.push({ path: `/ambiances/${v}/${c}`, changefreq: 'weekly', priority: cfg.tagPr });
+      for (const c of cities) {
+        routes.push({ path: `/ambiances/${v}/${c}`, changefreq: 'weekly', priority: cfg.tagPr });
+        vibesGenerated++;
+        if (SEO_DEBUG) console.log(`[seo-routes][tier${tier}][GEN] vibe   ${v} × ${c} → /ambiances/${v}/${c}`);
+      }
+    }
+  } else if (SEO_DEBUG) {
+    for (const g of GENRES) {
+      for (const c of cities) {
+        console.log(`[seo-routes][tier${tier}][SKIP] genre  ${g} × ${c} — tier ${tier} exclu (long-tail réservée aux tiers 1 & 2)`);
+      }
+    }
+    for (const v of VIBES) {
+      for (const c of cities) {
+        console.log(`[seo-routes][tier${tier}][SKIP] vibe   ${v} × ${c} — tier ${tier} exclu (long-tail réservée aux tiers 1 & 2)`);
+      }
     }
   }
 
+  if (SEO_DEBUG) {
+    const genresSkipped = longTailEligible ? 0 : GENRES.length * cities.length;
+    const vibesSkipped = longTailEligible ? 0 : VIBES.length * cities.length;
+    console.log(
+      `[seo-routes][tier${tier}][SUMMARY] villes=${cities.length} genres×villes: généré=${genresGenerated} exclu=${genresSkipped} · ambiances×villes: généré=${vibesGenerated} exclu=${vibesSkipped}`,
+    );
+  }
 
   return routes;
 }
