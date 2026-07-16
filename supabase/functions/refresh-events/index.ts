@@ -221,13 +221,12 @@ Deno.serve(async (req) => {
       };
       const body = JSON.stringify({ city });
 
-      const [shotgunRes, tmRes, ebRes, muRes, icRes, icfRes, rdfRes, bbRes, rtRes, oaRes, sfRes] = await Promise.allSettled([
+      const [shotgunRes, tmRes, ebRes, muRes, icRes, rdfRes, bbRes, rtRes, oaRes, sfRes] = await Promise.allSettled([
         fetchWithTimeout(`${supabaseUrl}/functions/v1/scrape-shotgun`, { method: 'POST', headers, body }).then(r => r.json()),
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-ticketmaster`, { method: 'POST', headers, body }).then(r => r.json()),
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-eventbrite`, { method: 'POST', headers, body }).then(r => r.json()),
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-meetup`, { method: 'POST', headers, body }).then(r => r.json()),
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-infoconcert`, { method: 'POST', headers, body }, 55000).then(r => r.json()),
-        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-infoconcert-festivals`, { method: 'POST', headers, body }, 50000).then(r => r.json()),
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-routedesfestivals`, { method: 'POST', headers, body }, 50000).then(r => r.json()),
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-brocabrac`, { method: 'POST', headers, body }, 45000).then(r => r.json()),
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-runtrail`, { method: 'POST', headers, body }).then(r => r.json()),
@@ -247,23 +246,6 @@ Deno.serve(async (req) => {
       if (oaRes.status === 'fulfilled' && oaRes.value?.events) events.push(...oaRes.value.events);
       if (sfRes.status === 'fulfilled' && sfRes.value?.events) events.push(...sfRes.value.events);
 
-      // Dedup InfoConcert festivals vs RDF festivals (same source page, same event) —
-      // normalize name + start date within 3 days. RDF wins if present.
-      const normName = (s: string) => (s || '').toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
-      const rdfSet = events
-        .filter(e => e.id?.startsWith('rdf-'))
-        .map(e => ({ n: normName(e.name), ts: new Date(e.startTime).getTime() }));
-      const icfEvents: any[] = icfRes.status === 'fulfilled' && icfRes.value?.events ? icfRes.value.events : [];
-      for (const e of icfEvents) {
-        const en = normName(e.name);
-        const ets = new Date(e.startTime).getTime();
-        const dup = rdfSet.some(r =>
-          (r.n === en || r.n.includes(en) || en.includes(r.n)) &&
-          Math.abs(r.ts - ets) < 3 * 86400000
-        );
-        if (!dup) events.push(e);
-      }
 
       if (events.length === 0) return 0;
 
@@ -438,8 +420,92 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ── InfoConcert Festivals: bulk scrape (1 call, all cities) ──
+    try {
+      console.log('[ICF] Bulk scraping InfoConcert festivals...');
+      const icfRes = await fetchWithTimeout(
+        `${supabaseUrl}/functions/v1/fetch-infoconcert-festivals`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${anonKey}` }, body: '{}' },
+        180000
+      );
+      const icfData = await icfRes.json();
+      const byCity: Record<string, any[]> = icfData?.byCity || {};
+      const cityNames = Object.keys(byCity);
+      if (cityNames.length > 0) {
+        const normName = (s: string) => (s || '').toLowerCase()
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+
+        // Fetch existing RDF festivals across the same cities in one query
+        const { data: existingRdf } = await supabase
+          .from('cached_events')
+          .select('name, city, start_time')
+          .eq('source', 'routedesfestivals')
+          .in('city', cityNames);
+
+        const rdfByCity = new Map<string, { n: string; ts: number }[]>();
+        for (const r of existingRdf || []) {
+          const arr = rdfByCity.get(r.city) || [];
+          arr.push({ n: normName(r.name), ts: new Date(r.start_time).getTime() });
+          rdfByCity.set(r.city, arr);
+        }
+
+        const allIcfBatch: any[] = [];
+        for (const [city, evs] of Object.entries(byCity)) {
+          const rdfList = rdfByCity.get(city) || [];
+          for (const e of evs) {
+            const en = normName(e.name);
+            const ets = new Date(e.startTime).getTime();
+            const dup = rdfList.some(r =>
+              (r.n === en || (r.n.length > 4 && en.length > 4 && (r.n.includes(en) || en.includes(r.n)))) &&
+              Math.abs(r.ts - ets) < 3 * 86400000
+            );
+            if (dup) continue;
+            const override = applyVenueOverride(e.venue || '', e.address || '');
+            allIcfBatch.push({
+              id: e.id,
+              name: e.name,
+              type: 'festival',
+              vibe: 'concert',
+              genres: e.genres || [],
+              lat: override?.lat ?? e.lat ?? 0,
+              lng: override?.lng ?? e.lng ?? 0,
+              address: e.address || '',
+              city,
+              start_time: e.startTime,
+              end_time: e.endTime || null,
+              price_range: 'Voir billet',
+              description: e.description || '',
+              venue: e.venue || city,
+              ticket_url: e.ticketUrl || null,
+              source: 'infoconcert-festivals',
+              updated_at: new Date().toISOString(),
+              external_attendees: null,
+            });
+          }
+        }
+
+        if (allIcfBatch.length > 0) {
+          // Chunk upsert (Postgrest handles up to ~1000 easily, but be safe)
+          const CHUNK = 500;
+          for (let i = 0; i < allIcfBatch.length; i += CHUNK) {
+            const slice = allIcfBatch.slice(i, i + CHUNK);
+            const { error: icfErr } = await supabase
+              .from('cached_events')
+              .upsert(slice, { onConflict: 'id' });
+            if (icfErr) console.error('[ICF] upsert error:', icfErr.message);
+          }
+          console.log(`[ICF] Upserted ${allIcfBatch.length} festivals (after dedup vs RDF)`);
+          totalInserted += allIcfBatch.length;
+        } else {
+          console.log('[ICF] No new festivals after dedup');
+        }
+      }
+    } catch (e) {
+      console.error('[ICF] Bulk fetch failed:', e);
+    }
 
     console.log(`Total: ${totalInserted} events cached`);
+
 
     // Ping IndexNow (Bing/Yandex) so new events are discovered ASAP — fire-and-forget
     if (totalInserted > 0) {
