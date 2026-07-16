@@ -60,23 +60,25 @@ const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
 };
 
 const MONTHS_FR: Record<string, number> = {
-  'janvier': 0, 'février': 1, 'fevrier': 1, 'mars': 2, 'avril': 3, 'mai': 4,
-  'juin': 5, 'juillet': 6, 'août': 7, 'aout': 7, 'septembre': 8,
-  'octobre': 9, 'novembre': 10, 'décembre': 11, 'decembre': 11,
+  'janvier': 0, 'janv': 0, 'février': 1, 'fevrier': 1, 'févr': 1, 'fév': 1, 'fev': 1,
+  'mars': 2, 'avril': 3, 'avr': 3, 'mai': 4, 'juin': 5,
+  'juillet': 6, 'juil': 6, 'août': 7, 'aout': 7, 'septembre': 8, 'sept': 8,
+  'octobre': 9, 'oct': 9, 'novembre': 10, 'nov': 10, 'décembre': 11, 'decembre': 11, 'déc': 11, 'dec': 11,
 };
 
 function parseFrenchDate(s: string): string {
-  // e.g. "Lundi 11 mai 2026 à 20h00" or "Du 11 mai 2026 au 15 mai 2026" — or already ISO
   if (!s) return '';
-  // ISO passthrough (RSC payload already gives us "2026-07-04T19:00:00.000Z")
+  // ISO passthrough
   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s)) {
     const d = new Date(s);
     return isNaN(d.getTime()) ? '' : d.toISOString();
   }
-  const m = s.match(/(\d{1,2})\s+(janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|septembre|octobre|novembre|décembre|decembre)\s+(\d{4})(?:[^0-9]+(\d{1,2})h(\d{2})?)?/i);
+  // Full ("Samedi 12 septembre 2026 à 20h00") or short ("12 fév. 2027 | 20h00" / "12 sept. 2026")
+  const m = s.match(/(\d{1,2})\s+([a-zéûôA-Z]{3,10})\.?\s+(\d{4})(?:[^0-9]+(\d{1,2})h(\d{2})?)?/i);
   if (!m) return '';
   const day = parseInt(m[1], 10);
-  const month = MONTHS_FR[m[2].toLowerCase()];
+  const monthKey = m[2].toLowerCase().replace(/\.$/, '');
+  const month = MONTHS_FR[monthKey];
   const year = parseInt(m[3], 10);
   const hour = m[4] ? parseInt(m[4], 10) : 20;
   const min = m[5] ? parseInt(m[5], 10) : 0;
@@ -85,6 +87,7 @@ function parseFrenchDate(s: string): string {
   if (isNaN(d.getTime())) return '';
   return d.toISOString();
 }
+
 
 function decodeHtml(s: string): string {
   return s
