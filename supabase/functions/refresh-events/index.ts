@@ -221,13 +221,12 @@ Deno.serve(async (req) => {
       };
       const body = JSON.stringify({ city });
 
-      const [shotgunRes, tmRes, ebRes, muRes, icRes, icfRes, rdfRes, bbRes, rtRes, oaRes, sfRes] = await Promise.allSettled([
+      const [shotgunRes, tmRes, ebRes, muRes, icRes, rdfRes, bbRes, rtRes, oaRes, sfRes] = await Promise.allSettled([
         fetchWithTimeout(`${supabaseUrl}/functions/v1/scrape-shotgun`, { method: 'POST', headers, body }).then(r => r.json()),
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-ticketmaster`, { method: 'POST', headers, body }).then(r => r.json()),
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-eventbrite`, { method: 'POST', headers, body }).then(r => r.json()),
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-meetup`, { method: 'POST', headers, body }).then(r => r.json()),
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-infoconcert`, { method: 'POST', headers, body }, 55000).then(r => r.json()),
-        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-infoconcert-festivals`, { method: 'POST', headers, body }, 50000).then(r => r.json()),
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-routedesfestivals`, { method: 'POST', headers, body }, 50000).then(r => r.json()),
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-brocabrac`, { method: 'POST', headers, body }, 45000).then(r => r.json()),
         fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-runtrail`, { method: 'POST', headers, body }).then(r => r.json()),
@@ -247,23 +246,6 @@ Deno.serve(async (req) => {
       if (oaRes.status === 'fulfilled' && oaRes.value?.events) events.push(...oaRes.value.events);
       if (sfRes.status === 'fulfilled' && sfRes.value?.events) events.push(...sfRes.value.events);
 
-      // Dedup InfoConcert festivals vs RDF festivals (same source page, same event) —
-      // normalize name + start date within 3 days. RDF wins if present.
-      const normName = (s: string) => (s || '').toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
-      const rdfSet = events
-        .filter(e => e.id?.startsWith('rdf-'))
-        .map(e => ({ n: normName(e.name), ts: new Date(e.startTime).getTime() }));
-      const icfEvents: any[] = icfRes.status === 'fulfilled' && icfRes.value?.events ? icfRes.value.events : [];
-      for (const e of icfEvents) {
-        const en = normName(e.name);
-        const ets = new Date(e.startTime).getTime();
-        const dup = rdfSet.some(r =>
-          (r.n === en || r.n.includes(en) || en.includes(r.n)) &&
-          Math.abs(r.ts - ets) < 3 * 86400000
-        );
-        if (!dup) events.push(e);
-      }
 
       if (events.length === 0) return 0;
 
