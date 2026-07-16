@@ -1,0 +1,227 @@
+{
+  "version": 1,
+  "sdk_version": "0.22.2",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://rhzojoyxldrllxroyyqt.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "pulsemap-mcp",
+      "version": "0.1.0",
+      "title": "PulseMap"
+    },
+    "tools": [
+      {
+        "name": "search_events",
+        "title": "Rechercher des événements",
+        "description": "Recherche les événements PulseMap à venir (soirées, concerts, festivals, brocantes, sport, sorties). Filtres optionnels par ville, texte libre, type et fenêtre de dates. Renvoie jusqu'à 50 résultats avec lieu, adresse, coordonnées GPS et lien billetterie.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "city": {
+              "type": "string",
+              "description": "Ville française (ex: 'Paris', 'Lyon'). Insensible à la casse."
+            },
+            "query": {
+              "type": "string",
+              "description": "Texte à chercher dans le nom, la description ou le lieu."
+            },
+            "type": {
+              "type": "string",
+              "description": "Type d'événement (ex: 'concert', 'festival', 'soiree', 'brocante', 'sport')."
+            },
+            "from": {
+              "type": "string",
+              "description": "Date de début ISO 8601. Par défaut : maintenant."
+            },
+            "to": {
+              "type": "string",
+              "description": "Date de fin ISO 8601. Par défaut : dans 90 jours."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Nombre max de résultats (défaut 20, max 50)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_event",
+        "title": "Détails d'un événement",
+        "description": "Récupère la fiche complète d'un événement PulseMap par son identifiant.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "event_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Identifiant de l'événement (ex: 'sg-paris-abc', 'icf-lyon-xxx')."
+            }
+          },
+          "required": [
+            "event_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "tonight_hotspots",
+        "title": "Lieux chauds ce soir",
+        "description": "Retourne les événements les plus populaires ce soir sur PulseMap (nombre de participants confirmés).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 30,
+              "description": "Nombre max de spots (défaut 10, max 30)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_favorites",
+        "title": "Mes favoris",
+        "description": "Liste les événements marqués comme favoris par l'utilisateur PulseMap connecté.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "add_favorite",
+        "title": "Ajouter un favori",
+        "description": "Ajoute un événement aux favoris de l'utilisateur PulseMap connecté.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "event_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "event_name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "event_city": {
+              "type": "string",
+              "minLength": 1
+            },
+            "event_date": {
+              "type": "string",
+              "description": "Date ISO 8601 de l'événement (facultatif)."
+            }
+          },
+          "required": [
+            "event_id",
+            "event_name",
+            "event_city"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "mark_attendance",
+        "title": "Je participe",
+        "description": "Indique que l'utilisateur connecté prévoit d'aller à un événement PulseMap. Notifie les amis abonnés.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "event_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "event_name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "event_city": {
+              "type": "string",
+              "minLength": 1
+            },
+            "event_date": {
+              "type": "string",
+              "description": "Date ISO 8601 (facultatif)."
+            }
+          },
+          "required": [
+            "event_id",
+            "event_name",
+            "event_city"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "my_profile",
+        "title": "Mon profil",
+        "description": "Renvoie le profil PulseMap de l'utilisateur connecté (pseudo, avatar, bio).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
