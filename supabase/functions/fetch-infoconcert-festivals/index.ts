@@ -178,6 +178,23 @@ interface InnerConcert {
   free: boolean;
 }
 
+const VENUE_LOCATIONS: Record<string, { lat: number; lng: number; address: string }> = {
+  'jardin de la ville de grenoble': {
+    lat: 45.1922202,
+    lng: 5.7266400,
+    address: 'Jardin de Ville, 38000 Grenoble, France',
+  },
+};
+
+function getVenueLocation(venue: string): { lat: number; lng: number; address: string } | null {
+  const normalized = venue.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return VENUE_LOCATIONS[normalized] || null;
+}
+
 async function scrapeFestivalConcerts(festivalUrl: string, firecrawlKey: string): Promise<string> {
   try {
     const res = await fetch('https://api.firecrawl.dev/v1/scrape', {
@@ -286,11 +303,32 @@ Deno.serve(async (req) => {
   }
 
   try {
+    let requestedCity = '';
+    try {
+      const body = await req.json();
+      requestedCity = typeof body?.city === 'string' ? body.city.trim() : '';
+    } catch { /* bulk refresh */ }
+
     const currentYear = new Date().getUTCFullYear();
     const years = [currentYear, currentYear + 1];
 
-    console.log(`[ICF] Firecrawl scraping seasons: ${years.join(', ')}`);
-    const markdowns = await Promise.all(years.map(y => scrapeSeason(y, firecrawlKey)));
+    const WHITELIST: Array<{ url: string; name: string; city: string; dept: string }> = [
+      { url: 'https://www.infoconcert.com/festival/cabaret-frappe-1906/concerts', name: 'Cabaret Frappé', city: 'Grenoble', dept: '38' },
+    ];
+    const requestedWhitelist = requestedCity
+      ? WHITELIST.filter(w => w.city.toLocaleLowerCase('fr') === requestedCity.toLocaleLowerCase('fr'))
+      : WHITELIST;
+
+    // A city-only refresh should not wait for the two national season pages when
+    // that city has a targeted festival source. This keeps the request well under
+    // the parent function timeout and makes same-day corrections deterministic.
+    const useTargetedOnly = requestedCity !== '' && requestedWhitelist.length > 0;
+    console.log(useTargetedOnly
+      ? `[ICF] Targeted refresh for ${requestedCity}`
+      : `[ICF] Firecrawl scraping seasons: ${years.join(', ')}`);
+    const markdowns = useTargetedOnly
+      ? []
+      : await Promise.all(years.map(y => scrapeSeason(y, firecrawlKey)));
 
     let allRaw: RawFestival[] = [];
     for (const md of markdowns) {
@@ -312,10 +350,7 @@ Deno.serve(async (req) => {
     // pour forcer le scrape des concerts internes. La vraie date de chaque
     // concert vient ensuite du parsing de la page festival.
     // ---------------------------------------------------------------------
-    const WHITELIST: Array<{ url: string; name: string; city: string; dept: string }> = [
-      { url: 'https://www.infoconcert.com/festival/cabaret-frappe-1906/concerts', name: 'Cabaret Frappé', city: 'Grenoble', dept: '38' },
-    ];
-    for (const w of WHITELIST) {
+    for (const w of requestedWhitelist) {
       if (seenUrls.has(w.url)) continue;
       seenUrls.add(w.url);
       allRaw.push({
@@ -330,7 +365,7 @@ Deno.serve(async (req) => {
 
     // Fenêtre "concerts internes" : festivals démarrant dans les 30 prochains jours
     // + toutes les entrées whitelist (toujours scrapées).
-    const whitelistUrls = new Set(WHITELIST.map(w => w.url));
+    const whitelistUrls = new Set(requestedWhitelist.map(w => w.url));
     const INNER_WINDOW_MS = 30 * 86400000;
     const now = Date.now();
     const innerTargets = allRaw.filter(f => {
@@ -338,7 +373,7 @@ Deno.serve(async (req) => {
       const start = new Date(f.startTime).getTime();
       return start >= now - 86400000 && start <= now + INNER_WINDOW_MS;
     });
-    console.log(`[ICF] Scraping inner concerts for ${innerTargets.length} festivals (fenêtre 30j + ${WHITELIST.length} whitelist)`);
+    console.log(`[ICF] Scraping inner concerts for ${innerTargets.length} festivals (fenêtre 30j + ${requestedWhitelist.length} whitelist)`);
 
 
     // Scrape parallèle des pages festival (limité à 5 concurrents pour ménager Firecrawl)
@@ -382,8 +417,13 @@ Deno.serve(async (req) => {
           // Geocode salle si nom présent ; fallback au geocode festival
           let venueGeo = geo;
           if (c.venue) {
-            const vg = await geocode(`${c.venue}, ${cityNorm}, France`);
-            if (vg) venueGeo = vg;
+            const knownVenue = getVenueLocation(c.venue);
+            if (knownVenue) {
+              venueGeo = knownVenue;
+            } else {
+              const vg = await geocode(`${c.venue}, ${cityNorm}, France`);
+              if (vg) venueGeo = vg;
+            }
           }
           const artistsLabel = c.artists.slice(0, 4).join(' / ');
           byCity[cityNorm] ??= [];
