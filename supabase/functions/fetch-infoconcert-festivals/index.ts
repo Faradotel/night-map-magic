@@ -405,8 +405,10 @@ Deno.serve(async (req) => {
           });
           innerEmitted++;
         }
-      } else {
+      } else if (!whitelistUrls.has(f.url)) {
         // Aucun concert interne trouvé (hors fenêtre 30j OU festival sans détail) → ombrelle
+        // Skip pour les entrées whitelist (date placeholder = aujourd'hui, pas d'ombrelle valable).
+
         byCity[cityNorm] ??= [];
         byCity[cityNorm].push({
           id: `icf-${festSlug}`,
