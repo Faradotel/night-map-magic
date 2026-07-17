@@ -286,11 +286,32 @@ Deno.serve(async (req) => {
   }
 
   try {
+    let requestedCity = '';
+    try {
+      const body = await req.json();
+      requestedCity = typeof body?.city === 'string' ? body.city.trim() : '';
+    } catch { /* bulk refresh */ }
+
     const currentYear = new Date().getUTCFullYear();
     const years = [currentYear, currentYear + 1];
 
-    console.log(`[ICF] Firecrawl scraping seasons: ${years.join(', ')}`);
-    const markdowns = await Promise.all(years.map(y => scrapeSeason(y, firecrawlKey)));
+    const WHITELIST: Array<{ url: string; name: string; city: string; dept: string }> = [
+      { url: 'https://www.infoconcert.com/festival/cabaret-frappe-1906/concerts', name: 'Cabaret Frappé', city: 'Grenoble', dept: '38' },
+    ];
+    const requestedWhitelist = requestedCity
+      ? WHITELIST.filter(w => w.city.toLocaleLowerCase('fr') === requestedCity.toLocaleLowerCase('fr'))
+      : WHITELIST;
+
+    // A city-only refresh should not wait for the two national season pages when
+    // that city has a targeted festival source. This keeps the request well under
+    // the parent function timeout and makes same-day corrections deterministic.
+    const useTargetedOnly = requestedCity !== '' && requestedWhitelist.length > 0;
+    console.log(useTargetedOnly
+      ? `[ICF] Targeted refresh for ${requestedCity}`
+      : `[ICF] Firecrawl scraping seasons: ${years.join(', ')}`);
+    const markdowns = useTargetedOnly
+      ? []
+      : await Promise.all(years.map(y => scrapeSeason(y, firecrawlKey)));
 
     let allRaw: RawFestival[] = [];
     for (const md of markdowns) {
@@ -312,10 +333,7 @@ Deno.serve(async (req) => {
     // pour forcer le scrape des concerts internes. La vraie date de chaque
     // concert vient ensuite du parsing de la page festival.
     // ---------------------------------------------------------------------
-    const WHITELIST: Array<{ url: string; name: string; city: string; dept: string }> = [
-      { url: 'https://www.infoconcert.com/festival/cabaret-frappe-1906/concerts', name: 'Cabaret Frappé', city: 'Grenoble', dept: '38' },
-    ];
-    for (const w of WHITELIST) {
+    for (const w of requestedWhitelist) {
       if (seenUrls.has(w.url)) continue;
       seenUrls.add(w.url);
       allRaw.push({
@@ -330,7 +348,7 @@ Deno.serve(async (req) => {
 
     // Fenêtre "concerts internes" : festivals démarrant dans les 30 prochains jours
     // + toutes les entrées whitelist (toujours scrapées).
-    const whitelistUrls = new Set(WHITELIST.map(w => w.url));
+    const whitelistUrls = new Set(requestedWhitelist.map(w => w.url));
     const INNER_WINDOW_MS = 30 * 86400000;
     const now = Date.now();
     const innerTargets = allRaw.filter(f => {
@@ -338,7 +356,7 @@ Deno.serve(async (req) => {
       const start = new Date(f.startTime).getTime();
       return start >= now - 86400000 && start <= now + INNER_WINDOW_MS;
     });
-    console.log(`[ICF] Scraping inner concerts for ${innerTargets.length} festivals (fenêtre 30j + ${WHITELIST.length} whitelist)`);
+    console.log(`[ICF] Scraping inner concerts for ${innerTargets.length} festivals (fenêtre 30j + ${requestedWhitelist.length} whitelist)`);
 
 
     // Scrape parallèle des pages festival (limité à 5 concurrents pour ménager Firecrawl)

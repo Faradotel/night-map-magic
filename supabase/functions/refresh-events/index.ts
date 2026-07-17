@@ -430,7 +430,11 @@ Deno.serve(async (req) => {
       console.log('[ICF] Bulk scraping InfoConcert festivals...');
       const icfRes = await fetchWithTimeout(
         `${supabaseUrl}/functions/v1/fetch-infoconcert-festivals`,
-        { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${anonKey}` }, body: '{}' },
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${anonKey}` },
+          body: JSON.stringify(singleCity ? { city: citiesToRefresh[0] } : {}),
+        },
         180000
       );
       const icfData = await icfRes.json();
