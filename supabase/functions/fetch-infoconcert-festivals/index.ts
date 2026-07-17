@@ -305,14 +305,41 @@ Deno.serve(async (req) => {
     });
     console.log(`[ICF] Parsed ${allRaw.length} unique upcoming festivals`);
 
+    // ---------------------------------------------------------------------
+    // Whitelist de festivals connus absents du listing bulk (gratuits,
+    // fêtes de ville, éditions récurrentes non listées dans /saison/...).
+    // On les injecte dans allRaw avec un placeholder de date (aujourd'hui)
+    // pour forcer le scrape des concerts internes. La vraie date de chaque
+    // concert vient ensuite du parsing de la page festival.
+    // ---------------------------------------------------------------------
+    const WHITELIST: Array<{ url: string; name: string; city: string; dept: string }> = [
+      { url: 'https://www.infoconcert.com/festival/cabaret-frappe-1906/concerts', name: 'Cabaret Frappé', city: 'Grenoble', dept: '38' },
+    ];
+    for (const w of WHITELIST) {
+      if (seenUrls.has(w.url)) continue;
+      seenUrls.add(w.url);
+      allRaw.push({
+        name: w.name,
+        startTime: new Date().toISOString(),
+        endTime: null,
+        city: w.city,
+        dept: w.dept,
+        url: w.url,
+      });
+    }
+
     // Fenêtre "concerts internes" : festivals démarrant dans les 30 prochains jours
+    // + toutes les entrées whitelist (toujours scrapées).
+    const whitelistUrls = new Set(WHITELIST.map(w => w.url));
     const INNER_WINDOW_MS = 30 * 86400000;
     const now = Date.now();
     const innerTargets = allRaw.filter(f => {
+      if (whitelistUrls.has(f.url)) return true;
       const start = new Date(f.startTime).getTime();
       return start >= now - 86400000 && start <= now + INNER_WINDOW_MS;
     });
-    console.log(`[ICF] Scraping inner concerts for ${innerTargets.length} festivals (fenêtre 30j)`);
+    console.log(`[ICF] Scraping inner concerts for ${innerTargets.length} festivals (fenêtre 30j + ${WHITELIST.length} whitelist)`);
+
 
     // Scrape parallèle des pages festival (limité à 5 concurrents pour ménager Firecrawl)
     const innerByFestivalUrl = new Map<string, InnerConcert[]>();
