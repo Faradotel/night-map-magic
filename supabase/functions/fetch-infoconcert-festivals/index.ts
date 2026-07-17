@@ -178,6 +178,23 @@ interface InnerConcert {
   free: boolean;
 }
 
+const VENUE_LOCATIONS: Record<string, { lat: number; lng: number; address: string }> = {
+  'jardin de la ville de grenoble': {
+    lat: 45.1922202,
+    lng: 5.7266400,
+    address: 'Jardin de Ville, 38000 Grenoble, France',
+  },
+};
+
+function getVenueLocation(venue: string): { lat: number; lng: number; address: string } | null {
+  const normalized = venue.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return VENUE_LOCATIONS[normalized] || null;
+}
+
 async function scrapeFestivalConcerts(festivalUrl: string, firecrawlKey: string): Promise<string> {
   try {
     const res = await fetch('https://api.firecrawl.dev/v1/scrape', {
@@ -400,8 +417,13 @@ Deno.serve(async (req) => {
           // Geocode salle si nom présent ; fallback au geocode festival
           let venueGeo = geo;
           if (c.venue) {
-            const vg = await geocode(`${c.venue}, ${cityNorm}, France`);
-            if (vg) venueGeo = vg;
+            const knownVenue = getVenueLocation(c.venue);
+            if (knownVenue) {
+              venueGeo = knownVenue;
+            } else {
+              const vg = await geocode(`${c.venue}, ${cityNorm}, France`);
+              if (vg) venueGeo = vg;
+            }
           }
           const artistsLabel = c.artists.slice(0, 4).join(' / ');
           byCity[cityNorm] ??= [];

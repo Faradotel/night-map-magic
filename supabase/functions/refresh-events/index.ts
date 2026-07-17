@@ -126,6 +126,7 @@ Deno.serve(async (req) => {
     // Match by normalized substring of either `venue` or `address`.
     const VENUE_OVERRIDES: Array<{ match: string; lat: number; lng: number }> = [
       // Grenoble
+      { match: 'jardin de la ville de grenoble', lat: 45.1922202, lng: 5.7266400 },
       { match: 'belle electrique', lat: 45.1871714, lng: 5.7041520 },
       { match: 'palais des sports', lat: 45.1856594, lng: 5.7407455 },
       { match: 'alpexpo', lat: 45.1553320, lng: 5.7363426 },
