@@ -403,7 +403,7 @@ Deno.serve(async (req) => {
         description: `[${e.type}] ${e.name} • via Brocabrac`,
         ticketUrl: e.url || baseUrl,
         price: 'Gratuit',
-        genres: [e.type],
+        genres: [],
         externalAttendees: null,
       };
     });

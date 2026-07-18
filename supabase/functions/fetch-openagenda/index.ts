@@ -311,7 +311,7 @@ async function fetchAgendaEvents(
         description: (kw.length ? `[${kw.join(', ')}] ` : '') + description + ' • via OpenAgenda',
         ticketUrl,
         price: e.conditions?.fr || (e.registration?.length > 0 ? null : 'Gratuit'),
-        genres: kw.slice(0, 5),
+        genres: [],
         externalAttendees: null,
         oaType: type,
         oaSubtype: subtype,
