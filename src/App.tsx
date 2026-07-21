@@ -5,7 +5,12 @@ import { SplashScreen } from "@/components/SplashScreen";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
+
+function VilleRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/sortir-ce-soir/${slug}`} replace />;
+}
 import { ThemeProvider } from "@/hooks/useTheme";
 import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
@@ -81,7 +86,7 @@ const App = () => {
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/villes" element={<CitiesIndex />} />
-                    <Route path="/villes/:slug" element={<CityPage />} />
+                    <Route path="/villes/:slug" element={<VilleRedirect />} />
                     <Route path="/sortir-ce-soir/:slug" element={<CityPage />} />
                     <Route path="/evenements/:slug" element={<EventPage />} />
                     <Route path="/en/nightlife/:slug" element={<NightlifePage />} />
