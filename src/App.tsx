@@ -86,7 +86,7 @@ const App = () => {
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/villes" element={<CitiesIndex />} />
-                    <Route path="/villes/:slug" element={<CityPage />} />
+                    <Route path="/villes/:slug" element={<VilleRedirect />} />
                     <Route path="/sortir-ce-soir/:slug" element={<CityPage />} />
                     <Route path="/evenements/:slug" element={<EventPage />} />
                     <Route path="/en/nightlife/:slug" element={<NightlifePage />} />
