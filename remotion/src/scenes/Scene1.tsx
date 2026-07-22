@@ -1,4 +1,5 @@
-import { AbsoluteFill, useCurrentFrame, spring, interpolate } from "remotion";
+import { AbsoluteFill, useCurrentFrame, spring } from "remotion";
+import { FONT_ANTON, FONT_INTER } from "../lib/fonts";
 
 export const Scene1 = () => {
   const frame = useCurrentFrame();
@@ -24,7 +25,7 @@ export const Scene1 = () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        fontFamily: "'Anton', sans-serif",
+        fontFamily: FONT_ANTON,
         color: "#FFFFFF",
       }}
     >
@@ -43,7 +44,7 @@ export const Scene1 = () => {
         style={{
           opacity: subtitleOpacity,
           marginTop: 40,
-          fontFamily: "'Inter', sans-serif",
+          fontFamily: FONT_INTER,
           fontSize: 48,
           fontWeight: 700,
           color: "#FF2D78",
