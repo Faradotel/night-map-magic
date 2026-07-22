@@ -3,35 +3,9 @@ import { FONT_ANTON, FONT_INTER } from "../lib/fonts";
 
 export const Scene3 = () => {
   const frame = useCurrentFrame();
-
-  const logoScale = spring({
-    frame: frame - 10,
-    fps: 30,
-    config: { damping: 12, stiffness: 150 },
-  });
-
-  const pinScale = spring({
-    frame: frame - 40,
-    fps: 30,
-    config: { damping: 10, stiffness: 200 },
-  });
-
-  const ringScale = interpolate(frame, [40, 120], [0, 2], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const ringOpacity = interpolate(frame, [40, 120], [0.8, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  const tagOpacity = spring({
-    frame: frame - 70,
-    fps: 30,
-    config: { damping: 20, stiffness: 150 },
-  });
-
-  const pulse = 1 + Math.sin(frame * 0.3) * 0.05;
+  const bar = interpolate(frame, [0, 20], [0, 1], { extrapolateRight: "clamp" });
+  const textIn = spring({ frame: frame - 10, fps: 30, config: { damping: 12 } });
+  const numIn = spring({ frame: frame - 22, fps: 30, config: { damping: 8, stiffness: 220 } });
 
   return (
     <AbsoluteFill
@@ -41,65 +15,53 @@ export const Scene3 = () => {
         alignItems: "center",
         justifyContent: "center",
         fontFamily: FONT_ANTON,
-        color: "#FFFFFF",
+        color: "#FFF",
+        gap: 30,
       }}
     >
       <div
         style={{
-          transform: `scale(${logoScale})`,
-          fontSize: 140,
-          color: "#FFFFFF",
-          textShadow: "0 0 60px rgba(255,45,120,0.4)",
-          letterSpacing: "0.02em",
+          height: 12,
+          width: `${bar * 90}%`,
+          background: "linear-gradient(90deg, #FF2D78, #8B5CF6, #06B6D4)",
+          boxShadow: "0 0 30px #FF2D78",
         }}
-      >
-        PulseMap
-      </div>
-
+      />
       <div
         style={{
-          position: "relative",
-          width: 140,
-          height: 140,
-          marginTop: 60,
-          transform: `scale(${pinScale * pulse})`,
+          fontFamily: FONT_INTER,
+          fontSize: 40,
+          fontWeight: 700,
+          opacity: textIn,
+          letterSpacing: "0.3em",
+          color: "#888",
         }}
       >
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            borderRadius: "50%",
-            border: "4px solid #FF2D78",
-            transform: `scale(${ringScale})`,
-            opacity: ringOpacity,
-          }}
-        />
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          style={{ width: "100%", height: "100%" }}
-        >
-          <path
-            d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
-            fill="#FF2D78"
-          />
-          <circle cx="12" cy="9" r="2.5" fill="#FFFFFF" />
-        </svg>
+        AUTOUR DE TOI
       </div>
-
       <div
         style={{
-          opacity: tagOpacity,
-          marginTop: 60,
+          fontSize: 380,
+          lineHeight: 0.85,
+          transform: `scale(${numIn})`,
+          background: "linear-gradient(180deg, #FF2D78, #8B5CF6)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          filter: "drop-shadow(0 0 40px rgba(255,45,120,0.6))",
+        }}
+      >
+        5000+
+      </div>
+      <div
+        style={{
           fontFamily: FONT_INTER,
           fontSize: 44,
-          fontWeight: 700,
-          color: "#06B6D4",
-          letterSpacing: "0.05em",
+          fontWeight: 900,
+          opacity: textIn,
+          textTransform: "uppercase",
         }}
       >
-        La carte des soirées
+        Soirées. Live. Maintenant.
       </div>
     </AbsoluteFill>
   );

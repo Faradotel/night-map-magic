@@ -1,58 +1,32 @@
-import { AbsoluteFill, useCurrentFrame, spring } from "remotion";
-import { FONT_ANTON, FONT_INTER } from "../lib/fonts";
+import { AbsoluteFill, useCurrentFrame, interpolate, spring } from "remotion";
+import { FONT_ANTON } from "../lib/fonts";
+import { Glitch } from "../components/Glitch";
 
 export const Scene1 = () => {
   const frame = useCurrentFrame();
-
-  const titleScale = spring({
-    frame,
-    fps: 30,
-    config: { damping: 12, stiffness: 200 },
-  });
-
-  const subtitleOpacity = spring({
-    frame: frame - 20,
-    fps: 30,
-    config: { damping: 20, stiffness: 150 },
-  });
-
-  const float = Math.sin(frame * 0.08) * 10;
+  const zoom = interpolate(frame, [0, 36], [1.4, 1.05]);
+  const pop = spring({ frame, fps: 30, config: { damping: 8, stiffness: 260 } });
+  const skew = interpolate(frame, [0, 20], [-8, 0], { extrapolateRight: "clamp" });
 
   return (
     <AbsoluteFill
       style={{
         display: "flex",
-        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         fontFamily: FONT_ANTON,
-        color: "#FFFFFF",
       }}
     >
       <div
         style={{
-          transform: `scale(${titleScale}) translateY(${float}px)`,
-          fontSize: 220,
-          lineHeight: 1,
+          transform: `scale(${pop * zoom}) skewX(${skew}deg)`,
+          fontSize: 340,
+          lineHeight: 0.9,
           textAlign: "center",
-          textShadow: "0 0 60px rgba(255,45,120,0.5)",
+          fontWeight: 900,
         }}
       >
-        CE SOIR ?
-      </div>
-      <div
-        style={{
-          opacity: subtitleOpacity,
-          marginTop: 40,
-          fontFamily: FONT_INTER,
-          fontSize: 48,
-          fontWeight: 700,
-          color: "#FF2D78",
-          letterSpacing: "0.1em",
-          textTransform: "uppercase",
-        }}
-      >
-        Tu veux sortir...
+        <Glitch intensity={10}>STOP.</Glitch>
       </div>
     </AbsoluteFill>
   );
