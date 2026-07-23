@@ -1,11 +1,21 @@
 import { AbsoluteFill, useCurrentFrame, spring, interpolate } from "remotion";
-import { FONT_ANTON, FONT_INTER } from "../lib/fonts";
+import { FONT_ANTON } from "../lib/fonts";
+
+const ROTATIONS = [
+  { text: "INSTA ?", color: "#FFF" },
+  { text: "STORIES VIDES.", color: "#888" },
+  { text: "SNAP ?", color: "#FFF" },
+  { text: "PERSONNE.", color: "#888" },
+  { text: "GOOGLE ?", color: "#FFF" },
+  { text: "3 RESTOS FERMÉS.", color: "#888" },
+];
 
 export const Scene3 = () => {
   const frame = useCurrentFrame();
-  const bar = interpolate(frame, [0, 20], [0, 1], { extrapolateRight: "clamp" });
-  const textIn = spring({ frame: frame - 10, fps: 30, config: { damping: 12 } });
-  const numIn = spring({ frame: frame - 22, fps: 30, config: { damping: 8, stiffness: 220 } });
+  const idx = Math.floor(frame / 8) % ROTATIONS.length;
+  const cur = ROTATIONS[idx];
+  const localFrame = frame % 8;
+  const scale = interpolate(localFrame, [0, 3, 8], [1.3, 1, 0.95]);
 
   return (
     <AbsoluteFill
@@ -15,53 +25,23 @@ export const Scene3 = () => {
         alignItems: "center",
         justifyContent: "center",
         fontFamily: FONT_ANTON,
-        color: "#FFF",
         gap: 30,
       }}
     >
       <div
         style={{
-          height: 12,
-          width: `${bar * 90}%`,
-          background: "linear-gradient(90deg, #FF2D78, #8B5CF6, #06B6D4)",
-          boxShadow: "0 0 30px #FF2D78",
-        }}
-      />
-      <div
-        style={{
-          fontFamily: FONT_INTER,
-          fontSize: 40,
-          fontWeight: 700,
-          opacity: textIn,
-          letterSpacing: "0.3em",
-          color: "#888",
+          fontSize: 180,
+          color: cur.color,
+          transform: `scale(${scale}) rotate(${
+            (idx % 2 === 0 ? -1 : 1) * 3
+          }deg)`,
+          textAlign: "center",
+          textShadow: cur.color === "#FFF" ? "6px 6px 0 #FF2D78" : "none",
+          padding: "0 40px",
+          lineHeight: 0.9,
         }}
       >
-        AUTOUR DE TOI
-      </div>
-      <div
-        style={{
-          fontSize: 380,
-          lineHeight: 0.85,
-          transform: `scale(${numIn})`,
-          background: "linear-gradient(180deg, #FF2D78, #8B5CF6)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          filter: "drop-shadow(0 0 40px rgba(255,45,120,0.6))",
-        }}
-      >
-        5000+
-      </div>
-      <div
-        style={{
-          fontFamily: FONT_INTER,
-          fontSize: 44,
-          fontWeight: 900,
-          opacity: textIn,
-          textTransform: "uppercase",
-        }}
-      >
-        Soirées. Live. Maintenant.
+        {cur.text}
       </div>
     </AbsoluteFill>
   );
