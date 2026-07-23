@@ -1,44 +1,56 @@
 import { AbsoluteFill, useCurrentFrame, spring, interpolate } from "remotion";
-import { FONT_ANTON } from "../lib/fonts";
+import { FONT_INTER } from "../lib/fonts";
 
-const WORDS = ["T'AS", "RIEN", "À", "FOUTRE", "CE SOIR ?"];
+type Msg = { from: "me" | "them"; text: string; at: number };
+const MSGS: Msg[] = [
+  { from: "them", text: "on fait quoi ce soir ?", at: 0 },
+  { from: "me", text: "j'sais pas 🤷", at: 10 },
+  { from: "them", text: "moi non plus 😭", at: 22 },
+  { from: "me", text: "encore netflix ?", at: 34 },
+];
 
 export const Scene2 = () => {
   const frame = useCurrentFrame();
   return (
     <AbsoluteFill
       style={{
+        padding: 80,
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
         justifyContent: "center",
-        gap: 14,
-        fontFamily: FONT_ANTON,
-        padding: 60,
+        gap: 30,
+        fontFamily: FONT_INTER,
       }}
     >
-      {WORDS.map((w, i) => {
+      {MSGS.map((m, i) => {
         const s = spring({
-          frame: frame - i * 5,
+          frame: frame - m.at,
           fps: 30,
-          config: { damping: 9, stiffness: 240 },
+          config: { damping: 12, stiffness: 220 },
         });
-        const rot = interpolate(s, [0, 1], [-15, i % 2 === 0 ? -2 : 3]);
-        const colors = ["#FFFFFF", "#FF2D78", "#FFFFFF", "#06B6D4", "#FFFFFF"];
+        const isMe = m.from === "me";
         return (
           <div
             key={i}
             style={{
-              transform: `scale(${s}) rotate(${rot}deg)`,
+              alignSelf: isMe ? "flex-end" : "flex-start",
+              transform: `scale(${s}) translateY(${(1 - s) * 30}px)`,
               opacity: s,
-              fontSize: i === 4 ? 150 : 180,
-              lineHeight: 0.9,
-              color: colors[i],
-              textShadow: `4px 4px 0 ${colors[i] === "#FFFFFF" ? "#FF2D78" : "#000"}`,
-              alignSelf: i % 2 === 0 ? "flex-start" : "flex-end",
+              maxWidth: "80%",
+              padding: "26px 40px",
+              borderRadius: 40,
+              background: isMe
+                ? "linear-gradient(135deg, #FF2D78, #8B5CF6)"
+                : "#2a2a2a",
+              color: "#FFF",
+              fontSize: 54,
+              fontWeight: 700,
+              boxShadow: isMe
+                ? "0 10px 40px rgba(255,45,120,0.4)"
+                : "0 10px 30px rgba(0,0,0,0.5)",
             }}
           >
-            {w}
+            {m.text}
           </div>
         );
       })}

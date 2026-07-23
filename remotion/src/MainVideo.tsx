@@ -43,28 +43,28 @@ export const MainVideo = () => {
       <PersistentBackground />
       <Shake>
         <Series>
-          <Series.Sequence durationInFrames={36}>
+          <Series.Sequence durationInFrames={50}>
             <Scene1 />
           </Series.Sequence>
-          <Series.Sequence durationInFrames={42}>
+          <Series.Sequence durationInFrames={56}>
             <Scene2 />
           </Series.Sequence>
           <Series.Sequence durationInFrames={48}>
             <Scene3 />
           </Series.Sequence>
-          <Series.Sequence durationInFrames={54}>
+          <Series.Sequence durationInFrames={40}>
             <Scene4 />
           </Series.Sequence>
-          <Series.Sequence durationInFrames={54}>
+          <Series.Sequence durationInFrames={60}>
             <Scene5 />
           </Series.Sequence>
-          <Series.Sequence durationInFrames={48}>
+          <Series.Sequence durationInFrames={54}>
             <Scene6 />
           </Series.Sequence>
           <Series.Sequence durationInFrames={36}>
             <Scene7 />
           </Series.Sequence>
-          <Series.Sequence durationInFrames={72}>
+          <Series.Sequence durationInFrames={78}>
             <Scene8 />
           </Series.Sequence>
         </Series>
