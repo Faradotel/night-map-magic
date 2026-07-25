@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_keys: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          owner_id: string | null
+          revoked_at: string | null
+          usage_count: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          key_hash: string
+          key_prefix: string
+          last_used_at?: string | null
+          name: string
+          owner_id?: string | null
+          revoked_at?: string | null
+          usage_count?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          owner_id?: string | null
+          revoked_at?: string | null
+          usage_count?: number
+        }
+        Relationships: []
+      }
       cached_events: {
         Row: {
           address: string
@@ -616,6 +655,14 @@ export type Database = {
         }[]
       }
       validate_event_pass: { Args: { _pass_id: string }; Returns: Json }
+      verify_api_key: {
+        Args: { _key_hash: string }
+        Returns: {
+          id: string
+          name: string
+          owner_id: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "pro" | "user"
