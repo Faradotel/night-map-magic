@@ -29,6 +29,7 @@ const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
 const ContactLegalPage = lazy(() => import("./pages/ContactLegalPage"));
 const IndexationDashboard = lazy(() => import("./pages/admin/IndexationDashboard"));
+const ApiKeysAdmin = lazy(() => import("./pages/admin/ApiKeys"));
 import { RetiredPageGuard } from "@/components/RetiredPageGuard";
 import { Capacitor } from "@capacitor/core";
 import { App as CapacitorApp } from "@capacitor/app";
@@ -97,6 +98,7 @@ const App = () => {
                     <Route path="/ambiances/:slug" element={<RetiredPageGuard><TagPage kind="vibe" /></RetiredPageGuard>} />
                     <Route path="/ambiances/:slug/:city" element={<RetiredPageGuard><TagPage kind="vibe" /></RetiredPageGuard>} />
                     <Route path="/admin/indexation" element={<IndexationDashboard />} />
+                    <Route path="/admin/api-keys" element={<ApiKeysAdmin />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
                     <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
