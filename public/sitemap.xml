@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <sitemap><loc>https://pulse-map.live/sitemap-tier1.xml</loc><lastmod>2026-07-23</lastmod></sitemap>
-  <sitemap><loc>https://pulse-map.live/sitemap-tier2.xml</loc><lastmod>2026-07-23</lastmod></sitemap>
-  <sitemap><loc>https://pulse-map.live/sitemap-tier3.xml</loc><lastmod>2026-07-23</lastmod></sitemap>
-  <sitemap><loc>https://pulse-map.live/sitemap-events.xml</loc><lastmod>2026-07-23</lastmod></sitemap>
+  <sitemap><loc>https://pulse-map.live/sitemap-tier1.xml</loc><lastmod>2026-07-25</lastmod></sitemap>
+  <sitemap><loc>https://pulse-map.live/sitemap-tier2.xml</loc><lastmod>2026-07-25</lastmod></sitemap>
+  <sitemap><loc>https://pulse-map.live/sitemap-tier3.xml</loc><lastmod>2026-07-25</lastmod></sitemap>
+  <sitemap><loc>https://pulse-map.live/sitemap-events.xml</loc><lastmod>2026-07-25</lastmod></sitemap>
 </sitemapindex>
