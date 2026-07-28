@@ -89,6 +89,8 @@ export default function IndexationDashboard() {
       <div className="max-w-7xl mx-auto space-y-6">
         <h1 className="text-3xl font-bold">Suivi indexation Google</h1>
 
+        <AiIntrosPanel />
+
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <Stat label="Total tracké" value={stats.total} />
           <Stat label="Indexé" value={stats.indexed} tone="text-green-600" />
