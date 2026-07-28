@@ -263,17 +263,24 @@ export default function CategoryPage() {
         <p className="text-xs text-accent font-semibold uppercase tracking-wider mb-3">
           Mis à jour · {todayFr}
         </p>
-        <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-          {isSoirees && cityName ? (
-            <><strong>Soirée {cityName}</strong> ce soir : PulseMap regroupe toutes les soirées, clubs, DJ sets, techno, électro, house, hip-hop, afterworks et bars animés à {cityName} — géolocalisés sur une carte temps réel, avec horaires et billetterie. La façon la plus rapide de trouver <strong>où sortir ce soir à {cityName}</strong>.</>
-          ) : isSoirees ? (
-            <>Tu cherches <strong>où sortir ce soir</strong> ? PulseMap regroupe toutes les <strong>soirées</strong> de ce soir en France : clubs, DJ sets, techno, électro, afterworks et bars animés géolocalisés sur une carte temps réel, avec horaires et billetterie.</>
-          ) : cityName ? (
-            <>Découvrez tous les <strong>{labelLower} ce soir à {cityName}</strong> sur PulseMap : carte temps réel, horaires précis, lieux et billetterie. Mis à jour en direct.</>
-          ) : (
-            <>{cat.description} <strong>PulseMap</strong> affiche en direct tous les {labelLower} disponibles ce soir partout en France, géolocalisés sur une carte interactive.</>
-          )}
-        </p>
+        {aiIntro?.intro_html ? (
+          <div
+            className="prose prose-sm prose-invert max-w-none text-muted-foreground leading-relaxed mb-6 [&_p]:mb-3 [&_strong]:text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+            dangerouslySetInnerHTML={{ __html: aiIntro.intro_html }}
+          />
+        ) : (
+          <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+            {isSoirees && cityName ? (
+              <><strong>Soirée {cityName}</strong> ce soir : PulseMap regroupe toutes les soirées, clubs, DJ sets, techno, électro, house, hip-hop, afterworks et bars animés à {cityName} — géolocalisés sur une carte temps réel, avec horaires et billetterie. La façon la plus rapide de trouver <strong>où sortir ce soir à {cityName}</strong>.</>
+            ) : isSoirees ? (
+              <>Tu cherches <strong>où sortir ce soir</strong> ? PulseMap regroupe toutes les <strong>soirées</strong> de ce soir en France : clubs, DJ sets, techno, électro, afterworks et bars animés géolocalisés sur une carte temps réel, avec horaires et billetterie.</>
+            ) : cityName ? (
+              <>Découvrez tous les <strong>{labelLower} ce soir à {cityName}</strong> sur PulseMap : carte temps réel, horaires précis, lieux et billetterie. Mis à jour en direct.</>
+            ) : (
+              <>{cat.description} <strong>PulseMap</strong> affiche en direct tous les {labelLower} disponibles ce soir partout en France, géolocalisés sur une carte interactive.</>
+            )}
+          </p>
+        )}
 
 
         <Link
