@@ -128,6 +128,48 @@ export type Database = {
         }
         Relationships: []
       }
+      city_seo_intros: {
+        Row: {
+          city_name: string
+          city_slug: string
+          created_at: string
+          events_snapshot: Json | null
+          generated_at: string
+          h1: string
+          intro_html: string
+          meta_description: string
+          model: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          city_name: string
+          city_slug: string
+          created_at?: string
+          events_snapshot?: Json | null
+          generated_at?: string
+          h1: string
+          intro_html: string
+          meta_description: string
+          model?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          city_name?: string
+          city_slug?: string
+          created_at?: string
+          events_snapshot?: Json | null
+          generated_at?: string
+          h1?: string
+          intro_html?: string
+          meta_description?: string
+          model?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string

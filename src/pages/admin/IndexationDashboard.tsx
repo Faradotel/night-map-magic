@@ -89,6 +89,8 @@ export default function IndexationDashboard() {
       <div className="max-w-7xl mx-auto space-y-6">
         <h1 className="text-3xl font-bold">Suivi indexation Google</h1>
 
+        <AiIntrosPanel />
+
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <Stat label="Total tracké" value={stats.total} />
           <Stat label="Indexé" value={stats.indexed} tone="text-green-600" />
@@ -163,6 +165,81 @@ function Stat({ label, value, tone }: { label: string; value: number; tone?: str
     <Card className="p-4">
       <div className="text-xs text-muted-foreground">{label}</div>
       <div className={`text-2xl font-bold ${tone ?? ""}`}>{value.toLocaleString("fr-FR")}</div>
+    </Card>
+  );
+}
+
+function AiIntrosPanel() {
+  const [status, setStatus] = useState<{ generated: number; total: number; lastAt: string | null }>({ generated: 0, total: 0, lastAt: null });
+  const [running, setRunning] = useState(false);
+
+  const refresh = async () => {
+    const { data, count } = await supabase
+      .from("city_seo_intros")
+      .select("city_slug,generated_at", { count: "exact" })
+      .order("generated_at", { ascending: false })
+      .limit(1);
+    setStatus({
+      generated: count ?? 0,
+      total: 115,
+      lastAt: data?.[0]?.generated_at ?? null,
+    });
+  };
+
+  useEffect(() => { refresh(); }, []);
+
+  const trigger = async (mode: "tier1" | "all") => {
+    setRunning(true);
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      const token = session.session?.access_token;
+      if (!token) { toast.error("Session expirée"); return; }
+
+      const body: Record<string, unknown> = { delayMs: 1500 };
+      if (mode === "all") {
+        // Load full city list from the client's slug map.
+        const mod = await import("@/lib/seo/slug");
+        body.cities = Object.entries(mod.CITY_SLUGS).map(([slug, name]) => ({ slug, name }));
+      }
+
+      const res = await fetch(
+        "https://rhzojoyxldrllxroyyqt.supabase.co/functions/v1/generate-city-intro",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify(body),
+        }
+      );
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Erreur");
+      toast.success(`Généré : ${json.count ?? 1} ville(s)`);
+      await refresh();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  return (
+    <Card className="p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="font-semibold">Intros SEO uniques par ville (IA)</div>
+          <div className="text-xs text-muted-foreground">
+            {status.generated} / {status.total} villes générées
+            {status.lastAt && ` — dernière : ${new Date(status.lastAt).toLocaleString("fr-FR")}`}
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" disabled={running} onClick={() => trigger("tier1")}>
+            {running ? "…" : "Régénérer Tier 1 (15 villes)"}
+          </Button>
+          <Button size="sm" disabled={running} onClick={() => trigger("all")}>
+            {running ? "…" : "Régénérer toutes"}
+          </Button>
+        </div>
+      </div>
     </Card>
   );
 }

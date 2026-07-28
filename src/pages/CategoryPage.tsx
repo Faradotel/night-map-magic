@@ -11,6 +11,12 @@ interface CachedEvent {
   start_time: string; type: string;
 }
 
+interface CitySeoIntro {
+  h1: string;
+  intro_html: string;
+  meta_description: string;
+}
+
 export default function CategoryPage() {
   const { slug = '', city: cityParam } = useParams();
   const cat = CATEGORY_SLUGS[slug.toLowerCase()];
@@ -19,6 +25,7 @@ export default function CategoryPage() {
   const cityValid = !citySlug || !!cityName;
   const [events, setEvents] = useState<CachedEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [aiIntro, setAiIntro] = useState<CitySeoIntro | null>(null);
 
   useEffect(() => {
     if (!cat || !cityValid) return;
@@ -38,6 +45,21 @@ export default function CategoryPage() {
     })();
     return () => { cancel = true; };
   }, [slug, cat, cityName, cityValid]);
+
+  // Fetch AI-generated unique intro for this city (only for the "soirees" category — main SEO target).
+  useEffect(() => {
+    if (!citySlug || slug.toLowerCase() !== 'soirees') { setAiIntro(null); return; }
+    let cancel = false;
+    (async () => {
+      const { data } = await supabase
+        .from('city_seo_intros')
+        .select('h1,intro_html,meta_description')
+        .eq('city_slug', citySlug)
+        .maybeSingle();
+      if (!cancel && data) setAiIntro(data as CitySeoIntro);
+    })();
+    return () => { cancel = true; };
+  }, [citySlug, slug]);
 
   if (!cat || !cityValid) {
     const pathname = citySlug
@@ -70,15 +92,18 @@ export default function CategoryPage() {
   const isSoirees = slug.toLowerCase() === 'soirees';
 
   // Titre optimisé : le mot-clé exact "Soirée <ville>" en tout début (positions 1-2 = poids max SEO).
+  const titleCount = cityName && events.length > 0 ? ` : ${events.length} events live` : '';
   const title = isSoirees
     ? (cityName
-        ? `Soirée ${cityName} ce soir : agenda live | PulseMap`
+        ? `Soirée ${cityName} ce soir${titleCount} | PulseMap`
         : `Soirée ce soir en France : où sortir ? Clubs, DJ & bars`)
     : (cityName
-        ? `${cat.label} ${cityName} ce soir — agenda live | PulseMap`
+        ? `${cat.label} ${cityName} ce soir${titleCount} | PulseMap`
         : `${cat.label} ce soir en France — agenda live | PulseMap`);
 
-  const description = isSoirees
+  // Dynamic upcoming events count for meta/title (fresh signal to Google + higher CTR).
+  const eventsCount = events.length;
+  const genericMeta = isSoirees
     ? (cityName
         ? `Soirée ${cityName} ce soir : toutes les soirées, clubs, DJ sets et bars animés à ${cityName} sur une carte temps réel. Mis à jour en direct, gratuit, sans inscription.`
         : `Où sortir ce soir ? Toutes les soirées en France ce soir : clubs, DJ sets, techno, électro, afterworks et bars animés sur une carte temps réel. Gratuit, sans inscription.`)
@@ -86,13 +111,27 @@ export default function CategoryPage() {
         ? `Tous les ${labelLower} ce soir à ${cityName} : carte temps réel, horaires, lieux et billetterie. Gratuit, sans inscription.`
         : `${cat.description} Carte temps réel des ${labelLower} ce soir partout en France. Gratuit, sans inscription.`);
 
-  const h1 = isSoirees
+  const description = (() => {
+    if (aiIntro?.meta_description) return aiIntro.meta_description;
+    if (!cityName || loading) return genericMeta;
+    const sampleVenues = [...new Set(events.slice(0, 6).map(e => e.venue).filter(Boolean))].slice(0, 2);
+    if (isSoirees && eventsCount > 0) {
+      const venuePart = sampleVenues.length ? ` : ${sampleVenues.join(', ')}` : '';
+      return `${eventsCount} soirée${eventsCount > 1 ? 's' : ''} à ${cityName} ce soir et dans les jours à venir${venuePart}. Carte live PulseMap, gratuit sans inscription.`.slice(0, 200);
+    }
+    if (eventsCount > 0) {
+      return `${eventsCount} ${labelLower} à ${cityName} à venir. Carte temps réel, horaires, lieux et billetterie sur PulseMap. Gratuit, sans inscription.`.slice(0, 200);
+    }
+    return genericMeta;
+  })();
+
+  const h1 = aiIntro?.h1 || (isSoirees
     ? (cityName
         ? `Soirée ${cityName} — Que faire ce soir à ${cityName} ?`
         : `Soirée ce soir en France : où sortir ?`)
     : (cityName
         ? `${cat.label} ${cityName} ce soir`
-        : `${cat.label} ce soir en France`);
+        : `${cat.label} ce soir en France`));
 
 
   const faqs = isSoirees && cityName ? [
@@ -224,17 +263,24 @@ export default function CategoryPage() {
         <p className="text-xs text-accent font-semibold uppercase tracking-wider mb-3">
           Mis à jour · {todayFr}
         </p>
-        <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-          {isSoirees && cityName ? (
-            <><strong>Soirée {cityName}</strong> ce soir : PulseMap regroupe toutes les soirées, clubs, DJ sets, techno, électro, house, hip-hop, afterworks et bars animés à {cityName} — géolocalisés sur une carte temps réel, avec horaires et billetterie. La façon la plus rapide de trouver <strong>où sortir ce soir à {cityName}</strong>.</>
-          ) : isSoirees ? (
-            <>Tu cherches <strong>où sortir ce soir</strong> ? PulseMap regroupe toutes les <strong>soirées</strong> de ce soir en France : clubs, DJ sets, techno, électro, afterworks et bars animés géolocalisés sur une carte temps réel, avec horaires et billetterie.</>
-          ) : cityName ? (
-            <>Découvrez tous les <strong>{labelLower} ce soir à {cityName}</strong> sur PulseMap : carte temps réel, horaires précis, lieux et billetterie. Mis à jour en direct.</>
-          ) : (
-            <>{cat.description} <strong>PulseMap</strong> affiche en direct tous les {labelLower} disponibles ce soir partout en France, géolocalisés sur une carte interactive.</>
-          )}
-        </p>
+        {aiIntro?.intro_html ? (
+          <div
+            className="prose prose-sm prose-invert max-w-none text-muted-foreground leading-relaxed mb-6 [&_p]:mb-3 [&_strong]:text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+            dangerouslySetInnerHTML={{ __html: aiIntro.intro_html }}
+          />
+        ) : (
+          <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+            {isSoirees && cityName ? (
+              <><strong>Soirée {cityName}</strong> ce soir : PulseMap regroupe toutes les soirées, clubs, DJ sets, techno, électro, house, hip-hop, afterworks et bars animés à {cityName} — géolocalisés sur une carte temps réel, avec horaires et billetterie. La façon la plus rapide de trouver <strong>où sortir ce soir à {cityName}</strong>.</>
+            ) : isSoirees ? (
+              <>Tu cherches <strong>où sortir ce soir</strong> ? PulseMap regroupe toutes les <strong>soirées</strong> de ce soir en France : clubs, DJ sets, techno, électro, afterworks et bars animés géolocalisés sur une carte temps réel, avec horaires et billetterie.</>
+            ) : cityName ? (
+              <>Découvrez tous les <strong>{labelLower} ce soir à {cityName}</strong> sur PulseMap : carte temps réel, horaires précis, lieux et billetterie. Mis à jour en direct.</>
+            ) : (
+              <>{cat.description} <strong>PulseMap</strong> affiche en direct tous les {labelLower} disponibles ce soir partout en France, géolocalisés sur une carte interactive.</>
+            )}
+          </p>
+        )}
 
 
         <Link
