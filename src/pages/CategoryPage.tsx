@@ -11,6 +11,12 @@ interface CachedEvent {
   start_time: string; type: string;
 }
 
+interface CitySeoIntro {
+  h1: string;
+  intro_html: string;
+  meta_description: string;
+}
+
 export default function CategoryPage() {
   const { slug = '', city: cityParam } = useParams();
   const cat = CATEGORY_SLUGS[slug.toLowerCase()];
@@ -19,6 +25,7 @@ export default function CategoryPage() {
   const cityValid = !citySlug || !!cityName;
   const [events, setEvents] = useState<CachedEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [aiIntro, setAiIntro] = useState<CitySeoIntro | null>(null);
 
   useEffect(() => {
     if (!cat || !cityValid) return;
@@ -38,6 +45,21 @@ export default function CategoryPage() {
     })();
     return () => { cancel = true; };
   }, [slug, cat, cityName, cityValid]);
+
+  // Fetch AI-generated unique intro for this city (only for the "soirees" category — main SEO target).
+  useEffect(() => {
+    if (!citySlug || slug.toLowerCase() !== 'soirees') { setAiIntro(null); return; }
+    let cancel = false;
+    (async () => {
+      const { data } = await supabase
+        .from('city_seo_intros')
+        .select('h1,intro_html,meta_description')
+        .eq('city_slug', citySlug)
+        .maybeSingle();
+      if (!cancel && data) setAiIntro(data as CitySeoIntro);
+    })();
+    return () => { cancel = true; };
+  }, [citySlug, slug]);
 
   if (!cat || !cityValid) {
     const pathname = citySlug
