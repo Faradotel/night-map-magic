@@ -97,6 +97,7 @@
   <url><loc>https://pulse-map.live/categories/bars/martigues</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/versailles</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/saint-denis</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://pulse-map.live/categories/sport/rueil-malmaison</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/martigues</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/roubaix</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/versailles</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
@@ -113,7 +114,6 @@
   <url><loc>https://pulse-map.live/categories/culture/levallois-perret</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/ivry-sur-seine</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/martigues</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://pulse-map.live/categories/brocantes/rueil-malmaison</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/brocantes/arles</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/brocantes/tarbes</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
 </urlset>
