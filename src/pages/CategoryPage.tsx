@@ -92,12 +92,13 @@ export default function CategoryPage() {
   const isSoirees = slug.toLowerCase() === 'soirees';
 
   // Titre optimisé : le mot-clé exact "Soirée <ville>" en tout début (positions 1-2 = poids max SEO).
+  const titleCount = cityName && events.length > 0 ? ` : ${events.length} events live` : '';
   const title = isSoirees
     ? (cityName
-        ? `Soirée ${cityName} ce soir : agenda live | PulseMap`
+        ? `Soirée ${cityName} ce soir${titleCount} | PulseMap`
         : `Soirée ce soir en France : où sortir ? Clubs, DJ & bars`)
     : (cityName
-        ? `${cat.label} ${cityName} ce soir — agenda live | PulseMap`
+        ? `${cat.label} ${cityName} ce soir${titleCount} | PulseMap`
         : `${cat.label} ce soir en France — agenda live | PulseMap`);
 
   // Dynamic upcoming events count for meta/title (fresh signal to Google + higher CTR).
