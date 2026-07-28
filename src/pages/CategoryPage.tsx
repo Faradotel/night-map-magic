@@ -100,7 +100,9 @@ export default function CategoryPage() {
         ? `${cat.label} ${cityName} ce soir — agenda live | PulseMap`
         : `${cat.label} ce soir en France — agenda live | PulseMap`);
 
-  const description = isSoirees
+  // Dynamic upcoming events count for meta/title (fresh signal to Google + higher CTR).
+  const eventsCount = events.length;
+  const genericMeta = isSoirees
     ? (cityName
         ? `Soirée ${cityName} ce soir : toutes les soirées, clubs, DJ sets et bars animés à ${cityName} sur une carte temps réel. Mis à jour en direct, gratuit, sans inscription.`
         : `Où sortir ce soir ? Toutes les soirées en France ce soir : clubs, DJ sets, techno, électro, afterworks et bars animés sur une carte temps réel. Gratuit, sans inscription.`)
@@ -108,13 +110,27 @@ export default function CategoryPage() {
         ? `Tous les ${labelLower} ce soir à ${cityName} : carte temps réel, horaires, lieux et billetterie. Gratuit, sans inscription.`
         : `${cat.description} Carte temps réel des ${labelLower} ce soir partout en France. Gratuit, sans inscription.`);
 
-  const h1 = isSoirees
+  const description = (() => {
+    if (aiIntro?.meta_description) return aiIntro.meta_description;
+    if (!cityName || loading) return genericMeta;
+    const sampleVenues = [...new Set(events.slice(0, 6).map(e => e.venue).filter(Boolean))].slice(0, 2);
+    if (isSoirees && eventsCount > 0) {
+      const venuePart = sampleVenues.length ? ` : ${sampleVenues.join(', ')}` : '';
+      return `${eventsCount} soirée${eventsCount > 1 ? 's' : ''} à ${cityName} ce soir et dans les jours à venir${venuePart}. Carte live PulseMap, gratuit sans inscription.`.slice(0, 200);
+    }
+    if (eventsCount > 0) {
+      return `${eventsCount} ${labelLower} à ${cityName} à venir. Carte temps réel, horaires, lieux et billetterie sur PulseMap. Gratuit, sans inscription.`.slice(0, 200);
+    }
+    return genericMeta;
+  })();
+
+  const h1 = aiIntro?.h1 || (isSoirees
     ? (cityName
         ? `Soirée ${cityName} — Que faire ce soir à ${cityName} ?`
         : `Soirée ce soir en France : où sortir ?`)
     : (cityName
         ? `${cat.label} ${cityName} ce soir`
-        : `${cat.label} ce soir en France`);
+        : `${cat.label} ce soir en France`));
 
 
   const faqs = isSoirees && cityName ? [
