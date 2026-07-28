@@ -141,8 +141,23 @@ Deno.serve(async (req) => {
   try {
     const authz = req.headers.get('authorization') ?? '';
     const bearer = authz.replace(/^Bearer\s+/i, '');
-    // Accept either the refresh secret OR the service role key (for admin calls).
-    if (REFRESH_SECRET && bearer !== REFRESH_SECRET && bearer !== SERVICE_ROLE) {
+
+    // Accept: (1) refresh secret, (2) service role key, or (3) an authenticated
+    // user whose account has the `admin` app_role (invoked from /admin panel).
+    let allowed = REFRESH_SECRET && (bearer === REFRESH_SECRET || bearer === SERVICE_ROLE);
+    if (!allowed && bearer) {
+      const userClient = createClient(SUPABASE_URL, Deno.env.get('SUPABASE_ANON_KEY') ?? '', {
+        global: { headers: { Authorization: `Bearer ${bearer}` } },
+      });
+      const { data: userData } = await userClient.auth.getUser();
+      if (userData?.user) {
+        const svc = createClient(SUPABASE_URL, SERVICE_ROLE);
+        const { data: roleRow } = await svc
+          .from('user_roles').select('role').eq('user_id', userData.user.id).eq('role', 'admin').maybeSingle();
+        if (roleRow) allowed = true;
+      }
+    }
+    if (!allowed) {
       return new Response(JSON.stringify({ error: 'unauthorized' }), {
         status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
