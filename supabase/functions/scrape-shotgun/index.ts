@@ -405,6 +405,15 @@ Deno.serve(async (req) => {
       const genreStr = raw.genres.length > 0 ? raw.genres.join(', ') : '';
       const description = [genreStr, raw.price, raw.date, 'via Shotgun'].filter(Boolean).join(' • ');
 
+      // Classification Option C — Shotgun = 100% nightlife/music, force la branche
+      const { classifyGeneric } = await import('../_shared/classify.ts');
+      const cls = classifyGeneric({
+        category: 'music',
+        name: raw.name,
+        genres: raw.genres,
+        forceNightlifeIfMusic: true,
+      });
+
       geocodedEvents.push({
         id: `shotgun-${slug}-${geocodedEvents.length}`,
         name: raw.name,
@@ -417,9 +426,14 @@ Deno.serve(async (req) => {
         description,
         ticketUrl: ticketUrl || `https://shotgun.live/fr/cities/${slug}`,
         price: raw.price || undefined,
-        genres: raw.genres,
+        genres: cls.genres.length ? cls.genres : raw.genres,
+        type: cls.type,
+        vibe: cls.vibe,
+        subGenre: cls.subGenre,
+        priority: cls.priority,
       });
     }
+
 
     console.log(`Returning ${geocodedEvents.length} geocoded Shotgun events`);
 
