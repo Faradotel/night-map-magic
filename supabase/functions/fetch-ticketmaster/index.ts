@@ -64,15 +64,19 @@ Deno.serve(async (req) => {
     // Build query params
     // Note: on retire `classificationName: 'music'` — trop restrictif, exclut
     // pas mal de concerts mal classés + spectacles/humour/festivals. On filtre
-    // en aval si besoin. On ajoute startDateTime=now pour ne pas gaspiller
-    // le quota de 1000 résultats (cap Ticketmaster) sur des events passés.
+    // en aval si besoin. On borne la fenêtre à [now, now+90j] pour ne pas
+    // saturer le cap dur Ticketmaster de 1000 résultats/requête sur les
+    // grandes villes (Paris/Lyon/…) et rester dans un horizon utile pour
+    // "sortir prochainement".
+    const isoNoMs = (d: Date) => d.toISOString().replace(/\.\d{3}Z$/, 'Z');
     const baseParams = new URLSearchParams({
       apikey: apiKey,
       locale: 'fr',
       countryCode: 'FR',
       size: '200',
       sort: 'date,asc',
-      startDateTime: new Date(Date.now() - 3600_000).toISOString().replace(/\.\d{3}Z$/, 'Z'),
+      startDateTime: isoNoMs(new Date(Date.now() - 3600_000)),
+      endDateTime: isoNoMs(new Date(Date.now() + 90 * 24 * 3600_000)),
     });
 
     if (hasCoords) {
