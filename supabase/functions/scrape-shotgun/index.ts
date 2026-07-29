@@ -28,7 +28,12 @@ interface ShotgunEvent {
   ticketUrl: string;
   price?: string;
   genres: string[];
+  type: string;
+  vibe: string;
+  subGenre: string | null;
+  priority: number;
 }
+
 
 // City slug mapping for shotgun.live/fr/cities/{slug}
 const CITY_SLUGS: Record<string, string> = {
