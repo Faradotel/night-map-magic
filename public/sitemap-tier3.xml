@@ -66,14 +66,17 @@
   <url><loc>https://pulse-map.live/sortir-ce-soir/rodez</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/epinal</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/categories/concerts/roubaix</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://pulse-map.live/categories/concerts/saint-nazaire</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/concerts/versailles</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/concerts/boulogne-billancourt</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://pulse-map.live/categories/concerts/saint-denis</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/concerts/montreuil</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/concerts/courbevoie</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/concerts/aubervilliers</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/concerts/neuilly-sur-seine</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/concerts/issy-les-moulineaux</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/concerts/martigues</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://pulse-map.live/categories/concerts/montauban</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/soirees/dunkerque</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/soirees/versailles</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/soirees/aubervilliers</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
@@ -95,11 +98,15 @@
   <url><loc>https://pulse-map.live/categories/bars/issy-les-moulineaux</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/levallois-perret</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/martigues</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://pulse-map.live/categories/bars/montauban</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://pulse-map.live/categories/sport/saint-nazaire</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/versailles</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/saint-denis</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/rueil-malmaison</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/martigues</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://pulse-map.live/categories/sport/montauban</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/roubaix</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://pulse-map.live/categories/culture/saint-nazaire</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/versailles</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/boulogne-billancourt</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/saint-denis</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
@@ -114,7 +121,9 @@
   <url><loc>https://pulse-map.live/categories/culture/levallois-perret</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/asnieres-sur-seine</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/ivry-sur-seine</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://pulse-map.live/categories/culture/menton</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/martigues</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://pulse-map.live/categories/culture/montauban</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/brocantes/arles</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/brocantes/tarbes</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
 </urlset>
