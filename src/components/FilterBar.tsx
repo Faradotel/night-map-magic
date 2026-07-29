@@ -4,7 +4,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useDistanceUnit, convertDistance } from '@/hooks/useDistanceUnit';
 
 type DateFilter = 'today' | 'weekend' | 'week' | 'all';
-type PriceFilter = 'all' | 'free' | 'paid';
+type GenreFilter = 'electro' | 'techno' | 'house' | 'pop' | 'rock' | 'indie' | 'r&b' | 'jazz';
 type VibeFilter = 'chill' | 'rave' | 'afterwork' | 'cosy' | 'concert' | 'culture' | 'sport' | 'party' | 'nightlife' | 'dance' | 'family' | 'energy';
 export type SourceFilter = 'concert' | 'brocante' | 'sport' | 'agenda' | 'festival' | 'meetup';
 
