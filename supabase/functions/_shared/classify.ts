@@ -55,6 +55,9 @@ const GENRE_NORMALIZE: Record<string, string> = {
 };
 
 // Genres musicaux → type "nightlife" (soirée/DJ) vs "concert" (live).
+// NB: on garde uniquement les genres 100% club/électro. Rap, r&b, reggae sur
+// Ticketmaster sont quasi-toujours des concerts live en salle (Zénith, Accor…),
+// pas des DJ sets. Les vrais clubbings sont attrapés par NIGHTLIFE_NAME_RE.
 const NIGHTLIFE_MUSIC_GENRES = new Set([
   'electro',
   'techno',
@@ -62,9 +65,6 @@ const NIGHTLIFE_MUSIC_GENRES = new Set([
   'trance',
   'drum-and-bass',
   'dnb',
-  'hip-hop',
-  'r&b',
-  'reggae',
 ]);
 
 // Mots-clés dans le nom qui basculent automatiquement en nightlife.
