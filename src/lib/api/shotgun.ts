@@ -76,8 +76,15 @@ const GENRE_MAP: Record<string, MusicGenre> = {
 
 const BROCANTE_PATTERN = /\b(vide[\s-]?grenier|vide[\s-]?dressing|brocante|braderie|puces|march[ée]\s+aux?\s+puces|march[ée]\s+du\s+livre|vinyles?)\b/i;
 
-const EVENT_VIBES = new Set<EventVibe>(['rave', 'chill', 'afterwork', 'cosy', 'concert', 'culture', 'sport']);
-const EVENT_TYPES = new Set<NightEvent['type']>(['soirée', 'club', 'bar', 'concert', 'afterwork', 'sport', 'théâtre', 'expo', 'festival', 'spectacle', 'brocante']);
+const EVENT_VIBES = new Set<EventVibe>([
+  'rave', 'chill', 'afterwork', 'cosy', 'concert', 'culture', 'sport',
+  'party', 'nightlife', 'dance', 'family', 'energy',
+]);
+const EVENT_TYPES = new Set<NightEvent['type']>([
+  'soirée', 'club', 'bar', 'concert', 'afterwork', 'sport', 'théâtre', 'expo',
+  'festival', 'spectacle', 'brocante',
+  'nightlife', 'culture', 'famille', 'cinema', 'autre',
+]);
 
 function isStoredEventVibe(value: string): value is EventVibe {
   return EVENT_VIBES.has(value as EventVibe);
@@ -403,6 +410,8 @@ function cachedToNightEvent(e: any): NightEvent {
     type,
     vibe,
     genres,
+    subGenre: e.sub_genre || undefined,
+    priority: typeof e.priority === 'number' ? e.priority : undefined,
     lat: e.lat,
     lng: e.lng,
     address: e.address,
@@ -419,6 +428,7 @@ function cachedToNightEvent(e: any): NightEvent {
     externalAttendees: e.external_attendees || null,
   };
 }
+
 
 /**
  * Load all upcoming events from every city (France mode)
