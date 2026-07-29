@@ -241,6 +241,14 @@ Deno.serve(async (req) => {
       const citySlug = city.toLowerCase().replace(/\s+/g, '-').replace(/[éèê]/g, 'e').replace(/[àâ]/g, 'a');
       const id = `mu-${citySlug}-${i}-${Date.now()}`;
 
+      // Classification Option C
+      const { classifyGeneric } = await import('../_shared/classify.ts');
+      const cls = classifyGeneric({
+        category: e.category,
+        name: e.name,
+        genres: [],
+      });
+
       events.push({
         id,
         name: e.name,
@@ -254,11 +262,16 @@ Deno.serve(async (req) => {
         description: (e.category ? `[${e.category}] ` : '') + (e.group ? `${e.group} — ` : '') + (e.description || ''),
         ticketUrl: e.url || '',
         price: e.price || 'Gratuit',
-        genres: [] as string[],
+        type: cls.type,
+        vibe: cls.vibe,
+        genres: cls.genres,
+        subGenre: cls.subGenre,
+        priority: cls.priority,
         category: e.category || 'other',
         externalAttendees: typeof e.attendees === 'number' && e.attendees > 0 ? e.attendees : null,
       });
     }
+
 
     console.log(`Returning ${events.length} valid Meetup events for ${city}`);
 
