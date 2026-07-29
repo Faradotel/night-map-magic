@@ -179,26 +179,32 @@ Deno.serve(async (req) => {
     }
 
 
-    function getTypeVibe(e: any): { type: string; vibe: string } {
+    function getTypeVibe(e: any): { type: string; vibe: string; priority: number } {
+      // Le fetcher a déjà classifié (Ticketmaster fait ça via classifyTicketmaster).
+      // On respecte tel quel.
+      if (e.type && e.vibe) {
+        return { type: e.type, vibe: e.vibe, priority: typeof e.priority === 'number' ? e.priority : 50 };
+      }
       const id: string = e.id || '';
       const name: string = e.name || '';
-      if (id.startsWith('rt-')) return { type: 'sport', vibe: 'sport' };
-      if (id.startsWith('sf-')) return { type: 'sport', vibe: 'sport' };
-      if (id.startsWith('rdf-')) return { type: 'festival', vibe: 'concert' };
-      if (id.startsWith('icf-')) return { type: 'festival', vibe: 'concert' };
+      if (id.startsWith('rt-')) return { type: 'sport', vibe: 'sport', priority: 60 };
+      if (id.startsWith('sf-')) return { type: 'sport', vibe: 'sport', priority: 60 };
+      if (id.startsWith('rdf-')) return { type: 'festival', vibe: 'concert', priority: 30 };
+      if (id.startsWith('icf-')) return { type: 'festival', vibe: 'concert', priority: 30 };
       if (id.startsWith('oa-')) {
-        // Use oaType from scraper if available, fallback to spectacle
         const oaType = e.oaType || 'spectacle';
         const vibeMap: Record<string, string> = { concert: 'concert', sport: 'sport', expo: 'chill', afterwork: 'afterwork' };
-        return { type: oaType, vibe: vibeMap[oaType] || 'culture' };
+        const prioMap: Record<string, number> = { concert: 20, sport: 60, expo: 50, afterwork: 25, spectacle: 40 };
+        return { type: oaType, vibe: vibeMap[oaType] || 'culture', priority: prioMap[oaType] ?? 50 };
       }
       if (id.startsWith('bb-')) {
-        if (SPORT_KEYWORDS.test(name)) return { type: 'sport', vibe: 'sport' };
-        return { type: 'brocante', vibe: 'culture' };
+        if (SPORT_KEYWORDS.test(name)) return { type: 'sport', vibe: 'sport', priority: 60 };
+        return { type: 'brocante', vibe: 'culture', priority: 85 };
       }
-      if (id.startsWith('mu-')) return { type: 'afterwork', vibe: 'afterwork' };
-      return { type: 'concert', vibe: 'concert' };
+      if (id.startsWith('mu-')) return { type: 'afterwork', vibe: 'afterwork', priority: 25 };
+      return { type: 'concert', vibe: 'concert', priority: 20 };
     }
+
 
     async function processCity(city: string): Promise<number> {
       // Capture timestamp BEFORE scraping — used to delete stale events after upsert
@@ -256,7 +262,7 @@ Deno.serve(async (req) => {
       if (events.length === 0) return 0;
 
       const batch = events.map((e: any) => {
-        const { type, vibe } = getTypeVibe(e);
+        const { type, vibe, priority } = getTypeVibe(e);
         const override = applyVenueOverride(e.venue || '', e.address || '');
         return {
           id: e.id,
@@ -264,6 +270,8 @@ Deno.serve(async (req) => {
           type,
           vibe,
           genres: e.genres || [],
+          sub_genre: e.subGenre || null,
+          priority,
           lat: override?.lat ?? e.lat ?? 0,
           lng: override?.lng ?? e.lng ?? 0,
           address: e.address || '',
@@ -278,6 +286,7 @@ Deno.serve(async (req) => {
           updated_at: new Date().toISOString(),
           external_attendees: e.externalAttendees || null,
         };
+
       });
 
       // 1. Upsert new events FIRST — users always see data, no gap

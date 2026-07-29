@@ -70,8 +70,10 @@ export type Database = {
           lng: number
           name: string
           price_range: string
+          priority: number
           source: string
           start_time: string
+          sub_genre: string | null
           ticket_url: string | null
           type: string
           updated_at: string
@@ -94,8 +96,10 @@ export type Database = {
           lng: number
           name: string
           price_range?: string
+          priority?: number
           source?: string
           start_time: string
+          sub_genre?: string | null
           ticket_url?: string | null
           type: string
           updated_at?: string
@@ -118,8 +122,10 @@ export type Database = {
           lng?: number
           name?: string
           price_range?: string
+          priority?: number
           source?: string
           start_time?: string
+          sub_genre?: string | null
           ticket_url?: string | null
           type?: string
           updated_at?: string

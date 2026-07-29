@@ -5,12 +5,11 @@ import { useDistanceUnit, convertDistance } from '@/hooks/useDistanceUnit';
 
 type DateFilter = 'today' | 'weekend' | 'week' | 'all';
 type PriceFilter = 'all' | 'free' | 'paid';
-type GenreFilter = 'electro' | 'techno' | 'house' | 'pop' | 'rock' | 'indie' | 'r&b' | 'jazz';
-type VibeFilter = 'chill' | 'rave' | 'afterwork' | 'cosy' | 'concert' | 'culture' | 'sport';
+type VibeFilter = 'chill' | 'rave' | 'afterwork' | 'cosy' | 'concert' | 'culture' | 'sport' | 'party' | 'nightlife' | 'dance' | 'family' | 'energy';
 export type SourceFilter = 'concert' | 'brocante' | 'sport' | 'agenda' | 'festival' | 'meetup';
 
 // Category maps to vibes + sources for filtering
-type CategoryKey = 'party' | 'concert' | 'festival' | 'chill' | 'afterwork' | 'sport' | 'culture';
+type CategoryKey = 'nightlife' | 'party' | 'concert' | 'festival' | 'chill' | 'afterwork' | 'sport' | 'culture' | 'famille';
 type AdvancedGenre = 'electronic' | 'pop' | 'rock' | 'other';
 
 export interface Filters {
@@ -37,28 +36,33 @@ interface FilterBarProps {
   isNearbyMode?: boolean;
 }
 
-// Category definitions mapping to internal vibes/sources
+// Category chips (ordre = priorité d'affichage attendue pour l'user "sortir")
 const categoryOptions: { key: CategoryKey; label: string; emoji: string }[] = [
+  { key: 'nightlife', label: 'Nightlife', emoji: '🌙' },
   { key: 'party', label: 'Soirée', emoji: '🎉' },
   { key: 'concert', label: 'Concert', emoji: '🎸' },
   { key: 'festival', label: 'Festival', emoji: '🎪' },
   { key: 'chill', label: 'Chill', emoji: '🍹' },
   { key: 'afterwork', label: 'Afterwork', emoji: '🥂' },
-  { key: 'sport', label: 'Sport', emoji: '⚽' },
   { key: 'culture', label: 'Culture', emoji: '🎭' },
+  { key: 'sport', label: 'Sport', emoji: '⚽' },
+  { key: 'famille', label: 'Famille', emoji: '👨‍👩‍👧' },
 ];
 
 // Map categories to vibes and sources
 const categoryToVibes: Record<CategoryKey, VibeFilter[]> = {
-  party: ['rave', 'cosy'],
-  concert: ['concert'],
+  nightlife: ['nightlife', 'rave', 'dance'],
+  party: ['party', 'rave', 'cosy'],
+  concert: ['concert', 'energy'],
   festival: [],
   chill: ['chill'],
   afterwork: ['afterwork'],
   sport: ['sport'],
   culture: ['culture'],
+  famille: ['family'],
 };
 const categoryToSources: Record<CategoryKey, SourceFilter[]> = {
+  nightlife: [],
   party: [],
   concert: ['concert'],
   festival: ['festival'],
@@ -66,7 +70,9 @@ const categoryToSources: Record<CategoryKey, SourceFilter[]> = {
   afterwork: [],
   sport: ['sport'],
   culture: ['agenda'],
+  famille: [],
 };
+
 
 // Advanced genre mapping
 const advancedGenreMap: Record<AdvancedGenre, GenreFilter[]> = {

@@ -126,18 +126,25 @@ Deno.serve(async (req) => {
 
     console.log(`Got ${allRawEvents.length} total Ticketmaster events`);
 
+    // Classification propre: segment/genre/subGenre TM → type/vibe/genres/subGenre/priority Pulse
+    const { classifyTicketmaster } = await import('../_shared/classify.ts');
+
     const events = allRawEvents.map((e: any) => {
       const venue = e._embedded?.venues?.[0];
       const eventLat = parseFloat(venue?.location?.latitude || '0');
       const eventLng = parseFloat(venue?.location?.longitude || '0');
       const priceMin = e.priceRanges?.[0]?.min;
-      const genres: string[] = [];
-      if (e.classifications?.[0]?.genre?.name && e.classifications[0].genre.name !== 'Undefined') {
-        genres.push(e.classifications[0].genre.name.toLowerCase());
-      }
-      if (e.classifications?.[0]?.subGenre?.name && e.classifications[0].subGenre.name !== 'Undefined') {
-        genres.push(e.classifications[0].subGenre.name.toLowerCase());
-      }
+      const cls = e.classifications?.[0] || {};
+      const segmentName = cls.segment?.name;
+      const genreName = cls.genre?.name;
+      const subGenreName = cls.subGenre?.name;
+
+      const classified = classifyTicketmaster({
+        segment: segmentName,
+        genre: genreName,
+        subGenre: subGenreName,
+        name: e.name,
+      });
 
       return {
         id: `tm-${e.id}`,
@@ -149,14 +156,19 @@ Deno.serve(async (req) => {
         lng: eventLng,
         startTime: e.dates?.start?.dateTime || new Date().toISOString(),
         endTime: null,
-        description: `${genres.join(', ')} • via Ticketmaster`,
+        description: `${classified.genres.join(', ')} • via Ticketmaster`,
         ticketUrl: e.url || '',
         price: priceMin ? `${priceMin}€` : null,
-        genres,
+        type: classified.type,
+        vibe: classified.vibe,
+        genres: classified.genres,
+        subGenre: classified.subGenre,
+        priority: classified.priority,
       };
     }).filter((e: any) => e.lat !== 0 && e.lng !== 0);
 
     console.log(`Returning ${events.length} geocoded Ticketmaster events`);
+
 
     return new Response(
       JSON.stringify({ success: true, events }),
