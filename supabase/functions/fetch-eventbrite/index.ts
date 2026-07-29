@@ -266,6 +266,14 @@ Deno.serve(async (req) => {
 
       const id = `eb-${slug}-${i}-${Date.now()}`;
 
+      // Classification Option C: category + name + genres → type/vibe/priority
+      const { classifyGeneric } = await import('../_shared/classify.ts');
+      const cls = classifyGeneric({
+        category: e.category,
+        name: e.name,
+        genres: (e.description || '').split(/[,;•]/).map((s: string) => s.trim()).filter(Boolean),
+      });
+
       events.push({
         id,
         name: e.name,
@@ -279,11 +287,16 @@ Deno.serve(async (req) => {
         description: (e.category ? `[${e.category}] ` : '') + (e.description || ''),
         ticketUrl: e.url || '',
         price: e.price || null,
-        genres: [] as string[],
+        type: cls.type,
+        vibe: cls.vibe,
+        genres: cls.genres,
+        subGenre: cls.subGenre,
+        priority: cls.priority,
         category: e.category || 'other',
         externalAttendees: typeof e.attendees === 'number' && e.attendees > 0 ? e.attendees : null,
       });
     }
+
 
     console.log(`Returning ${events.length} valid Eventbrite events for ${city}`);
 
