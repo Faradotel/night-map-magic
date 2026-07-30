@@ -156,16 +156,19 @@ async function fetchContentSets(): Promise<ContentSets | null> {
 // le warning GSC "URL soumise dans le sitemap mais marquée 'noindex'".
 function filterEmptyCombos(routes: SeoRoute[], sets: ContentSets | null): SeoRoute[] {
   if (!sets) return routes;
+  const enough = (m: Map<string, Map<string, number>>, tag: string, city: string, min: number) =>
+    (m.get(tag)?.get(city) ?? 0) >= min;
   return routes.filter(r => {
     let m = r.path.match(/^\/categories\/([^/]+)\/([^/]+)$/);
-    if (m) return sets.citiesWithCategory.get(m[1])?.has(m[2]) ?? false;
+    if (m) return enough(sets.citiesWithCategory, m[1], m[2], 1);
     m = r.path.match(/^\/genres\/([^/]+)\/([^/]+)$/);
-    if (m) return sets.citiesWithGenre.get(m[1])?.has(m[2]) ?? false;
+    if (m) return enough(sets.citiesWithGenre, m[1], m[2], MIN_TAG_EVENTS);
     m = r.path.match(/^\/ambiances\/([^/]+)\/([^/]+)$/);
-    if (m) return sets.citiesWithVibe.get(m[1])?.has(m[2]) ?? false;
+    if (m) return enough(sets.citiesWithVibe, m[1], m[2], MIN_TAG_EVENTS);
     return true;
   });
 }
+
 
 function urlset(routes: SeoRoute[]): string {
   const body = routes
