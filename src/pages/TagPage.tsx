@@ -188,9 +188,8 @@ export default function TagPage({ kind }: { kind: Kind }) {
     })),
   };
 
-  // Auto-noindex des pages tag×ville vides : Google marque sinon la page
-  // "Explorée, actuellement non indexée" et la recrawle indéfiniment.
-  const emptyCityPage = !!cityName && !loading && events.length === 0;
+
+
 
   return (
     <>
