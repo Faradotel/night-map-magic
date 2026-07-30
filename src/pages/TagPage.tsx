@@ -115,9 +115,14 @@ export default function TagPage({ kind }: { kind: Kind }) {
   const selfPath = cityName
     ? `/${prefix}/${tagSlug}/${citySlug}`
     : `/${prefix}/${tagSlug}`;
-  const thinCityPage = !!cityName && !loading && events.length < MIN_OWN_CANONICAL_EVENTS;
+  const eventCount = events.length;
+  const emptyCityPage = !!cityName && !loading && eventCount === 0;
+  // 1 ou 2 events : la page reste utile pour l'utilisateur mais ne doit pas
+  // concurrencer la page ville dans l'index → canonical vers /sortir-ce-soir.
+  const thinCityPage = !!cityName && !loading && eventCount > 0 && eventCount < MIN_OWN_CANONICAL_EVENTS;
 
   const canonical = thinCityPage ? `/sortir-ce-soir/${citySlug}` : selfPath;
+
 
   const kindKeyword = kind === 'genre' ? tagLower : `soirée ${tagLower}`;
 
