@@ -57,12 +57,23 @@ export default function CityPage() {
   // /villes/<slug> consolidates its signals into the canonical URL.
   const canonical = `/sortir-ce-soir/${slug.toLowerCase()}`;
   const isSortirRoute = location.pathname.startsWith('/sortir-ce-soir');
+
+  // Lieux récurrents réellement programmés — contenu unique par ville
+  // (Google distingue ainsi cette page d'un template dupliqué 115 fois).
+  const topVenues = [...new Set(events.map(e => e.venue).filter(Boolean))].slice(0, 8);
+  const eventsCount = events.length;
+
+  // Le titre couvre les 3 variantes qui ont du volume : « soirée <ville> »,
+  // « sortir à <ville> » et « <ville> ce soir ».
   const title = isSortirRoute
-    ? `Où sortir ce soir à ${cityName} ? Concerts, soirées & bars`
+    ? `Soirée ${cityName} : sortir ce soir à ${cityName}`
     : `Sortir ce soir à ${cityName} : que faire ? | PulseMap`;
-  const description = `Où sortir ce soir à ${cityName} ? Carte temps réel des concerts, soirées, clubs, festivals et bars animés ouverts ce soir à ${cityName}. Gratuit, sans inscription.`;
-  const ogTitle = `Où sortir ce soir à ${cityName} — Concerts, soirées & clubs live`;
+  const description = eventsCount > 0
+    ? `${eventsCount} sorties à ${cityName} ce soir et dans les jours à venir : soirées, concerts, clubs et bars${topVenues.length ? ` (${topVenues.slice(0, 2).join(', ')})` : ''}. Carte live, gratuit sans inscription.`
+    : `Où sortir ce soir à ${cityName} ? Carte temps réel des concerts, soirées, clubs, festivals et bars animés ouverts ce soir à ${cityName}. Gratuit, sans inscription.`;
+  const ogTitle = `Soirée ${cityName} — Où sortir ce soir à ${cityName} ?`;
   const ogDescription = `Tu cherches où sortir ce soir à ${cityName} ? PulseMap te montre tous les événements live ce soir sur une carte interactive. Gratuit, sans inscription.`;
+
 
   const faqs = [
     {
