@@ -106,11 +106,21 @@ export default function TagPage({ kind }: { kind: Kind }) {
   const kindLabel = kind === 'genre' ? 'Genre' : 'Ambiance';
   const tagLower = tag.label.toLowerCase();
 
-  const canonical = cityName
+  // Anti-cannibalisation : une page tag×ville ne mérite sa propre URL indexable
+  // que si elle a un contenu propre substantiel. En dessous du seuil, on
+  // canonicalise vers la page ville — sinon /genres/pop/toulon et
+  // /genres/house/toulon se disputent la requête « soirée toulon » et Google
+  // n'en classe correctement aucune.
+  const MIN_OWN_CANONICAL_EVENTS = 3;
+  const selfPath = cityName
     ? `/${prefix}/${tagSlug}/${citySlug}`
     : `/${prefix}/${tagSlug}`;
+  const thinCityPage = !!cityName && !loading && events.length < MIN_OWN_CANONICAL_EVENTS;
+
+  const canonical = thinCityPage ? `/sortir-ce-soir/${citySlug}` : selfPath;
 
   const kindKeyword = kind === 'genre' ? tagLower : `soirée ${tagLower}`;
+
 
   const title = cityName
     ? `Soirée ${tag.label} à ${cityName} ce soir : où sortir ?`
