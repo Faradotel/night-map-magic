@@ -44,11 +44,16 @@ async function fetchRetiredUrls(): Promise<Set<string>> {
 
 // Pages avec noindex quand vides => on les exclut aussi du sitemap pour éviter
 // que GSC signale "URL soumise mais marquée 'noindex'".
+// Les combos tag×ville sous MIN_TAG_EVENTS canonicalisent vers la page ville
+// (voir TagPage.tsx) : on ne les soumet donc pas non plus.
+const MIN_TAG_EVENTS = 3;
+
 interface ContentSets {
-  citiesWithCategory: Map<string, Set<string>>; // catSlug -> Set<citySlug>
-  citiesWithGenre: Map<string, Set<string>>;
-  citiesWithVibe: Map<string, Set<string>>;
+  citiesWithCategory: Map<string, Map<string, number>>; // catSlug -> citySlug -> count
+  citiesWithGenre: Map<string, Map<string, number>>;
+  citiesWithVibe: Map<string, Map<string, number>>;
 }
+
 
 async function fetchContentSets(): Promise<ContentSets | null> {
   const url = process.env.VITE_SUPABASE_URL;
@@ -109,14 +114,16 @@ async function fetchContentSets(): Promise<ContentSets | null> {
       vibeToSlug.set(def.dbValue.toLowerCase(), slug);
     }
 
-    const citiesWithCategory = new Map<string, Set<string>>();
-    const citiesWithGenre = new Map<string, Set<string>>();
-    const citiesWithVibe = new Map<string, Set<string>>();
+    const citiesWithCategory = new Map<string, Map<string, number>>();
+    const citiesWithGenre = new Map<string, Map<string, number>>();
+    const citiesWithVibe = new Map<string, Map<string, number>>();
 
-    const add = (m: Map<string, Set<string>>, k: string, v: string) => {
-      if (!m.has(k)) m.set(k, new Set());
-      m.get(k)!.add(v);
+    const add = (m: Map<string, Map<string, number>>, k: string, v: string) => {
+      if (!m.has(k)) m.set(k, new Map());
+      const inner = m.get(k)!;
+      inner.set(v, (inner.get(v) || 0) + 1);
     };
+
 
     for (const row of rows) {
       if (!row.city) continue;
@@ -149,16 +156,19 @@ async function fetchContentSets(): Promise<ContentSets | null> {
 // le warning GSC "URL soumise dans le sitemap mais marquée 'noindex'".
 function filterEmptyCombos(routes: SeoRoute[], sets: ContentSets | null): SeoRoute[] {
   if (!sets) return routes;
+  const enough = (m: Map<string, Map<string, number>>, tag: string, city: string, min: number) =>
+    (m.get(tag)?.get(city) ?? 0) >= min;
   return routes.filter(r => {
     let m = r.path.match(/^\/categories\/([^/]+)\/([^/]+)$/);
-    if (m) return sets.citiesWithCategory.get(m[1])?.has(m[2]) ?? false;
+    if (m) return enough(sets.citiesWithCategory, m[1], m[2], 1);
     m = r.path.match(/^\/genres\/([^/]+)\/([^/]+)$/);
-    if (m) return sets.citiesWithGenre.get(m[1])?.has(m[2]) ?? false;
+    if (m) return enough(sets.citiesWithGenre, m[1], m[2], MIN_TAG_EVENTS);
     m = r.path.match(/^\/ambiances\/([^/]+)\/([^/]+)$/);
-    if (m) return sets.citiesWithVibe.get(m[1])?.has(m[2]) ?? false;
+    if (m) return enough(sets.citiesWithVibe, m[1], m[2], MIN_TAG_EVENTS);
     return true;
   });
 }
+
 
 function urlset(routes: SeoRoute[]): string {
   const body = routes
