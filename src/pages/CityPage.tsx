@@ -81,6 +81,12 @@ export default function CityPage() {
       a: `Pour sortir ce soir à ${cityName}, PulseMap affiche en temps réel tous les concerts, soirées, clubs, bars animés et festivals ouverts ce soir à ${cityName} sur une carte interactive. Filtre par type, distance ou horaire pour trouver la sortie idéale.`,
     },
     {
+      q: `Quelle soirée à ${cityName} ce soir ?`,
+      a: topVenues.length
+        ? `Ce soir à ${cityName}, des soirées sont programmées notamment à ${topVenues.slice(0, 4).join(', ')}. PulseMap liste ${eventsCount} sorties à venir à ${cityName} avec horaires, adresse exacte et billetterie.`
+        : `PulseMap liste en direct toutes les soirées, clubs et DJ sets programmés à ${cityName}, avec horaires, adresse exacte et lien billetterie.`,
+    },
+    {
       q: `Que faire ce soir à ${cityName} ?`,
       a: `Ce soir à ${cityName}, tu peux profiter de concerts live, soirées électro et techno, clubs, afterworks, festivals, expos nocturnes ou simplement un bar animé. Tous les événements sont géolocalisés et mis à jour en continu sur PulseMap.`,
     },
@@ -93,6 +99,7 @@ export default function CityPage() {
       a: `Oui, PulseMap est 100 % gratuit. Tu peux consulter la carte des sorties à ${cityName} sans inscription, et créer un compte uniquement pour les fonctionnalités sociales (amis, check-ins, badges).`,
     },
   ];
+
 
   const faqLd = {
     '@context': 'https://schema.org',
