@@ -114,14 +114,16 @@ async function fetchContentSets(): Promise<ContentSets | null> {
       vibeToSlug.set(def.dbValue.toLowerCase(), slug);
     }
 
-    const citiesWithCategory = new Map<string, Set<string>>();
-    const citiesWithGenre = new Map<string, Set<string>>();
-    const citiesWithVibe = new Map<string, Set<string>>();
+    const citiesWithCategory = new Map<string, Map<string, number>>();
+    const citiesWithGenre = new Map<string, Map<string, number>>();
+    const citiesWithVibe = new Map<string, Map<string, number>>();
 
-    const add = (m: Map<string, Set<string>>, k: string, v: string) => {
-      if (!m.has(k)) m.set(k, new Set());
-      m.get(k)!.add(v);
+    const add = (m: Map<string, Map<string, number>>, k: string, v: string) => {
+      if (!m.has(k)) m.set(k, new Map());
+      const inner = m.get(k)!;
+      inner.set(v, (inner.get(v) || 0) + 1);
     };
+
 
     for (const row of rows) {
       if (!row.city) continue;
