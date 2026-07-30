@@ -44,11 +44,16 @@ async function fetchRetiredUrls(): Promise<Set<string>> {
 
 // Pages avec noindex quand vides => on les exclut aussi du sitemap pour éviter
 // que GSC signale "URL soumise mais marquée 'noindex'".
+// Les combos tag×ville sous MIN_TAG_EVENTS canonicalisent vers la page ville
+// (voir TagPage.tsx) : on ne les soumet donc pas non plus.
+const MIN_TAG_EVENTS = 3;
+
 interface ContentSets {
-  citiesWithCategory: Map<string, Set<string>>; // catSlug -> Set<citySlug>
-  citiesWithGenre: Map<string, Set<string>>;
-  citiesWithVibe: Map<string, Set<string>>;
+  citiesWithCategory: Map<string, Map<string, number>>; // catSlug -> citySlug -> count
+  citiesWithGenre: Map<string, Map<string, number>>;
+  citiesWithVibe: Map<string, Map<string, number>>;
 }
+
 
 async function fetchContentSets(): Promise<ContentSets | null> {
   const url = process.env.VITE_SUPABASE_URL;
