@@ -206,8 +206,27 @@ export default function CityPage() {
           </ul>
         </section>
 
+        {topVenues.length > 0 && (
+          <section className="mt-10" aria-labelledby="venues-h2">
+            <h2 id="venues-h2" className="text-base font-bold text-foreground mb-3">
+              Où sortir à {cityName} : les lieux programmés en ce moment
+            </h2>
+            <ul className="flex flex-wrap gap-2">
+              {topVenues.map(v => (
+                <li
+                  key={v}
+                  className="px-3 py-1.5 rounded-lg border border-border bg-secondary text-xs font-medium"
+                >
+                  {v}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <section className="mt-10 text-sm text-muted-foreground leading-relaxed">
-          <h2 className="text-base font-bold text-foreground mb-2">Où sortir ce soir à {cityName} ?</h2>
+          <h2 className="text-base font-bold text-foreground mb-2">Sortir à {cityName} ce soir : que faire ?</h2>
+
           <p>
             Que tu cherches une soirée techno, un concert live, un festival, un afterwork ou
             simplement un bar animé pour <strong>sortir ce soir à {cityName}</strong>,
