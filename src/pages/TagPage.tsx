@@ -146,13 +146,14 @@ export default function TagPage({ kind }: { kind: Kind }) {
         { name: 'Accueil', url: '/' },
         { name: kindLabel + 's', url: '/villes' },
         { name: tag.label, url: `/${prefix}/${tagSlug}` },
-        { name: cityName, url: canonical },
+        { name: cityName, url: selfPath },
       ]
     : [
         { name: 'Accueil', url: '/' },
         { name: kindLabel + 's', url: '/villes' },
-        { name: tag.label, url: canonical },
+        { name: tag.label, url: selfPath },
       ];
+
 
   const faqs = cityName ? [
     {
