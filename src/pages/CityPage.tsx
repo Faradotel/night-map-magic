@@ -162,13 +162,17 @@ export default function CityPage() {
           <span className="px-3 py-1.5 font-medium text-foreground">{cityName}</span>
         </nav>
 
-        <h1 className="text-3xl font-black mb-2">Où sortir ce soir à {cityName} ?</h1>
+        <h1 className="text-3xl font-black mb-2">Soirée {cityName} : où sortir ce soir ?</h1>
         <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-          Tu cherches <strong>où sortir ce soir à {cityName}</strong> ? PulseMap référence
-          en temps réel tous les concerts, soirées, clubs, festivals et bars animés ouverts
-          ce soir à {cityName}. La carte interactive te montre instantanément les meilleures
+          Tu cherches <strong>où sortir ce soir à {cityName}</strong> ou une <strong>soirée à {cityName}</strong> ?
+          PulseMap référence en temps réel tous les concerts, soirées, clubs, festivals et bars animés
+          ouverts ce soir à {cityName}. La carte interactive te montre instantanément les meilleures
           sorties autour de toi, avec horaires, lieux et liens billetterie.
+          {eventsCount > 0 && (
+            <> Actuellement <strong>{eventsCount} sorties à {cityName}</strong> sont référencées.</>
+          )}
         </p>
+
 
         <Link
           to={`/?city=${encodeURIComponent(cityName)}`}
