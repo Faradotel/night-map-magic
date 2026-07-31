@@ -90,9 +90,12 @@ export default function CityPage() {
   const title = isSortirRoute
     ? `Soirée ${cityName} : sortir ce soir à ${cityName}`
     : `Sortir ce soir à ${cityName} : que faire ? | PulseMap`;
-  const description = eventsCount > 0
+  const description = aiIntro?.meta_description
+    ? aiIntro.meta_description
+    : eventsCount > 0
     ? `${eventsCount} sorties à ${cityName} ce soir et dans les jours à venir : soirées, concerts, clubs et bars${topVenues.length ? ` (${topVenues.slice(0, 2).join(', ')})` : ''}. Carte live, gratuit sans inscription.`
     : `Où sortir ce soir à ${cityName} ? Carte temps réel des concerts, soirées, clubs, festivals et bars animés ouverts ce soir à ${cityName}. Gratuit, sans inscription.`;
+
   const ogTitle = `Soirée ${cityName} — Où sortir ce soir à ${cityName} ?`;
   const ogDescription = `Tu cherches où sortir ce soir à ${cityName} ? PulseMap te montre tous les événements live ce soir sur une carte interactive. Gratuit, sans inscription.`;
 
