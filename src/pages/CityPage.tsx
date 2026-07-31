@@ -187,7 +187,7 @@ export default function CityPage() {
           <span className="px-3 py-1.5 font-medium text-foreground">{cityName}</span>
         </nav>
 
-        <h1 className="text-3xl font-black mb-2">Soirée {cityName} : où sortir ce soir ?</h1>
+        
         <h1 className="text-3xl font-black mb-2">
           {aiIntro?.h1 || `Soirée ${cityName} : où sortir ce soir ?`}
         </h1>
