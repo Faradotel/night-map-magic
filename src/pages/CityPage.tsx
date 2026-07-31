@@ -188,15 +188,27 @@ export default function CityPage() {
         </nav>
 
         <h1 className="text-3xl font-black mb-2">Soirée {cityName} : où sortir ce soir ?</h1>
-        <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-          Tu cherches <strong>où sortir ce soir à {cityName}</strong> ou une <strong>soirée à {cityName}</strong> ?
-          PulseMap référence en temps réel tous les concerts, soirées, clubs, festivals et bars animés
-          ouverts ce soir à {cityName}. La carte interactive te montre instantanément les meilleures
-          sorties autour de toi, avec horaires, lieux et liens billetterie.
-          {eventsCount > 0 && (
-            <> Actuellement <strong>{eventsCount} sorties à {cityName}</strong> sont référencées.</>
-          )}
-        </p>
+        <h1 className="text-3xl font-black mb-2">
+          {aiIntro?.h1 || `Soirée ${cityName} : où sortir ce soir ?`}
+        </h1>
+        {aiIntro?.intro_html ? (
+          <div
+            className="text-sm text-muted-foreground mb-6 leading-relaxed space-y-3 [&_strong]:text-foreground [&_ul]:list-disc [&_ul]:pl-5"
+            dangerouslySetInnerHTML={{ __html: aiIntro.intro_html }}
+          />
+        ) : (
+          <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+            Tu cherches <strong>où sortir ce soir à {cityName}</strong> ou une <strong>soirée à {cityName}</strong> ?
+            PulseMap référence en temps réel tous les concerts, soirées, clubs, festivals et bars animés
+            ouverts ce soir à {cityName}. La carte interactive te montre instantanément les meilleures
+            sorties autour de toi, avec horaires, lieux et liens billetterie.
+            {eventsCount > 0 && (
+              <> Actuellement <strong>{eventsCount} sorties à {cityName}</strong> sont référencées.</>
+            )}
+          </p>
+        )}
+
+
 
 
         <Link
