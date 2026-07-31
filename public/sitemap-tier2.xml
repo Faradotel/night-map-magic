@@ -64,6 +64,7 @@
   <url><loc>https://pulse-map.live/categories/bars/toulon</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/angers</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/antibes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
+  <url><loc>https://pulse-map.live/categories/sport/toulon</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/chambery</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/antibes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/toulon</loc><changefreq>daily</changefreq><priority>0.6</priority></url>

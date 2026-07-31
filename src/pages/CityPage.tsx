@@ -22,12 +22,34 @@ interface CachedEvent {
   type: string;
 }
 
+interface CitySeoIntro {
+  h1: string;
+  intro_html: string;
+  meta_description: string;
+}
+
 export default function CityPage() {
   const { slug = '' } = useParams();
   const location = useLocation();
   const cityName = CITY_SLUGS[slug.toLowerCase()];
   const [events, setEvents] = useState<CachedEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [aiIntro, setAiIntro] = useState<CitySeoIntro | null>(null);
+
+  useEffect(() => {
+    if (!cityName) return;
+    let cancel = false;
+    (async () => {
+      const { data } = await supabase
+        .from('city_seo_intros')
+        .select('h1,intro_html,meta_description')
+        .eq('city_slug', slug.toLowerCase())
+        .maybeSingle();
+      if (!cancel) setAiIntro((data as CitySeoIntro) || null);
+    })();
+    return () => { cancel = true; };
+  }, [cityName, slug]);
+
 
   useEffect(() => {
     if (!cityName) return;
@@ -68,9 +90,12 @@ export default function CityPage() {
   const title = isSortirRoute
     ? `Soirée ${cityName} : sortir ce soir à ${cityName}`
     : `Sortir ce soir à ${cityName} : que faire ? | PulseMap`;
-  const description = eventsCount > 0
+  const description = aiIntro?.meta_description
+    ? aiIntro.meta_description
+    : eventsCount > 0
     ? `${eventsCount} sorties à ${cityName} ce soir et dans les jours à venir : soirées, concerts, clubs et bars${topVenues.length ? ` (${topVenues.slice(0, 2).join(', ')})` : ''}. Carte live, gratuit sans inscription.`
     : `Où sortir ce soir à ${cityName} ? Carte temps réel des concerts, soirées, clubs, festivals et bars animés ouverts ce soir à ${cityName}. Gratuit, sans inscription.`;
+
   const ogTitle = `Soirée ${cityName} — Où sortir ce soir à ${cityName} ?`;
   const ogDescription = `Tu cherches où sortir ce soir à ${cityName} ? PulseMap te montre tous les événements live ce soir sur une carte interactive. Gratuit, sans inscription.`;
 
@@ -162,16 +187,28 @@ export default function CityPage() {
           <span className="px-3 py-1.5 font-medium text-foreground">{cityName}</span>
         </nav>
 
-        <h1 className="text-3xl font-black mb-2">Soirée {cityName} : où sortir ce soir ?</h1>
-        <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-          Tu cherches <strong>où sortir ce soir à {cityName}</strong> ou une <strong>soirée à {cityName}</strong> ?
-          PulseMap référence en temps réel tous les concerts, soirées, clubs, festivals et bars animés
-          ouverts ce soir à {cityName}. La carte interactive te montre instantanément les meilleures
-          sorties autour de toi, avec horaires, lieux et liens billetterie.
-          {eventsCount > 0 && (
-            <> Actuellement <strong>{eventsCount} sorties à {cityName}</strong> sont référencées.</>
-          )}
-        </p>
+        
+        <h1 className="text-3xl font-black mb-2">
+          {aiIntro?.h1 || `Soirée ${cityName} : où sortir ce soir ?`}
+        </h1>
+        {aiIntro?.intro_html ? (
+          <div
+            className="text-sm text-muted-foreground mb-6 leading-relaxed space-y-3 [&_strong]:text-foreground [&_ul]:list-disc [&_ul]:pl-5"
+            dangerouslySetInnerHTML={{ __html: aiIntro.intro_html }}
+          />
+        ) : (
+          <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+            Tu cherches <strong>où sortir ce soir à {cityName}</strong> ou une <strong>soirée à {cityName}</strong> ?
+            PulseMap référence en temps réel tous les concerts, soirées, clubs, festivals et bars animés
+            ouverts ce soir à {cityName}. La carte interactive te montre instantanément les meilleures
+            sorties autour de toi, avec horaires, lieux et liens billetterie.
+            {eventsCount > 0 && (
+              <> Actuellement <strong>{eventsCount} sorties à {cityName}</strong> sont référencées.</>
+            )}
+          </p>
+        )}
+
+
 
 
         <Link
