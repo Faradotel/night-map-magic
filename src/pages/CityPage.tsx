@@ -22,12 +22,34 @@ interface CachedEvent {
   type: string;
 }
 
+interface CitySeoIntro {
+  h1: string;
+  intro_html: string;
+  meta_description: string;
+}
+
 export default function CityPage() {
   const { slug = '' } = useParams();
   const location = useLocation();
   const cityName = CITY_SLUGS[slug.toLowerCase()];
   const [events, setEvents] = useState<CachedEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [aiIntro, setAiIntro] = useState<CitySeoIntro | null>(null);
+
+  useEffect(() => {
+    if (!cityName) return;
+    let cancel = false;
+    (async () => {
+      const { data } = await supabase
+        .from('city_seo_intros')
+        .select('h1,intro_html,meta_description')
+        .eq('city_slug', slug.toLowerCase())
+        .maybeSingle();
+      if (!cancel) setAiIntro((data as CitySeoIntro) || null);
+    })();
+    return () => { cancel = true; };
+  }, [cityName, slug]);
+
 
   useEffect(() => {
     if (!cityName) return;
