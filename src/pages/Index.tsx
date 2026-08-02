@@ -573,7 +573,14 @@ export default function Index() {
                 </span>
               </button>
               <button
-                onClick={() => setShowSafePlaces(v => !v)}
+                onClick={() => {
+                  const next = !showSafePlaces;
+                  setShowSafePlaces(next);
+                  if (next && displayedMapZoom < 10) {
+                    toast.info('Zoome sur une ville pour voir les lieux sûrs', { duration: 3000 });
+                  }
+                }}
+
                 aria-label={showSafePlaces ? 'Masquer les safeplaces' : 'Afficher les safeplaces'}
                 className="h-10 pl-2.5 pr-3.5 rounded-full flex items-center gap-2 shrink-0 transition-all active:scale-95"
                 style={{
