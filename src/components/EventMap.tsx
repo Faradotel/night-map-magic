@@ -328,20 +328,18 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       }
       if (!showSafePlaces || !safePlaces?.length) return;
 
-      // Same logic que les events : on n'affiche pas toute la France.
-      // Requiert un zoom suffisamment proche, et on filtre dans le rayon utilisateur
-      // (ou à défaut dans la bbox visible).
-      if (map.getZoom() < 11) return;
+      // On affiche les safeplaces visibles à l'écran dès qu'on est assez zoomé.
 
-      const bounds = map.getBounds();
-      const center = userLocation ?? [map.getCenter().lat, map.getCenter().lng] as [number, number];
-      const radiusDeg = Math.min(radiusKm, 50) / 111; // ~ deg latitude
+      // (Pas de filtre par rayon utilisateur : on suit ce que l'utilisateur regarde.)
+      if (map.getZoom() < 10) return;
+
+      const bounds = map.getBounds().pad(0.1);
       const layer = L.layerGroup();
       let count = 0;
       const MAX = 400;
       for (const place of safePlaces) {
         if (!bounds.contains([place.lat, place.lng])) continue;
-        if (Math.abs(place.lat - center[0]) > radiusDeg || Math.abs(place.lng - center[1]) > radiusDeg) continue;
+
         const cfg = SAFE_PLACE_CONFIG[place.type];
         const marker = L.marker([place.lat, place.lng], {
           icon: createSafePlaceIcon(place.type, isDark),
