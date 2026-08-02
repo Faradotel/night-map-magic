@@ -326,8 +326,10 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
         map.removeLayer(safePlaceLayerRef.current);
         safePlaceLayerRef.current = null;
       }
+      if (!showSafePlaces || !safePlaces?.length) return;
 
       // On affiche les safeplaces visibles à l'écran dès qu'on est assez zoomé.
+
       // (Pas de filtre par rayon utilisateur : on suit ce que l'utilisateur regarde.)
       if (map.getZoom() < 10) return;
 
