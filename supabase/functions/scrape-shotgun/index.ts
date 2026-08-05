@@ -228,11 +228,13 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Auth: accept service-role bearer (internal) OR a valid user JWT
+  // Auth: accept service-role bearer (internal), shared refresh secret, OR a valid user JWT
   {
     const _serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    const _refreshSecret = Deno.env.get("REFRESH_EVENTS_SECRET") || "";
     const _auth = req.headers.get("authorization") || "";
-    let _ok = _auth === `Bearer ${_serviceKey}`;
+    let _ok = _serviceKey !== "" && _auth === `Bearer ${_serviceKey}`;
+    if (!_ok && _refreshSecret !== "" && req.headers.get("x-refresh-secret") === _refreshSecret) _ok = true;
     if (!_ok && _auth.startsWith("Bearer ")) {
       try {
         const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
@@ -242,12 +244,14 @@ Deno.serve(async (req) => {
       } catch { _ok = false; }
     }
     if (!_ok) {
+      console.warn('scrape-shotgun: unauthorized call (auth header present:', _auth !== "", ')');
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
   }
 
   try {
     const { city } = await req.json();
+    console.log('scrape-shotgun: start for city', city);
 
     if (!city) {
       return new Response(
@@ -258,11 +262,13 @@ Deno.serve(async (req) => {
 
     const apiKey = Deno.env.get('FIRECRAWL_API_KEY');
     if (!apiKey) {
+      console.error('scrape-shotgun: FIRECRAWL_API_KEY missing');
       return new Response(
         JSON.stringify({ success: false, error: 'Service temporarily unavailable' }),
         { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
 
     const cityLower = city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const slug = CITY_SLUGS[cityLower];
@@ -290,10 +296,19 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         url: shotgunUrl,
         formats: ['markdown'],
-        waitFor: 10000,
-        timeout: 30000,
+        waitFor: 8000,
+        timeout: 90000,
+        // Shotgun lazy-loads its event list: scroll repeatedly to load all events
+        actions: [
+          { type: 'wait', milliseconds: 5000 },
+          ...Array.from({ length: 8 }, () => ([
+            { type: 'scroll', direction: 'down' },
+            { type: 'wait', milliseconds: 1500 },
+          ])).flat(),
+        ],
       }),
     });
+
 
     const scrapeData = await scrapeResponse.json();
 
@@ -308,8 +323,17 @@ Deno.serve(async (req) => {
     const markdown = scrapeData?.data?.markdown || scrapeData?.markdown || '';
     console.log('Markdown length:', markdown.length);
 
-    const rawEvents = parseEventsFromCityPage(markdown);
-    console.log(`Parsed ${rawEvents.length} events for ${city}`);
+    const parsed = parseEventsFromCityPage(markdown);
+    // Dedupe by event URL (the same card can appear in several sections)
+    const seenUrls = new Set<string>();
+    const rawEvents = parsed.filter((e) => {
+      const key = e.url.split('?')[0];
+      if (seenUrls.has(key)) return false;
+      seenUrls.add(key);
+      return true;
+    });
+    console.log(`Parsed ${parsed.length} cards, ${rawEvents.length} unique events for ${city}`);
+
 
     // Get city center coordinates
     let cityLat = 0, cityLng = 0;
@@ -337,7 +361,7 @@ Deno.serve(async (req) => {
     // Geocode each venue
     const geocodedEvents: ShotgunEvent[] = [];
 
-    for (const raw of rawEvents.slice(0, 50)) {
+    for (const raw of rawEvents.slice(0, 80)) {
       let lat = cityLat;
       let lng = cityLng;
       let geocoded = false;
@@ -415,7 +439,7 @@ Deno.serve(async (req) => {
       });
 
       geocodedEvents.push({
-        id: `shotgun-${slug}-${geocodedEvents.length}`,
+        id: `shotgun-${(raw.url.split('?')[0].split('/events/')[1] || String(geocodedEvents.length)).slice(0, 80)}`,
         name: raw.name,
         venue: raw.venue,
         address: resolvedAddress,
