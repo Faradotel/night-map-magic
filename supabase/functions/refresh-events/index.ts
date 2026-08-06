@@ -247,19 +247,34 @@ Deno.serve(async (req) => {
       ]);
 
       const events: any[] = [];
-      if (shotgunRes.status === 'fulfilled' && shotgunRes.value?.events) events.push(...shotgunRes.value.events);
-      if (tmRes.status === 'fulfilled' && tmRes.value?.events) events.push(...tmRes.value.events);
-      if (ebRes.status === 'fulfilled' && ebRes.value?.events) events.push(...ebRes.value.events);
-      if (muRes.status === 'fulfilled' && muRes.value?.events) events.push(...muRes.value.events);
-      if (icRes.status === 'fulfilled' && icRes.value?.events) events.push(...icRes.value.events);
-      if (rdfRes.status === 'fulfilled' && rdfRes.value?.events) events.push(...rdfRes.value.events);
-      if (bbRes.status === 'fulfilled' && bbRes.value?.events) events.push(...bbRes.value.events);
-      if (rtRes.status === 'fulfilled' && rtRes.value?.events) events.push(...rtRes.value.events);
-      if (oaRes.status === 'fulfilled' && oaRes.value?.events) events.push(...oaRes.value.events);
-      if (sfRes.status === 'fulfilled' && sfRes.value?.events) events.push(...sfRes.value.events);
-
+      // Sources that answered with at least one event this run. Only those get their
+      // stale rows purged — a source that failed (timeout, rate limit) must NOT wipe
+      // the data it delivered on a previous run.
+      const healthySources = new Set<string>();
+      const collect = (res: PromiseSettledResult<any>, source: string) => {
+        if (res.status === 'fulfilled' && Array.isArray(res.value?.events) && res.value.events.length > 0) {
+          events.push(...res.value.events);
+          healthySources.add(source);
+        } else {
+          const reason = res.status === 'rejected'
+            ? (res.reason as Error)?.message
+            : (res.value?.error ?? 'aucun événement');
+          console.warn(`${city}: source ${source} sans données (${reason}) — anciens événements conservés`);
+        }
+      };
+      collect(shotgunRes, 'shotgun');
+      collect(tmRes, 'ticketmaster');
+      collect(ebRes, 'eventbrite');
+      collect(muRes, 'meetup');
+      collect(icRes, 'infoconcert');
+      collect(rdfRes, 'routedesfestivals');
+      collect(bbRes, 'brocabrac');
+      collect(rtRes, 'runtrail');
+      collect(oaRes, 'openagenda');
+      collect(sfRes, 'sports-federations');
 
       if (events.length === 0) return 0;
+
 
       const batch = events.map((e: any) => {
         const { type, vibe, priority } = getTypeVibe(e);
