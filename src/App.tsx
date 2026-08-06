@@ -11,6 +11,11 @@ function VilleRedirect() {
   const { slug } = useParams();
   return <Navigate to={`/sortir-ce-soir/${slug}`} replace />;
 }
+
+function SoireesRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/categories/soirees/${slug}`} replace />;
+}
 import { ThemeProvider } from "@/hooks/useTheme";
 import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
@@ -88,6 +93,7 @@ const App = () => {
                     <Route path="/" element={<Index />} />
                     <Route path="/villes" element={<CitiesIndex />} />
                     <Route path="/villes/:slug" element={<VilleRedirect />} />
+                    <Route path="/soirees/:slug" element={<SoireesRedirect />} />
                     <Route path="/sortir-ce-soir/:slug" element={<CityPage />} />
                     <Route path="/evenements/:slug" element={<EventPage />} />
                     <Route path="/en/nightlife/:slug" element={<NightlifePage />} />
