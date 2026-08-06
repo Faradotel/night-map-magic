@@ -116,7 +116,12 @@ export function deduceVibe(genres: MusicGenre[], name: string): EventVibe {
   return 'rave';
 }
 
-export function mapGenres(rawGenres: string[]): MusicGenre[] {
+// Types dont l'absence de genre justifie un fallback musical ("electro") —
+// tout le reste (culture, famille, sport, cinéma, expo…) n'est pas de la
+// musique et ne doit récupérer aucun genre s'il n'en a pas réellement.
+const MUSIC_TYPES = new Set<NightEvent['type']>(['nightlife', 'soirée', 'club', 'concert', 'festival']);
+
+export function mapGenres(rawGenres: string[], type?: NightEvent['type']): MusicGenre[] {
   const mapped = new Set<MusicGenre>();
   for (const raw of rawGenres) {
     const lower = raw.toLowerCase().trim();
@@ -132,7 +137,8 @@ export function mapGenres(rawGenres: string[]): MusicGenre[] {
       }
     }
   }
-  return mapped.size > 0 ? Array.from(mapped) : ['electro'];
+  if (mapped.size > 0) return Array.from(mapped);
+  return type && MUSIC_TYPES.has(type) ? ['electro'] : [];
 }
 
  export function deduceType(name: string): 'soirée' | 'club' | 'bar' | 'concert' | 'afterwork' | 'sport' | 'théâtre' | 'expo' | 'festival' | 'spectacle' | 'brocante' {
@@ -412,11 +418,11 @@ export async function loadEventsNearby(lat: number, lng: number, radiusKm: numbe
 }
 
 function cachedToNightEvent(e: any): NightEvent {
-  const genres = mapGenres(e.genres || []);
-  const storedVibe = typeof e.vibe === 'string' ? e.vibe.toLowerCase() : '';
   const storedType = typeof e.type === 'string' ? e.type.toLowerCase() : '';
-  const vibe = isStoredEventVibe(storedVibe) ? storedVibe : deduceVibe(genres, e.name);
   const type = isStoredEventType(storedType) ? storedType : deduceType(e.name);
+  const genres = mapGenres(e.genres || [], type);
+  const storedVibe = typeof e.vibe === 'string' ? e.vibe.toLowerCase() : '';
+  const vibe = isStoredEventVibe(storedVibe) ? storedVibe : deduceVibe(genres, e.name);
   return {
     id: e.id,
     name: e.name.toUpperCase(),
