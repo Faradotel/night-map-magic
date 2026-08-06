@@ -287,38 +287,53 @@ Deno.serve(async (req) => {
 
     console.log('Scraping Shotgun URL:', shotgunUrl, 'for city:', city);
 
-    const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url: shotgunUrl,
-        formats: ['markdown'],
-        waitFor: 8000,
-        timeout: 90000,
-        // Shotgun lazy-loads its event list: scroll repeatedly to load all events
-        actions: [
-          { type: 'wait', milliseconds: 5000 },
-          ...Array.from({ length: 8 }, () => ([
-            { type: 'scroll', direction: 'down' },
-            { type: 'wait', milliseconds: 1500 },
-          ])).flat(),
-        ],
-      }),
+    const scrapeBody = JSON.stringify({
+      url: shotgunUrl,
+      formats: ['markdown'],
+      waitFor: 8000,
+      timeout: 90000,
+      // Shotgun lazy-loads its event list: scroll repeatedly to load all events
+      actions: [
+        { type: 'wait', milliseconds: 5000 },
+        ...Array.from({ length: 8 }, () => ([
+          { type: 'scroll', direction: 'down' },
+          { type: 'wait', milliseconds: 1500 },
+        ])).flat(),
+      ],
     });
 
+    // Firecrawl applique un rate limit par minute : on retente au lieu d'abandonner,
+    // sinon la ville se retrouve sans aucun événement Shotgun.
+    let scrapeResponse: Response | null = null;
+    let scrapeData: any = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: scrapeBody,
+      });
+      scrapeData = await scrapeResponse.json();
+      if (scrapeResponse.ok) break;
 
-    const scrapeData = await scrapeResponse.json();
+      const isRateLimited = scrapeResponse.status === 429 ||
+        /rate limit/i.test(String(scrapeData?.error ?? ''));
+      console.error(`Firecrawl attempt ${attempt + 1} failed (${scrapeResponse.status}):`, JSON.stringify(scrapeData));
+      if (!isRateLimited || attempt === 2) break;
+      await new Promise((r) => setTimeout(r, 20000));
+    }
 
-    if (!scrapeResponse.ok) {
-      console.error('Firecrawl error:', JSON.stringify(scrapeData));
+    if (!scrapeResponse!.ok) {
+      // IMPORTANT: success:false — refresh-events ne doit pas purger les événements
+      // Shotgun déjà en base quand le scrape échoue.
       return new Response(
-        JSON.stringify({ success: true, events: [], city }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: false, error: 'Firecrawl scrape failed', events: [], city }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
 
     const markdown = scrapeData?.data?.markdown || scrapeData?.markdown || '';
     console.log('Markdown length:', markdown.length);
