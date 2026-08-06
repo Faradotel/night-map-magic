@@ -62,6 +62,7 @@
   <url><loc>https://pulse-map.live/categories/festivals/la-rochelle</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/toulon</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/angers</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
+  <url><loc>https://pulse-map.live/categories/bars/cannes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/antibes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/toulon</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/chambery</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
@@ -106,6 +107,8 @@
   <url><loc>https://pulse-map.live/ambiances/chill/toulon</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/chill/chambery</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/chill/antibes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/afterwork/cannes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/afterwork/antibes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/concert/toulon</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/concert/le-havre</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/concert/angers</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
@@ -113,6 +116,8 @@
   <url><loc>https://pulse-map.live/ambiances/concert/chambery</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/concert/antibes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/culture/chambery</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/culture/cannes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/culture/antibes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/sport/chambery</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/sport/antibes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
 </urlset>
