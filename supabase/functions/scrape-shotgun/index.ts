@@ -476,7 +476,7 @@ Deno.serve(async (req) => {
       geocodedEvents.push({
         id: `shotgun-${(raw.url.split('?')[0].split('/events/')[1] || String(geocodedEvents.length)).slice(0, 80)}`,
         name: raw.name,
-        venue: raw.venue,
+        venue: venueName,
         address: resolvedAddress,
         city,
         lat,
