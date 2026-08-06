@@ -358,68 +358,103 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Geocode each venue
+    // Geocode each venue (cached per venue so events at the same place share coords)
     const geocodedEvents: ShotgunEvent[] = [];
+    const venueCache = new Map<string, { lat: number; lng: number; address: string } | null>();
+
+    // Deterministic small offset from a string, so the same venue always lands on the same point
+    const hashOffset = (s: string) => {
+      let h = 0;
+      for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+      const a = ((h >>> 0) % 1000) / 1000 - 0.5;
+      const b = (((h >>> 10) >>> 0) % 1000) / 1000 - 0.5;
+      return [a * 0.01, b * 0.01];
+    };
 
     for (const raw of rawEvents.slice(0, 80)) {
       let lat = cityLat;
       let lng = cityLng;
       let geocoded = false;
 
-      let resolvedAddress = `${raw.venue}, ${city}`;
+      // Shotgun titles are often "Artiste | Lieu" — the real venue is the trailing segment.
+      // The card parser can mistake the artist line for the venue, so prefer the title's venue part.
+      const nameParts = raw.name.split('|').map((s) => s.trim()).filter(Boolean);
+      let venueName = raw.venue;
+      if (nameParts.length > 1) {
+        const tail = nameParts[nameParts.length - 1];
+        if (tail.length > 2) venueName = tail;
+      }
 
-      if (raw.venue && raw.venue !== raw.name) {
-        // Try multiple geocoding strategies
-        const queries = [
-          `${raw.venue}, ${city}, France`,
-          `${raw.venue}, France`,
-        ];
+      let resolvedAddress = `${venueName}, ${city}`;
 
-        for (const query of queries) {
-          if (geocoded) break;
-          try {
-            const geoRes = await fetch(
-              `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&addressdetails=1&countrycodes=fr`,
-              { headers: { 'User-Agent': 'PulseMap/1.0' } }
-            );
-            const geoData = await geoRes.json();
-            if (geoData.length > 0) {
-              const resultLat = parseFloat(geoData[0].lat);
-              const resultLng = parseFloat(geoData[0].lon);
-              
-              // Validate: result should be within ~100km of city center
-              const distKm = Math.sqrt(
-                Math.pow((resultLat - cityLat) * 111, 2) +
-                Math.pow((resultLng - cityLng) * 111 * Math.cos(cityLat * Math.PI / 180), 2)
+      if (venueName && venueName !== raw.name) {
+        const cacheKey = venueName.toLowerCase();
+        if (venueCache.has(cacheKey)) {
+          const cached = venueCache.get(cacheKey);
+          if (cached) {
+            lat = cached.lat;
+            lng = cached.lng;
+            resolvedAddress = cached.address;
+            geocoded = true;
+          }
+        } else {
+          // Try multiple geocoding strategies
+          const queries = [
+            `${venueName}, ${city}, France`,
+            `${venueName}, France`,
+          ];
+
+          for (const query of queries) {
+            if (geocoded) break;
+            try {
+              const geoRes = await fetch(
+                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&addressdetails=1&countrycodes=fr`,
+                { headers: { 'User-Agent': 'PulseMap/1.0' } }
               );
-              
-              if (distKm < 100) {
-                lat = resultLat;
-                lng = resultLng;
-                geocoded = true;
-                const addr = geoData[0].address;
-                if (addr) {
-                  const parts = [
-                    addr.road ? `${addr.house_number ? addr.house_number + ' ' : ''}${addr.road}` : null,
-                    addr.postcode,
-                    addr.city || addr.town || addr.village || city,
-                  ].filter(Boolean);
-                  if (parts.length > 0) {
-                    resolvedAddress = parts.join(', ');
+              const geoData = await geoRes.json();
+              if (geoData.length > 0) {
+                const resultLat = parseFloat(geoData[0].lat);
+                const resultLng = parseFloat(geoData[0].lon);
+
+                // Validate: result should be within ~100km of city center
+                const distKm = Math.sqrt(
+                  Math.pow((resultLat - cityLat) * 111, 2) +
+                  Math.pow((resultLng - cityLng) * 111 * Math.cos(cityLat * Math.PI / 180), 2)
+                );
+
+                if (distKm < 100) {
+                  lat = resultLat;
+                  lng = resultLng;
+                  geocoded = true;
+                  const addr = geoData[0].address;
+                  if (addr) {
+                    const parts = [
+                      addr.road ? `${addr.house_number ? addr.house_number + ' ' : ''}${addr.road}` : null,
+                      addr.postcode,
+                      addr.city || addr.town || addr.village || city,
+                    ].filter(Boolean);
+                    if (parts.length > 0) {
+                      resolvedAddress = parts.join(', ');
+                    }
                   }
                 }
               }
-            }
-            await new Promise(r => setTimeout(r, 250));
-          } catch { /* try next query */ }
+              await new Promise(r => setTimeout(r, 250));
+            } catch { /* try next query */ }
+          }
+
+          venueCache.set(cacheKey, geocoded ? { lat, lng, address: resolvedAddress } : null);
         }
       }
 
-      // If not geocoded, add small random offset around city center so markers don't stack
+      // Not geocoded: deterministic offset keyed on the venue, so all events of the
+      // same venue stack on the exact same point instead of scattering across the city.
       if (!geocoded) {
-        lat += (Math.random() - 0.5) * 0.01;
-        lng += (Math.random() - 0.5) * 0.01;
+        const [dLat, dLng] = hashOffset((venueName || raw.name).toLowerCase());
+        lat += dLat;
+        lng += dLng;
       }
+
 
       let ticketUrl = raw.url;
       if (ticketUrl && !ticketUrl.startsWith('http')) {
@@ -441,7 +476,7 @@ Deno.serve(async (req) => {
       geocodedEvents.push({
         id: `shotgun-${(raw.url.split('?')[0].split('/events/')[1] || String(geocodedEvents.length)).slice(0, 80)}`,
         name: raw.name,
-        venue: raw.venue,
+        venue: venueName,
         address: resolvedAddress,
         city,
         lat,
