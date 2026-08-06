@@ -295,7 +295,7 @@ Deno.serve(async (req) => {
       // Shotgun lazy-loads its event list: scroll repeatedly to load all events
       actions: [
         { type: 'wait', milliseconds: 5000 },
-        ...Array.from({ length: 8 }, () => ([
+        ...Array.from({ length: 14 }, () => ([
           { type: 'scroll', direction: 'down' },
           { type: 'wait', milliseconds: 1500 },
         ])).flat(),
@@ -386,7 +386,7 @@ Deno.serve(async (req) => {
       return [a * 0.01, b * 0.01];
     };
 
-    for (const raw of rawEvents.slice(0, 80)) {
+    for (const raw of rawEvents.slice(0, 150)) {
       let lat = cityLat;
       let lng = cityLng;
       let geocoded = false;

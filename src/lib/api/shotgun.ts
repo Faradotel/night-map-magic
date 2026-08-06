@@ -269,16 +269,29 @@ export async function fetchTicketmasterEvents(city: string): Promise<NightEvent[
 /**
  * Deduplicate events: if two events have very similar names (regardless of distance), keep only one.
  * Also dedup by same venue within 500m. Prefer Shotgun over Ticketmaster.
+ *
+ * Both rules also require the events to be the same night (±12h) — otherwise
+ * distinct dates of a recurring show at the same venue (e.g. a weekly night
+ * that lists several upcoming sessions) collapse into a single kept event.
  */
 export function deduplicateEvents(events: NightEvent[]): NightEvent[] {
   const kept: NightEvent[] = [];
 
   const normalize = (s: string) => s.toLowerCase().replace(/[^a-zà-ÿ0-9]/g, '').slice(0, 60);
 
+  const sameNight = (a: string, b: string) => {
+    const ta = new Date(a).getTime();
+    const tb = new Date(b).getTime();
+    if (isNaN(ta) || isNaN(tb)) return false;
+    return Math.abs(ta - tb) < 12 * 60 * 60 * 1000;
+  };
+
   for (const event of events) {
     const normName = normalize(event.name);
 
     const isDuplicate = kept.some(existing => {
+      if (!sameNight(existing.startTime, event.startTime)) return false;
+
       const dist = getDistance(existing.lat, existing.lng, event.lat, event.lng);
 
       // Same name within 5km = duplicate (same event, slightly different coords)
