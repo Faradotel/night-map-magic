@@ -311,11 +311,14 @@ Deno.serve(async (req) => {
         return 0;
       }
 
-      // 2. Remove stale events from previous refreshes (updated_at predates this run)
+      // 2. Remove stale events from previous refreshes (updated_at predates this run),
+      //    mais uniquement pour les sources qui ont bien répondu ce run.
       await supabase.from('cached_events')
         .delete()
         .eq('city', city)
-        .lt('updated_at', refreshStart);
+        .lt('updated_at', refreshStart)
+        .in('source', Array.from(healthySources));
+
 
       console.log(`${city}: ${batch.length} events cached`);
       return batch.length;
