@@ -60,14 +60,27 @@ function geoBbox(lat: number, lng: number, radiusKm: number) {
   };
 }
 
-const EXPO_KEYWORDS = /exposition|musée|museum|galerie|vernissage|patrimoine|visite|monument|château|chateau|jardin|archive/i;
+const CINEMA_KEYWORDS = /cin[ée]ma/i;
+const CULTURE_KEYWORDS = /histoires?|litt[ée]rature|exposition|conf[ée]rence/i;
+const EXPO_KEYWORDS = /musée|museum|galerie|vernissage|patrimoine|visite|monument|château|chateau|jardin|archive/i;
 const SPECTACLE_KEYWORDS = /spectacle|théâtre|theatre|danse|cirque|marionnette|opéra|opera|comédie|comedie|ballet|chorale|choeur/i;
 const CONCERT_KEYWORDS = /concert|musique|music|festival|jazz|rock|electro|dj|hip.?hop|rap|orchestre|symphoni/i;
 const SPORT_KEYWORDS = /sport|course|run|trail|vélo|velo|cyclisme|marathon|foot|rugby|basket|natation|gym|fitness|randonnée|randonnee/i;
-const ATELIER_KEYWORDS = /atelier|workshop|stage|formation|conférence|conference|débat|debat|rencontre|lecture|salon|forum|séminaire/i;
+const ATELIER_KEYWORDS = /atelier|workshop|stage|formation|débat|debat|rencontre|lecture|salon|forum|séminaire/i;
 
-function detectOaType(title: string, desc: string, keywords: string[]): { type: string; subtype: string } {
+function detectOaType(title: string, desc: string, keywords: string[], address: string): { type: string; subtype: string } {
   const all = `${title} ${desc} ${keywords.join(' ')}`.toLowerCase();
+  // Vérifié en premier : "cinéma" dans le titre/desc/adresse prime sur les
+  // autres mots-clés (ex: "Ciné-concert" ne doit pas finir en type concert).
+  if (CINEMA_KEYWORDS.test(all) || CINEMA_KEYWORDS.test(address.toLowerCase())) {
+    return { type: 'cinema', subtype: 'cinema' };
+  }
+  // Histoire / littérature / exposition / conférence → culture, avant les
+  // autres buckets (sinon "exposition" finit en "expo" et "conférence" en
+  // "afterwork" via ATELIER_KEYWORDS).
+  if (CULTURE_KEYWORDS.test(all)) {
+    return { type: 'culture', subtype: 'culture' };
+  }
   if (SPORT_KEYWORDS.test(all)) return { type: 'sport', subtype: 'sport' };
   if (CONCERT_KEYWORDS.test(all)) return { type: 'concert', subtype: 'concert' };
   if (SPECTACLE_KEYWORDS.test(all)) return { type: 'spectacle', subtype: 'spectacle' };
@@ -296,7 +309,7 @@ async function fetchAgendaEvents(
         : '';
       const ticketUrl = canonicalUrl || e.registration?.[0]?.value || e.links?.[0]?.link || e.originalUrl || `https://openagenda.com`;
 
-      const { type, subtype } = detectOaType(title, description, kw);
+      const { type, subtype } = detectOaType(title, description, kw, `${venue} ${address}`);
 
       accepted++;
       events.push({
