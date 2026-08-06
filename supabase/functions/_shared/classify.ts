@@ -70,6 +70,7 @@ const NIGHTLIFE_MUSIC_GENRES = new Set([
 // Mots-clés dans le nom qui basculent automatiquement en nightlife.
 const NIGHTLIFE_NAME_RE = /\b(club|dj\s?set|dj\b|nuit|night|after|warehouse|rave|boiler|techno|house\s+music)\b/i;
 const FESTIVAL_NAME_RE = /\b(festival|fest\b|solidays|hellfest|main\s+square|rock\s+en\s+seine|vieilles\s+charrues)\b/i;
+const CONCERT_NAME_OVERRIDE_RE = /\bconcert\b/i;
 
 function normalizeGenre(raw?: string | null): string | null {
   if (!raw) return null;
@@ -127,6 +128,13 @@ export function classifyTicketmaster(input: {
       subGenre: subN,
       priority: 20,
     };
+  }
+
+  // "Concert" dans le nom mais segment != Musique → TM classe souvent les
+  // petits organisateurs/salles associatives sous "Arts & Théâtre / Culturel".
+  // On corrige par le nom plutôt que de faire confiance à leur taxonomie.
+  if (CONCERT_NAME_OVERRIDE_RE.test(name)) {
+    return { type: 'concert', vibe: 'concert', genres, subGenre: subN, priority: 20 };
   }
 
   // ---- Segment ARTS & THEATRE ----
