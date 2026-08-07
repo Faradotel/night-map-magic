@@ -57,10 +57,36 @@
   <url><loc>https://pulse-map.live/categories/concerts/aix-en-provence</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/concerts/saint-etienne</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/concerts/villeurbanne</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/soirees/paris</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/soirees/lyon</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/soirees/marseille</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/soirees/toulouse</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/soirees/nice</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/soirees/nantes</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/soirees/bordeaux</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/soirees/grenoble</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/soirees/lille</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/soirees/strasbourg</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/soirees/rennes</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/soirees/montpellier</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/soirees/aix-en-provence</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/soirees/saint-etienne</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/soirees/villeurbanne</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/festivals/paris</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/festivals/lyon</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/festivals/marseille</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/festivals/toulouse</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/festivals/nice</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/festivals/nantes</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/festivals/bordeaux</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/festivals/grenoble</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/festivals/lille</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/festivals/strasbourg</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/festivals/rennes</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/festivals/montpellier</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/festivals/aix-en-provence</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/festivals/saint-etienne</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/festivals/villeurbanne</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/paris</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/lyon</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/marseille</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
@@ -69,6 +95,10 @@
   <url><loc>https://pulse-map.live/categories/bars/nantes</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/bordeaux</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/grenoble</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/bars/lille</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/bars/strasbourg</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/bars/rennes</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/bars/montpellier</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/aix-en-provence</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/saint-etienne</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/villeurbanne</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
@@ -80,7 +110,12 @@
   <url><loc>https://pulse-map.live/categories/sport/nantes</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/bordeaux</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/grenoble</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/sport/lille</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/sport/strasbourg</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/sport/rennes</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/sport/montpellier</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/aix-en-provence</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/sport/saint-etienne</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/villeurbanne</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/paris</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/lyon</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
@@ -90,47 +125,175 @@
   <url><loc>https://pulse-map.live/categories/culture/nantes</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/bordeaux</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/grenoble</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/culture/lille</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/culture/strasbourg</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/culture/rennes</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/culture/montpellier</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/aix-en-provence</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/saint-etienne</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/villeurbanne</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/brocantes/paris</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/brocantes/lyon</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/brocantes/marseille</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/brocantes/toulouse</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/brocantes/nice</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/brocantes/nantes</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/brocantes/bordeaux</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/brocantes/grenoble</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/brocantes/lille</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/brocantes/strasbourg</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/brocantes/rennes</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/brocantes/montpellier</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/brocantes/aix-en-provence</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/categories/brocantes/saint-etienne</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://pulse-map.live/categories/brocantes/villeurbanne</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pulse-map.live/genres/techno/paris</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/techno/lyon</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/techno/marseille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/techno/toulouse</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/techno/nice</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/techno/nantes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/techno/bordeaux</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/techno/grenoble</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/techno/lille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/techno/strasbourg</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/techno/rennes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/techno/montpellier</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/techno/aix-en-provence</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/techno/saint-etienne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/techno/villeurbanne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/electro/paris</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/electro/lyon</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/electro/marseille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/electro/toulouse</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/electro/nice</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/electro/nantes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/electro/bordeaux</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/electro/grenoble</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/electro/lille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/electro/strasbourg</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/electro/rennes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/electro/montpellier</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/electro/aix-en-provence</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/electro/saint-etienne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/electro/villeurbanne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/house/paris</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/house/lyon</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/house/marseille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/house/toulouse</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/house/nice</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/house/nantes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/house/bordeaux</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/house/grenoble</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/house/lille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/house/strasbourg</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/house/rennes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/house/montpellier</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/house/aix-en-provence</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/house/saint-etienne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/house/villeurbanne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rock/paris</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/rock/lyon</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/rock/marseille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/rock/toulouse</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rock/nice</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/rock/nantes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/rock/bordeaux</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rock/grenoble</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/rock/lille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/rock/strasbourg</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/rock/rennes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/rock/montpellier</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rock/aix-en-provence</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rock/saint-etienne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rock/villeurbanne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/paris</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/lyon</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/marseille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/toulouse</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/pop/nice</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/nantes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/bordeaux</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/pop/grenoble</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/lille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/strasbourg</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/rennes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/montpellier</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/pop/aix-en-provence</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/pop/saint-etienne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/pop/villeurbanne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/indie/paris</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/indie/lyon</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/indie/marseille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/indie/toulouse</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/indie/nice</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/indie/nantes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/indie/bordeaux</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/indie/grenoble</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/indie/lille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/indie/strasbourg</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/indie/rennes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/indie/montpellier</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/indie/aix-en-provence</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/indie/saint-etienne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/indie/villeurbanne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/jazz/paris</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/jazz/lyon</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/jazz/marseille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/jazz/toulouse</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/jazz/nice</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/jazz/nantes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/jazz/bordeaux</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/jazz/grenoble</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/jazz/lille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/jazz/strasbourg</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/jazz/rennes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/jazz/montpellier</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/jazz/aix-en-provence</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/jazz/saint-etienne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/jazz/villeurbanne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rnb/paris</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rnb/lyon</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rnb/marseille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/genres/rnb/toulouse</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rnb/nice</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rnb/nantes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rnb/bordeaux</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rnb/grenoble</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rnb/lille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rnb/strasbourg</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rnb/rennes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rnb/montpellier</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rnb/aix-en-provence</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rnb/saint-etienne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/genres/rnb/villeurbanne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/rave/paris</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/rave/lyon</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/rave/marseille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/rave/toulouse</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/rave/nice</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/rave/nantes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/rave/bordeaux</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/rave/grenoble</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/rave/lille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/rave/strasbourg</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/rave/rennes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/rave/montpellier</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/rave/aix-en-provence</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/rave/saint-etienne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/rave/villeurbanne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/chill/paris</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/chill/lyon</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/chill/marseille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/chill/toulouse</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/chill/nice</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/chill/nantes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/chill/bordeaux</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/chill/grenoble</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/chill/lille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/chill/strasbourg</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/chill/rennes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/chill/montpellier</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/chill/aix-en-provence</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/chill/saint-etienne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/chill/villeurbanne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
@@ -142,9 +305,28 @@
   <url><loc>https://pulse-map.live/ambiances/afterwork/nantes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/afterwork/bordeaux</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/afterwork/grenoble</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/afterwork/lille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/afterwork/strasbourg</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/afterwork/rennes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/afterwork/montpellier</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/afterwork/aix-en-provence</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/afterwork/saint-etienne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/afterwork/villeurbanne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/cosy/paris</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/cosy/lyon</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/cosy/marseille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/cosy/toulouse</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/cosy/nice</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/cosy/nantes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/cosy/bordeaux</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/cosy/grenoble</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/cosy/lille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/cosy/strasbourg</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/cosy/rennes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/cosy/montpellier</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/cosy/aix-en-provence</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/cosy/saint-etienne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/cosy/villeurbanne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/concert/paris</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/concert/lyon</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/concert/marseille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
@@ -158,6 +340,7 @@
   <url><loc>https://pulse-map.live/ambiances/concert/rennes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/concert/montpellier</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/concert/aix-en-provence</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/concert/saint-etienne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/concert/villeurbanne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/culture/paris</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/culture/lyon</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
@@ -167,6 +350,10 @@
   <url><loc>https://pulse-map.live/ambiances/culture/nantes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/culture/bordeaux</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/culture/grenoble</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/culture/lille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/culture/strasbourg</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/culture/rennes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/culture/montpellier</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/culture/aix-en-provence</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/culture/saint-etienne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/culture/villeurbanne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
@@ -178,5 +365,11 @@
   <url><loc>https://pulse-map.live/ambiances/sport/nantes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/sport/bordeaux</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/sport/grenoble</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/sport/lille</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/sport/strasbourg</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/sport/rennes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/sport/montpellier</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/sport/aix-en-provence</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/sport/saint-etienne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pulse-map.live/ambiances/sport/villeurbanne</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
 </urlset>
