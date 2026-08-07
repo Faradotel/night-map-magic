@@ -193,8 +193,8 @@ Deno.serve(async (req) => {
       if (id.startsWith('icf-')) return { type: 'festival', vibe: 'concert', priority: 30 };
       if (id.startsWith('oa-')) {
         const oaType = e.oaType || 'spectacle';
-        const vibeMap: Record<string, string> = { concert: 'concert', sport: 'sport', expo: 'chill', afterwork: 'afterwork', cinema: 'culture' };
-        const prioMap: Record<string, number> = { concert: 20, sport: 60, expo: 50, afterwork: 25, spectacle: 40, cinema: 80 };
+        const vibeMap: Record<string, string> = { concert: 'concert', sport: 'sport', expo: 'chill', afterwork: 'afterwork', cinema: 'culture', plante: 'chill' };
+        const prioMap: Record<string, number> = { concert: 20, sport: 60, expo: 50, afterwork: 25, spectacle: 40, cinema: 80, plante: 85 };
         return { type: oaType, vibe: vibeMap[oaType] || 'culture', priority: prioMap[oaType] ?? 50 };
       }
       if (id.startsWith('bb-')) {

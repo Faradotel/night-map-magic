@@ -61,6 +61,7 @@ function geoBbox(lat: number, lng: number, radiusKm: number) {
 }
 
 const CINEMA_KEYWORDS = /cin[ée]ma/i;
+const PLANTE_KEYWORDS = /plantes?/i;
 const CULTURE_KEYWORDS = /histoires?|litt[ée]rature|exposition|conf[ée]rence/i;
 const EXPO_KEYWORDS = /musée|museum|galerie|vernissage|patrimoine|visite|monument|château|chateau|jardin|archive/i;
 const SPECTACLE_KEYWORDS = /spectacle|théâtre|theatre|danse|cirque|marionnette|opéra|opera|comédie|comedie|ballet|chorale|choeur/i;
@@ -74,6 +75,11 @@ function detectOaType(title: string, desc: string, keywords: string[], address: 
   // autres mots-clés (ex: "Ciné-concert" ne doit pas finir en type concert).
   if (CINEMA_KEYWORDS.test(all) || CINEMA_KEYWORDS.test(address.toLowerCase())) {
     return { type: 'cinema', subtype: 'cinema' };
+  }
+  // "Plante(s)" dans le nom/desc → vignette dédiée (bourse/troc de plantes,
+  // marché aux plantes…), avant EXPO_KEYWORDS ("jardin" y matcherait aussi).
+  if (PLANTE_KEYWORDS.test(all)) {
+    return { type: 'plante', subtype: 'plante' };
   }
   // Histoire / littérature / exposition / conférence → culture, avant les
   // autres buckets (sinon "exposition" finit en "expo" et "conférence" en

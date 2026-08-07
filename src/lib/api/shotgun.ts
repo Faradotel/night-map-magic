@@ -83,7 +83,7 @@ const EVENT_VIBES = new Set<EventVibe>([
 const EVENT_TYPES = new Set<NightEvent['type']>([
   'soirée', 'club', 'bar', 'concert', 'afterwork', 'sport', 'théâtre', 'expo',
   'festival', 'spectacle', 'brocante',
-  'nightlife', 'culture', 'famille', 'cinema', 'autre',
+  'nightlife', 'culture', 'famille', 'cinema', 'plante', 'autre',
 ]);
 
 function isStoredEventVibe(value: string): value is EventVibe {

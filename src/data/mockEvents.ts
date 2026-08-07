@@ -30,6 +30,7 @@ export type EventType =
   | 'sport'
   | 'famille'
   | 'cinema'
+  | 'plante'
   | 'autre'
   // Legacy — encore présent en DB, mappé vers les nouveaux au fil du refresh
   | 'soirée'
@@ -119,6 +120,7 @@ export const typeConfig: Record<string, { label: string; emoji: string }> = {
   sport: { label: 'Sport', emoji: '⚽' },
   famille: { label: 'Famille', emoji: '👨‍👩‍👧' },
   cinema: { label: 'Cinéma', emoji: '🎬' },
+  plante: { label: 'Plantes', emoji: '🌱' },
   autre: { label: 'Autre', emoji: '📍' },
   // Legacy (rendu identique)
   soirée: { label: 'Soirée', emoji: '🎉' },
@@ -144,6 +146,7 @@ export const TYPE_PRIORITY: Record<string, number> = {
   sport: 60,
   famille: 70,
   cinema: 80,
+  plante: 85,
   brocante: 85,
   afterwork: 25,
   bar: 45,
