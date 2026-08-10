@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { MapPin, Navigation, Search, ChevronDown, X, Globe } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
+import { getDistance } from '@/data/mockEvents';
 
 export interface City {
   name: string;
@@ -61,6 +62,20 @@ export const CITIES: City[] = [
   { name: 'Valence', lat: 44.9334, lng: 4.8924 },
   { name: 'Monaco', lat: 43.7384, lng: 7.4246 },
 ];
+
+const NEARBY_CITY_MAX_KM = 30;
+
+// Nearest-neighbor lookup against CITIES, used to auto-detect a default city
+// from geolocation coords (boot-time detection and onboarding "use my location").
+export function findNearestCity(lat: number, lng: number): City | null {
+  let best: City | null = null;
+  let bestDist = Infinity;
+  for (const c of CITIES) {
+    const d = getDistance(lat, lng, c.lat, c.lng);
+    if (d < bestDist) { bestDist = d; best = c; }
+  }
+  return best && bestDist <= NEARBY_CITY_MAX_KM ? best : null;
+}
 
 export type LocationModeType = 'nearby' | 'city' | 'france';
 

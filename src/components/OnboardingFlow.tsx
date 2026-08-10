@@ -1,73 +1,54 @@
-import { useState, useEffect } from 'react';
-import { MapPin, Zap, Sliders, Users, Heart, X, ChevronRight, Music, PartyPopper, Theater, Activity, ShoppingBag, UsersRound, ShieldCheck } from 'lucide-react';
-
-const STORAGE_KEY = 'pulse_onboarding_done_v2';
+import { useState, useEffect, useMemo } from 'react';
+import { MapPin, X, ChevronRight, ChevronLeft, Navigation, Search, Check } from 'lucide-react';
+import { City, CITIES, findNearestCity } from '@/components/LocationMode';
+import { InterestTag, INTEREST_TAG_OPTIONS } from '@/hooks/useOnboardingPreferences';
 
 interface OnboardingFlowProps {
-  onClose: () => void;
+  /** city=null means "no city chosen" (skip, or edit-mode clear) */
+  onComplete: (city: City | null, tags: InterestTag[]) => void;
+  initialCity?: City | null;
+  initialTags?: InterestTag[];
+  /** 'edit' hides the skip button and relabels the final CTA for re-entry from the profile screen */
+  mode?: 'onboarding' | 'edit';
 }
 
-const slides = [
-  {
-    key: 'welcome',
-    title: 'Bienvenue sur PulseMap',
-    subtitle: 'Découvre en temps réel ce qui se passe autour de toi : concerts, soirées, festivals, brocantes, sport et plus encore.',
-    visual: 'pulse',
-  },
-  {
-    key: 'icons',
-    title: 'Comprendre la carte',
-    subtitle: 'Chaque pin sur la carte correspond à un type de sortie.',
-    visual: 'icons',
-  },
-  {
-    key: 'features',
-    title: 'Tout ce que tu peux faire',
-    subtitle: 'PulseMap est pensée pour sortir vite, mieux, et avec tes amis.',
-    visual: 'features',
-  },
-] as const;
-
-const iconRows = [
-  { Icon: PartyPopper, color: 'text-pink-400', label: 'Soirées & clubs' },
-  { Icon: Music, color: 'text-purple-400', label: 'Concerts live' },
-  { Icon: Theater, color: 'text-amber-400', label: 'Culture & expos' },
-  { Icon: Activity, color: 'text-emerald-400', label: 'Sport & running' },
-  { Icon: ShoppingBag, color: 'text-orange-400', label: 'Brocantes & marchés' },
-  { Icon: UsersRound, color: 'text-sky-400', label: 'Meetups & rencontres' },
-  { Icon: ShieldCheck, color: 'text-green-400', label: 'SAFE — lieux refuges 24/7' },
-  { Icon: Zap, color: 'text-red-500', label: 'LIVE — en ce moment' },
-];
-
-const featureRows = [
-  { Icon: MapPin, label: 'Près de moi', desc: 'Toutes les sorties autour de ta position' },
-  { Icon: Zap, label: 'LIVE', desc: 'Ce qui se passe maintenant, en temps réel' },
-  { Icon: ShieldCheck, label: 'SAFE', desc: 'Pharmacies, tabacs, police, bars partenaires — un refuge proche en cas de pépin' },
-  { Icon: Sliders, label: 'Filtres', desc: 'Type, ambiance, distance, prix — à ta sauce' },
-  { Icon: Users, label: 'Amis', desc: 'Vois où vont tes amis et sortez ensemble' },
-  { Icon: Heart, label: 'Favoris', desc: 'Sauvegarde les events qui te branchent' },
-];
-
-export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
+export function OnboardingFlow({ onComplete, initialCity = null, initialTags = [], mode = 'onboarding' }: OnboardingFlowProps) {
   const [step, setStep] = useState(0);
-  const total = slides.length;
-  const current = slides[step];
+  const [selectedCity, setSelectedCity] = useState<City | null>(initialCity);
+  const [selectedTags, setSelectedTags] = useState<InterestTag[]>(initialTags);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [locating, setLocating] = useState(false);
 
   useEffect(() => {
-    // Lock scroll while open
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
   }, []);
 
-  const finish = () => {
-    try { localStorage.setItem(STORAGE_KEY, '1'); } catch {}
-    onClose();
+  const filteredCities = useMemo(
+    () => CITIES.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase())),
+    [searchQuery],
+  );
+
+  const finish = (city: City | null, tags: InterestTag[]) => onComplete(city, tags);
+  const skip = () => finish(null, []);
+
+  const useMyLocation = () => {
+    if (!('geolocation' in navigator)) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocating(false);
+        const nearest = findNearestCity(pos.coords.latitude, pos.coords.longitude);
+        if (nearest) setSelectedCity(nearest);
+      },
+      () => setLocating(false),
+      { enableHighAccuracy: true, timeout: 8000 },
+    );
   };
 
-  const next = () => {
-    if (step < total - 1) setStep(step + 1);
-    else finish();
+  const toggleTag = (tag: InterestTag) => {
+    setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
   };
 
   return (
@@ -78,20 +59,21 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
       aria-labelledby="onboarding-title"
     >
       <div className="relative w-full sm:max-w-md bg-card border border-border sm:rounded-3xl rounded-t-3xl shadow-2xl p-6 pb-8 animate-scale-in max-h-[92vh] overflow-y-auto">
-        {/* Skip */}
-        <button
-          onClick={finish}
-          className="absolute top-4 right-4 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 px-2 py-1 rounded-lg"
-          aria-label="Passer"
-        >
-          Passer <X className="w-3.5 h-3.5" />
-        </button>
+        {mode === 'onboarding' && (
+          <button
+            onClick={skip}
+            className="absolute top-4 right-4 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 px-2 py-1 rounded-lg"
+            aria-label="Passer"
+          >
+            Passer <X className="w-3.5 h-3.5" />
+          </button>
+        )}
 
         {/* Progress dots */}
         <div className="flex items-center gap-1.5 mb-6 mt-2">
-          {slides.map((s, i) => (
+          {[0, 1].map((i) => (
             <div
-              key={s.key}
+              key={i}
               className={`h-1 rounded-full transition-all duration-300 ${
                 i === step ? 'bg-accent w-8' : i < step ? 'bg-accent/60 w-4' : 'bg-border w-4'
               }`}
@@ -99,79 +81,114 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
           ))}
         </div>
 
-        {/* Visual */}
-        <div className="mb-5">
-          {current.visual === 'pulse' && (
-            <div className="relative h-40 flex items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-accent/20 via-pink-500/10 to-purple-500/20">
-              <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_30%_30%,hsl(var(--accent))_0%,transparent_50%),radial-gradient(circle_at_70%_60%,#ec4899_0%,transparent_50%)]" />
-              <div className="relative">
-                <div className="absolute inset-0 rounded-full bg-accent/40 animate-ping" />
-                <div className="absolute inset-0 rounded-full bg-accent/30 animate-ping" style={{ animationDelay: '0.4s' }} />
-                <div className="relative w-16 h-16 rounded-full bg-accent flex items-center justify-center shadow-lg shadow-accent/50">
-                  <MapPin className="w-8 h-8 text-accent-foreground" fill="currentColor" />
-                </div>
-              </div>
+        {step === 0 ? (
+          <>
+            <h2 id="onboarding-title" className="text-2xl font-black text-foreground leading-tight mb-2">
+              Tu es dans quelle ville ?
+            </h2>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+              On te montre ce qui se passe près de chez toi.
+            </p>
+
+            <button
+              onClick={useMyLocation}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-secondary border border-border font-semibold text-sm mb-4 active:scale-[0.98] transition-transform"
+            >
+              <Navigation className={`w-4 h-4 ${locating ? 'animate-spin' : ''}`} />
+              {locating ? 'Localisation…' : 'Utiliser ma position'}
+            </button>
+
+            <div className="flex items-center gap-2 h-10 px-3 rounded-xl bg-secondary border border-border mb-2">
+              <Search className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Rechercher une ville…"
+                className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground min-w-0"
+              />
             </div>
-          )}
 
-          {current.visual === 'icons' && (
-            <div className="grid grid-cols-2 gap-2">
-              {iconRows.map(({ Icon, color, label }) => (
-                <div key={label} className="flex items-center gap-2 p-2.5 rounded-xl bg-secondary border border-border">
-                  <div className={`w-8 h-8 rounded-lg bg-background flex items-center justify-center ${color} shrink-0`}>
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <span className="text-xs font-medium text-foreground leading-tight">{label}</span>
-                </div>
-              ))}
+            <div className="max-h-56 overflow-y-auto rounded-xl border border-border divide-y divide-border mb-6">
+              {filteredCities.length === 0 ? (
+                <p className="px-3 py-4 text-xs text-center text-muted-foreground">Aucune ville trouvée</p>
+              ) : (
+                filteredCities.map((city) => {
+                  const active = selectedCity?.name === city.name;
+                  return (
+                    <button
+                      key={city.name}
+                      onClick={() => setSelectedCity(city)}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm"
+                      style={{ background: active ? 'hsl(var(--accent) / 0.12)' : 'transparent' }}
+                    >
+                      <MapPin className="w-3.5 h-3.5 opacity-40 shrink-0" />
+                      <span className="font-medium text-foreground">{city.name}</span>
+                      {active && <Check className="w-3.5 h-3.5 ml-auto text-accent shrink-0" />}
+                    </button>
+                  );
+                })
+              )}
             </div>
-          )}
 
-          {current.visual === 'features' && (
-            <div className="space-y-2">
-              {featureRows.map(({ Icon, label, desc }) => (
-                <div key={label} className="flex items-start gap-3 p-3 rounded-xl bg-secondary border border-border">
-                  <div className="w-9 h-9 rounded-lg bg-accent/15 text-accent flex items-center justify-center shrink-0">
-                    <Icon className="w-4.5 h-4.5" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-foreground leading-tight">{label}</p>
-                    <p className="text-xs text-muted-foreground leading-snug mt-0.5">{desc}</p>
-                  </div>
-                </div>
-              ))}
+            <button
+              onClick={() => setStep(1)}
+              disabled={!selectedCity}
+              className="w-full py-3.5 rounded-2xl bg-accent text-accent-foreground font-bold text-sm flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform shadow-lg shadow-accent/30 disabled:opacity-40 disabled:pointer-events-none"
+            >
+              Continuer
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </>
+        ) : (
+          <>
+            <h2 id="onboarding-title" className="text-2xl font-black text-foreground leading-tight mb-2">
+              Qu'est-ce qui te branche ?
+            </h2>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+              On pré-filtre la carte selon tes goûts — tu pourras toujours tout changer plus tard.
+            </p>
+
+            <div className="grid grid-cols-2 gap-2 mb-6">
+              {INTEREST_TAG_OPTIONS.map(({ key, label, emoji }) => {
+                const active = selectedTags.includes(key);
+                return (
+                  <button
+                    key={key}
+                    onClick={() => toggleTag(key)}
+                    className="flex items-center gap-2 p-3 rounded-xl border text-left active:scale-[0.98] transition-transform"
+                    style={{
+                      background: active ? 'hsl(var(--accent) / 0.12)' : 'hsl(var(--secondary))',
+                      borderColor: active ? 'hsl(var(--accent))' : 'hsl(var(--border))',
+                    }}
+                  >
+                    <span className="text-lg leading-none">{emoji}</span>
+                    <span className="text-sm font-semibold text-foreground">{label}</span>
+                    {active && <Check className="w-3.5 h-3.5 ml-auto text-accent shrink-0" />}
+                  </button>
+                );
+              })}
             </div>
-          )}
-        </div>
 
-        {/* Text */}
-        <h2 id="onboarding-title" className="text-2xl font-black text-foreground leading-tight mb-2">
-          {current.title}
-        </h2>
-        <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-          {current.subtitle}
-        </p>
-
-        {/* CTA */}
-        <button
-          onClick={next}
-          className="w-full py-3.5 rounded-2xl bg-accent text-accent-foreground font-bold text-sm flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform shadow-lg shadow-accent/30"
-        >
-          {step === total - 1 ? 'Explorer la carte' : 'Continuer'}
-          <ChevronRight className="w-4 h-4" />
-        </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStep(0)}
+                className="py-3.5 px-4 rounded-2xl bg-secondary border border-border font-bold text-sm flex items-center justify-center active:scale-[0.98] transition-transform"
+                aria-label="Retour"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => finish(selectedCity, selectedTags)}
+                className="flex-1 py-3.5 rounded-2xl bg-accent text-accent-foreground font-bold text-sm flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform shadow-lg shadow-accent/30"
+              >
+                {mode === 'edit' ? 'Enregistrer' : "C'est parti"}
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
-}
-
-export function useShouldShowOnboarding() {
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    try {
-      const done = localStorage.getItem(STORAGE_KEY);
-      if (!done) setShow(true);
-    } catch {}
-  }, []);
-  return { show, close: () => setShow(false) };
 }

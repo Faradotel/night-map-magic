@@ -16,8 +16,16 @@ import { toast } from 'sonner';
 import { useFavorites } from '@/hooks/useFavorites';
 import { formatDate } from '@/data/mockEvents';
 import { PassViewerScreen } from '@/components/PassViewerScreen';
+import { City } from '@/components/LocationMode';
+import { InterestTag } from '@/hooks/useOnboardingPreferences';
 
-export function ProfileScreen() {
+interface ProfileScreenProps {
+  preferredCityObj?: City | null;
+  onboardingTags?: InterestTag[];
+  onEditPreferences?: () => void;
+}
+
+export function ProfileScreen({ preferredCityObj = null, onboardingTags = [], onEditPreferences }: ProfileScreenProps) {
   const { theme, toggleTheme } = useTheme();
   const { unit, cycleUnit } = useDistanceUnit();
   const { stats, attended } = useAttendance();
@@ -442,6 +450,19 @@ export function ProfileScreen() {
                 <p className="text-sm font-medium">Unité de distance</p>
                 <p className="text-xs text-muted-foreground">
                   {unit === 'km' ? 'Kilomètres' : unit === 'miles' ? 'Miles' : 'Mètres'}
+                </p>
+              </div>
+              <ChevronRight size={14} className="text-muted-foreground" />
+            </button>
+            <button
+              onClick={onEditPreferences}
+              className="w-full flex items-center justify-between px-4 py-3 text-left"
+              style={{ borderBottom: '1px solid var(--profile-divider)' }}
+            >
+              <div>
+                <p className="text-sm font-medium">Modifier mes préférences</p>
+                <p className="text-xs text-muted-foreground">
+                  {preferredCityObj ? preferredCityObj.name : 'Aucune ville'} · {onboardingTags.length} centre{onboardingTags.length !== 1 ? 's' : ''} d'intérêt
                 </p>
               </div>
               <ChevronRight size={14} className="text-muted-foreground" />

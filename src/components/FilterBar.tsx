@@ -5,13 +5,13 @@ import { useDistanceUnit, convertDistance } from '@/hooks/useDistanceUnit';
 
 type DateFilter = 'today' | 'weekend' | 'week' | 'all';
 type PriceFilter = 'all' | 'free' | 'paid';
-type GenreFilter = 'electro' | 'techno' | 'house' | 'pop' | 'rock' | 'indie' | 'r&b' | 'jazz';
+type GenreFilter = 'electro' | 'techno' | 'house' | 'pop' | 'rock' | 'indie' | 'r&b' | 'jazz' | 'hip-hop';
 type VibeFilter = 'chill' | 'rave' | 'afterwork' | 'cosy' | 'concert' | 'culture' | 'sport' | 'party' | 'nightlife' | 'dance' | 'family' | 'energy';
 export type SourceFilter = 'concert' | 'brocante' | 'sport' | 'agenda' | 'festival' | 'meetup';
 
 // Category maps to vibes + sources for filtering
 type CategoryKey = 'nightlife' | 'party' | 'concert' | 'festival' | 'chill' | 'afterwork' | 'sport' | 'culture' | 'famille';
-type AdvancedGenre = 'electronic' | 'pop' | 'rock' | 'other';
+type AdvancedGenre = 'electronic' | 'pop' | 'rock' | 'hiphop' | 'other';
 
 export interface Filters {
   date: DateFilter;
@@ -51,7 +51,7 @@ const categoryOptions: { key: CategoryKey; label: string; emoji: string }[] = [
 ];
 
 // Map categories to vibes and sources
-const categoryToVibes: Record<CategoryKey, VibeFilter[]> = {
+export const categoryToVibes: Record<CategoryKey, VibeFilter[]> = {
   nightlife: ['nightlife', 'rave', 'dance'],
   party: ['party', 'rave', 'cosy'],
   concert: ['concert', 'energy'],
@@ -62,7 +62,7 @@ const categoryToVibes: Record<CategoryKey, VibeFilter[]> = {
   culture: ['culture'],
   famille: ['family'],
 };
-const categoryToSources: Record<CategoryKey, SourceFilter[]> = {
+export const categoryToSources: Record<CategoryKey, SourceFilter[]> = {
   nightlife: [],
   party: [],
   concert: ['concert'],
@@ -76,10 +76,11 @@ const categoryToSources: Record<CategoryKey, SourceFilter[]> = {
 
 
 // Advanced genre mapping
-const advancedGenreMap: Record<AdvancedGenre, GenreFilter[]> = {
+export const advancedGenreMap: Record<AdvancedGenre, GenreFilter[]> = {
   electronic: ['electro', 'techno', 'house'],
   pop: ['pop'],
   rock: ['rock', 'indie'],
+  hiphop: ['hip-hop'],
   other: ['r&b', 'jazz'],
 };
 
@@ -87,6 +88,7 @@ const advancedGenreOptions: { key: AdvancedGenre; label: string }[] = [
   { key: 'electronic', label: 'Électronique' },
   { key: 'pop', label: 'Pop' },
   { key: 'rock', label: 'Rock' },
+  { key: 'hiphop', label: 'Hip-Hop/Rap' },
   { key: 'other', label: 'Autre' },
 ];
 

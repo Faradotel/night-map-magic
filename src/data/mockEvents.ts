@@ -13,7 +13,7 @@ export type EventVibe =
   | 'family'
   | 'energy';
 
-export type MusicGenre = 'electro' | 'techno' | 'house' | 'pop' | 'rock' | 'indie' | 'r&b' | 'jazz';
+export type MusicGenre = 'electro' | 'techno' | 'house' | 'pop' | 'rock' | 'indie' | 'r&b' | 'jazz' | 'hip-hop';
 export type PriceRange = 'gratuit' | '€1-10' | '€10-20' | '€20+';
 
 // Types d'événements. Volontairement en string ouvert pour accepter les nouveaux

@@ -12,7 +12,7 @@ import { FriendsScreen } from '@/components/FriendsScreen';
 import { AuthScreen } from '@/components/AuthScreen';
 import { NotificationsSheet, useNotifications } from '@/components/NotificationsSheet';
 import { useAuth } from '@/hooks/useAuth';
-import { mockEvents, NightEvent, getDistance } from '@/data/mockEvents';
+import { mockEvents, NightEvent, EventType, getDistance } from '@/data/mockEvents';
 import { useAttendance } from '@/hooks/useAttendance';
 import { usePreferredCity } from '@/hooks/usePreferredCity';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -23,7 +23,7 @@ import { useOfflineEvents } from '@/hooks/useOfflineEvents';
 
 import { loadEventsForCity, loadEventsNearby, loadAllEvents, deduplicateEvents } from '@/lib/api/shotgun';
 import { mapGenres, deduceVibe, deduceType, parsePriceRange } from '@/lib/api/shotgun';
-import { LocationMode, City, LocationModeType, CITIES } from '@/components/LocationMode';
+import { LocationMode, City, LocationModeType, CITIES, findNearestCity } from '@/components/LocationMode';
 import { MapPin, Locate, Sliders, Bell, Plus, Zap, Flame, ShieldCheck } from 'lucide-react';
 import { useSafePlaces } from '@/hooks/useSafePlaces';
 import safeShieldLogo from '@/assets/safe-shield.png';
@@ -33,7 +33,8 @@ import { TonightsHotspotsBanner } from '@/components/TonightsHotspotsBanner';
 import { LiveTicker } from '@/components/LiveTicker';
 import { SEO } from '@/components/SEO';
 import { organizationLd, websiteLd } from '@/lib/seo/jsonld';
-import { OnboardingFlow, useShouldShowOnboarding } from '@/components/OnboardingFlow';
+import { OnboardingFlow } from '@/components/OnboardingFlow';
+import { useShouldShowOnboarding, useOnboardingPreferences, InterestTag, tagsToFilterPatch } from '@/hooks/useOnboardingPreferences';
 
 type Tab = 'map' | 'search' | 'friends' | 'profile';
 
@@ -44,22 +45,41 @@ const CITY_RADIUS_DEFAULT = 80;
 
 const FRANCE_CENTER: [number, number] = [46.2276, 2.2137];
 const FRANCE_ZOOM = 6;
-const NEARBY_CITY_MAX_KM = 30;
 
-function findNearestCity(lat: number, lng: number): City | null {
-  let best: City | null = null;
-  let bestDist = Infinity;
-  for (const c of CITIES) {
-    const d = getDistance(lat, lng, c.lat, c.lng);
-    if (d < bestDist) { bestDist = d; best = c; }
-  }
-  return best && bestDist <= NEARBY_CITY_MAX_KM ? best : null;
+// Most sources don't provide an endTime, so LIVE mode has to guess how long an
+// event runs. A flat 4h default cuts nightlife events short — soirées/clubs
+// routinely run past midnight (e.g. 19h→2h) — so the fallback duration is
+// type-aware instead of one-size-fits-all.
+const DEFAULT_DURATION_HOURS_BY_TYPE: Partial<Record<EventType, number>> = {
+  nightlife: 7,
+  soirée: 7,
+  club: 7,
+  bar: 7,
+  afterwork: 5,
+  festival: 8,
+  concert: 3,
+  spectacle: 2.5,
+  théâtre: 2.5,
+  cinema: 2.5,
+  expo: 3,
+  culture: 3,
+  sport: 3,
+  famille: 4,
+  brocante: 4,
+};
+const DEFAULT_DURATION_HOURS_FALLBACK = 4;
+
+function getDefaultDurationMs(type: EventType): number {
+  return (DEFAULT_DURATION_HOURS_BY_TYPE[type] ?? DEFAULT_DURATION_HOURS_FALLBACK) * 60 * 60 * 1000;
 }
 
 export default function Index() {
   const { user, loading: authLoading } = useAuth();
   const { isPro } = useUserRole();
   const { preferredCity, setPreferredCity } = usePreferredCity();
+  const { show: showOnboarding, complete: completeOnboarding } = useShouldShowOnboarding();
+  const { tags: onboardingTags, setTags: setOnboardingTags } = useOnboardingPreferences();
+  const [showEditPreferences, setShowEditPreferences] = useState(false);
   const savedCity = preferredCity ? CITIES.find(c => c.name === preferredCity) : null;
   // Default mode: city if saved, otherwise France
   const initMode: LocationModeType = savedCity ? 'city' : 'france';
@@ -113,7 +133,8 @@ export default function Index() {
     genres: [],
     vibes: [],
     sources: [],
-    radiusKm: savedCity ? CITY_RADIUS_DEFAULT : initMode === 'france' ? 9999 : NEARBY_RADIUS_DEFAULT
+    radiusKm: savedCity ? CITY_RADIUS_DEFAULT : initMode === 'france' ? 9999 : NEARBY_RADIUS_DEFAULT,
+    ...tagsToFilterPatch(onboardingTags),
   });
 
   // Compute a loading key based on mode + city/location
@@ -214,7 +235,10 @@ export default function Index() {
         // so the user stays focused on the targeted event/city.
         const arrivingFromDeepLink = !!(searchParams.get('event') || searchParams.get('city'))
           || hasProcessedEvent.current || hasProcessedCity.current;
-        if (!savedCity && !arrivingFromDeepLink) {
+        // The new onboarding flow owns first-visit city selection explicitly;
+        // skip the silent auto-detect while it's showing so it can't race with
+        // (and silently override) whatever the user picks in that flow.
+        if (!savedCity && !arrivingFromDeepLink && !showOnboarding) {
           const nearest = findNearestCity(loc[0], loc[1]);
           if (nearest) {
             setSelectedCityName(nearest.name);
@@ -243,7 +267,7 @@ export default function Index() {
       const eventStart = new Date(new Date(event.startTime).toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
       const eventEnd = event.endTime
         ? new Date(new Date(event.endTime).toLocaleString('en-US', { timeZone: 'Europe/Paris' }))
-        : new Date(eventStart.getTime() + 4 * 60 * 60 * 1000);
+        : new Date(eventStart.getTime() + getDefaultDurationMs(event.type));
       // Fenêtre "ce soir" : jusqu'à 6h du matin le lendemain (heure de Paris)
       const tonightEnd = new Date(parisNow);
       if (parisNow.getHours() < 6) {
@@ -422,6 +446,26 @@ export default function Index() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allEvents]);
 
+  // Single place that translates an onboarding (city, tags) choice into app
+  // state — used both by the first-run flow and by re-editing from the profile.
+  const handleOnboardingComplete = useCallback((city: City | null, tags: InterestTag[]) => {
+    if (city) {
+      setPreferredCity(city.name);
+      setSelectedCityName(city.name);
+      setLocationMode('city');
+      setFilterCenter([city.lat, city.lng]);
+      setMapCenter([city.lat, city.lng]);
+      setMapZoom(DEFAULT_ZOOM);
+    }
+    setOnboardingTags(tags);
+    setFilters((prev) => ({
+      ...prev,
+      ...(city ? { radiusKm: CITY_RADIUS_DEFAULT } : {}),
+      ...tagsToFilterPatch(tags),
+    }));
+    completeOnboarding();
+  }, [setPreferredCity, setOnboardingTags, completeOnboarding]);
+
   return (
     <div className="relative w-full h-full overflow-hidden" style={{ background: 'var(--map-bg)' }}>
       <SEO
@@ -431,7 +475,18 @@ export default function Index() {
         jsonLd={[organizationLd(), websiteLd()]}
       />
       <h1 className="sr-only">Où sortir ce soir ? PulseMap — sorties, concerts & événements en direct près de chez vous</h1>
-      <OnboardingGate />
+      {showOnboarding && <OnboardingFlow onComplete={handleOnboardingComplete} />}
+      {showEditPreferences && (
+        <OnboardingFlow
+          mode="edit"
+          initialCity={savedCity}
+          initialTags={onboardingTags}
+          onComplete={(city, tags) => {
+            handleOnboardingComplete(city, tags);
+            setShowEditPreferences(false);
+          }}
+        />
+      )}
       {/* ── MAP SCREEN (always mounted, hidden via visibility) ── */}
       <div className="absolute inset-0" style={{ visibility: activeTab === 'map' ? 'visible' : 'hidden' }}>
         {/* Map */}
@@ -680,7 +735,11 @@ export default function Index() {
 
       {/* ── PROFILE SCREEN ── */}
       {activeTab === 'profile' &&
-      <ProfileScreen />
+      <ProfileScreen
+        preferredCityObj={savedCity}
+        onboardingTags={onboardingTags}
+        onEditPreferences={() => setShowEditPreferences(true)}
+      />
       }
 
       {/* ── NOTIFICATIONS ── */}
@@ -730,12 +789,4 @@ export default function Index() {
       {/* ── BOTTOM NAV ── */}
       <BottomNav activeTab={activeTab} onTabChange={(tab) => {setActiveTab(tab);setSelectedEvent(null);}} />
     </div>);
-}
-
-function OnboardingGate() {
-  const { show, close } = useShouldShowOnboarding();
-  if (!show) return null;
-  return <OnboardingFlow onClose={close} />;
-
-
 }
