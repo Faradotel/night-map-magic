@@ -71,6 +71,7 @@
   <url><loc>https://pulse-map.live/categories/culture/chambery</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/cannes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/antibes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
+  <url><loc>https://pulse-map.live/categories/brocantes/cannes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/genres/rock/le-havre</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/genres/rock/angers</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/genres/rock/dijon</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
