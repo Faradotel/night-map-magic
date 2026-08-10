@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { MapPin, X, ChevronRight, ChevronLeft, Search, Check } from 'lucide-react';
 import { City, CITIES } from '@/components/LocationMode';
 import { InterestTag, INTEREST_TAG_OPTIONS } from '@/hooks/useOnboardingPreferences';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 interface OnboardingFlowProps {
   /** city=null means "no city chosen" (skip, or edit-mode clear) */
@@ -13,6 +14,7 @@ interface OnboardingFlowProps {
 }
 
 export function OnboardingFlow({ onComplete, initialCity = null, initialTags = [], mode = 'onboarding' }: OnboardingFlowProps) {
+  const { trackEvent } = useAnalytics();
   const [step, setStep] = useState(0);
   const [selectedCity, setSelectedCity] = useState<City | null>(initialCity);
   const [selectedTags, setSelectedTags] = useState<InterestTag[]>(initialTags);
@@ -30,7 +32,10 @@ export function OnboardingFlow({ onComplete, initialCity = null, initialTags = [
   );
 
   const finish = (city: City | null, tags: InterestTag[]) => onComplete(city, tags);
-  const skip = () => finish(null, []);
+  const skip = () => {
+    trackEvent('onboarding_skipped');
+    finish(null, []);
+  };
 
   const toggleTag = (tag: InterestTag) => {
     setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
@@ -156,7 +161,12 @@ export function OnboardingFlow({ onComplete, initialCity = null, initialTags = [
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
-                onClick={() => finish(selectedCity, selectedTags)}
+                onClick={() => {
+                  if (mode === 'onboarding') {
+                    trackEvent('onboarding_completed', { city: selectedCity?.name ?? '', tags_count: selectedTags.length });
+                  }
+                  finish(selectedCity, selectedTags);
+                }}
                 className="flex-1 py-3.5 rounded-2xl bg-accent text-accent-foreground font-bold text-sm flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform shadow-lg shadow-accent/30"
               >
                 {mode === 'edit' ? 'Enregistrer' : "C'est parti"}

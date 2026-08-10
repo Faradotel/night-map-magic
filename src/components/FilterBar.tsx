@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useDistanceUnit, convertDistance } from '@/hooks/useDistanceUnit';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 type DateFilter = 'today' | 'weekend' | 'week' | 'all';
 type PriceFilter = 'all' | 'free' | 'paid';
@@ -121,6 +122,7 @@ function getActiveAdvancedGenres(filters: Filters): AdvancedGenre[] {
 }
 
 export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBarProps) {
+  const { trackEvent } = useAnalytics();
   const [showPanel, setShowPanel] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -161,6 +163,7 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
       for (const v of vibes) if (!newVibes.includes(v)) newVibes.push(v);
       for (const s of sources) if (!newSources.includes(s)) newSources.push(s);
     }
+    trackEvent('filter_applied', { filter_type: 'category', value: cat });
     onChange({ ...filters, vibes: newVibes, sources: newSources });
   }
 
@@ -173,6 +176,7 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
     } else {
       for (const g of mapped) if (!newGenres.includes(g)) newGenres.push(g);
     }
+    trackEvent('filter_applied', { filter_type: 'genre', value: ag });
     onChange({ ...filters, genres: newGenres });
   }
 
@@ -219,7 +223,11 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
                   {dateChips.map(d => (
                     <button
                       key={d.key}
-                      onClick={() => onChange({ ...filters, date: filters.date === d.key ? 'all' : d.key })}
+                      onClick={() => {
+                        const next = filters.date === d.key ? 'all' : d.key;
+                        trackEvent('filter_applied', { filter_type: 'date', value: next });
+                        onChange({ ...filters, date: next });
+                      }}
                       className="h-7 px-2.5 rounded-full text-[11px] font-semibold transition-all"
                       style={chipStyle(filters.date === d.key)}
                     >
@@ -247,6 +255,8 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
                   <input
                     type="range" min={1} max={50} value={filters.radiusKm}
                     onChange={e => onChange({ ...filters, radiusKm: Number(e.target.value) })}
+                    onPointerUp={e => trackEvent('filter_applied', { filter_type: 'radius', value: Number((e.target as HTMLInputElement).value) })}
+                    onTouchEnd={e => trackEvent('filter_applied', { filter_type: 'radius', value: Number((e.target as HTMLInputElement).value) })}
                     className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
                     style={{
                       background: `linear-gradient(to right, hsl(325 89% 50%) 0%, hsl(325 89% 50%) ${(filters.radiusKm - 1) / 49 * 100}%, hsl(0 0% 100% / 0.1) ${(filters.radiusKm - 1) / 49 * 100}%, hsl(0 0% 100% / 0.1) 100%)`,
@@ -262,7 +272,10 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
                   {(['all', 'free', 'paid'] as const).map(p => (
                     <button
                       key={p}
-                      onClick={() => onChange({ ...filters, price: p })}
+                      onClick={() => {
+                        trackEvent('filter_applied', { filter_type: 'price', value: p });
+                        onChange({ ...filters, price: p });
+                      }}
                       className="flex-1 h-7 rounded-full text-[11px] font-semibold transition-all"
                       style={{
                         background: filters.price === p ? 'hsl(325 89% 50% / 0.2)' : isLight ? 'hsl(0 0% 0% / 0.04)' : 'hsl(0 0% 100% / 0.06)',
@@ -341,7 +354,10 @@ export function FilterBar({ filters, onChange, isNearbyMode = false }: FilterBar
               {/* Reset */}
               {activeCount > 0 && (
                 <button
-                  onClick={() => onChange({ date: 'all', price: 'all', genres: [], vibes: [], sources: [], radiusKm: 10 })}
+                  onClick={() => {
+                    trackEvent('filter_applied', { filter_type: 'reset' });
+                    onChange({ date: 'all', price: 'all', genres: [], vibes: [], sources: [], radiusKm: 10 });
+                  }}
                   className="w-full h-7 rounded-full text-[11px] font-semibold transition-colors"
                   style={{ background: isLight ? 'hsl(0 0% 0% / 0.04)' : 'hsl(0 0% 100% / 0.06)', color: isLight ? 'hsl(230 25% 25%)' : 'hsl(225 15% 55%)' }}
                 >

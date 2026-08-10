@@ -35,6 +35,7 @@ import { SEO } from '@/components/SEO';
 import { organizationLd, websiteLd } from '@/lib/seo/jsonld';
 import { OnboardingFlow } from '@/components/OnboardingFlow';
 import { useShouldShowOnboarding, useOnboardingPreferences, InterestTag, tagsToFilterPatch } from '@/hooks/useOnboardingPreferences';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 type Tab = 'map' | 'search' | 'friends' | 'profile';
 
@@ -74,6 +75,7 @@ function getDefaultDurationMs(type: EventType): number {
 }
 
 export default function Index() {
+  const { trackEvent } = useAnalytics();
   const { user, loading: authLoading } = useAuth();
   const { isPro } = useUserRole();
   const { preferredCity, setPreferredCity } = usePreferredCity();
@@ -148,6 +150,12 @@ export default function Index() {
 
   // Load events from cache when city or location changes
   useEffect(() => {
+    // Defer any fetch until the user has actually made a choice in onboarding (or
+    // skipped it). Without this, every first-time visit kicks off a France-wide
+    // fetch (thousands of events + heavy marker clustering) immediately on mount,
+    // which then collides with the city-scoped reload right as onboarding closes —
+    // visible as a lag/jank spike at exactly the moment the user picks their city.
+    if (showOnboarding) return;
     if (!currentLoadKey || currentLoadKey === loadedKey) return;
 
     const myLoadId = ++loadIdRef.current;
@@ -217,7 +225,7 @@ export default function Index() {
       }
     }
     load();
-  }, [currentLoadKey, locationMode, selectedCityName, userLocation, filters.radiusKm, loadedKey, cacheEvents, getCachedEvents]);
+  }, [currentLoadKey, locationMode, selectedCityName, userLocation, filters.radiusKm, loadedKey, cacheEvents, getCachedEvents, showOnboarding]);
 
   // Request geolocation on load
   useEffect(() => {
@@ -255,7 +263,9 @@ export default function Index() {
         }
       },
       () => { setLocating(false); },
-      { enableHighAccuracy: true, timeout: 8000 }
+      // Coarse positioning is enough to pick a nearby city — enableHighAccuracy forces
+      // a GPS-level fix that can hang well past the timeout on devices with no real GPS.
+      { enableHighAccuracy: false, timeout: 8000 }
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -396,7 +406,10 @@ export default function Index() {
         setLocating(false);
         toast.error('Impossible d\'obtenir votre position');
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      // Coarse positioning is enough for "near me" radius search — enableHighAccuracy
+      // forces a GPS-level fix that can hang well past the timeout on devices with no
+      // real GPS (most desktops).
+      { enableHighAccuracy: false, timeout: 10000 }
     );
   }, []);
 
@@ -702,7 +715,10 @@ export default function Index() {
           <MapEventCard
             event={selectedEvent}
             onClose={() => setSelectedEvent(null)}
-            onDetails={() => setShowDetail(true)}
+            onDetails={() => {
+              trackEvent('event_clicked', { event_id: selectedEvent.id, event_type: selectedEvent.type });
+              setShowDetail(true);
+            }}
             userLocation={userLocation}
             coLocatedEvents={filteredEvents.filter(e => {
               const THRESHOLD = 0.0005; // ~50m

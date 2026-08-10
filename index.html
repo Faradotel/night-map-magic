@@ -69,6 +69,11 @@
       (function(i,m,p,a,c,t){c.ire_o=p;c[p]=c[p]||function(){(c[p].a=c[p].a||[]).push(arguments)};t=a.createElement(m);var z=a.getElementsByTagName(m)[0];t.async=1;t.src=i;z.parentNode.insertBefore(t,z)})('https://utt.impactcdn.com/P-A7261544-5f75-4391-bf8c-e18beac7e5f01.js','script','impactStat',document,window);
       window.addEventListener('load', function(){ try { impactStat('transformLinks'); impactStat('trackImpression'); } catch(e){} });
     </script>
+
+    <!-- Plausible Analytics — no cookie, GDPR-friendly. Queue stub lets trackEvent()
+         calls land before the deferred script finishes loading. -->
+    <script>window.plausible = window.plausible || function () { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>
+    <script defer data-domain="pulse-map.live" src="https://plausible.io/js/script.js"></script>
   </head>
 
   <body>

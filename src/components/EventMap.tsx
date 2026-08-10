@@ -7,6 +7,7 @@ import { NightEvent, vibeConfig, typeConfig } from '@/data/mockEvents';
 import { useTheme } from '@/hooks/useTheme';
 import { getSourceEmoji } from '@/lib/sourceEmoji';
 import { SafePlace } from '@/hooks/useSafePlaces';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 interface EventMapProps {
   events: NightEvent[];
@@ -105,6 +106,7 @@ function createUserIcon(): L.DivIcon {
 }
 
 export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, userLocation, radiusKm, livePulseMap, liveMode, safePlaces, showSafePlaces }: EventMapProps) {
+  const { trackEvent } = useAnalytics();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const containerRef = useRef<HTMLDivElement>(null);
@@ -117,6 +119,10 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
   const radiusCircleRef = useRef<L.Circle | null>(null);
   const stackCountsRef = useRef<Map<string, number>>(new Map());
   const safePlaceLayerRef = useRef<L.LayerGroup | null>(null);
+  // Tracks whether the current move/zoom was started by a human gesture (drag/tap)
+  // rather than a programmatic setView/panTo (e.g. recentring after onboarding or
+  // a city change) — only the former should count as a map_interaction event.
+  const userIsInteractingRef = useRef(false);
 
   // Initialize map
   useEffect(() => {
@@ -136,6 +142,16 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     tileLayerRef.current = L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(map);
 
     mapRef.current = map;
+
+    map.on('mousedown', () => { userIsInteractingRef.current = true; });
+    map.on('touchstart', () => { userIsInteractingRef.current = true; });
+    map.on('zoomend', () => {
+      if (userIsInteractingRef.current) trackEvent('map_interaction', { interaction_type: 'zoom' });
+    });
+    map.on('moveend', () => {
+      if (userIsInteractingRef.current) trackEvent('map_interaction', { interaction_type: 'pan' });
+      setTimeout(() => { userIsInteractingRef.current = false; }, 0);
+    });
 
     return () => {
       map.remove();
