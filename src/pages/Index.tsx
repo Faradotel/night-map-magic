@@ -222,6 +222,12 @@ export default function Index() {
   // Request geolocation on load
   useEffect(() => {
     if (!('geolocation' in navigator)) return;
+    // The onboarding flow owns geolocation entirely during first visit (its own
+    // "Utiliser ma position" button makes its own getCurrentPosition call). Firing
+    // this background request at the same time creates two concurrent geolocation
+    // requests — several browsers (mobile Safari in particular) never resolve the
+    // second one, success or error, leaving its spinner stuck forever.
+    if (showOnboarding) return;
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -235,10 +241,7 @@ export default function Index() {
         // so the user stays focused on the targeted event/city.
         const arrivingFromDeepLink = !!(searchParams.get('event') || searchParams.get('city'))
           || hasProcessedEvent.current || hasProcessedCity.current;
-        // The new onboarding flow owns first-visit city selection explicitly;
-        // skip the silent auto-detect while it's showing so it can't race with
-        // (and silently override) whatever the user picks in that flow.
-        if (!savedCity && !arrivingFromDeepLink && !showOnboarding) {
+        if (!savedCity && !arrivingFromDeepLink) {
           const nearest = findNearestCity(loc[0], loc[1]);
           if (nearest) {
             setSelectedCityName(nearest.name);
