@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { MapPin, X, ChevronRight, ChevronLeft, Navigation, Search, Check } from 'lucide-react';
-import { City, CITIES, findNearestCity } from '@/components/LocationMode';
+import { MapPin, X, ChevronRight, ChevronLeft, Search, Check } from 'lucide-react';
+import { City, CITIES } from '@/components/LocationMode';
 import { InterestTag, INTEREST_TAG_OPTIONS } from '@/hooks/useOnboardingPreferences';
 
 interface OnboardingFlowProps {
@@ -17,7 +17,6 @@ export function OnboardingFlow({ onComplete, initialCity = null, initialTags = [
   const [selectedCity, setSelectedCity] = useState<City | null>(initialCity);
   const [selectedTags, setSelectedTags] = useState<InterestTag[]>(initialTags);
   const [searchQuery, setSearchQuery] = useState('');
-  const [locating, setLocating] = useState(false);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -32,20 +31,6 @@ export function OnboardingFlow({ onComplete, initialCity = null, initialTags = [
 
   const finish = (city: City | null, tags: InterestTag[]) => onComplete(city, tags);
   const skip = () => finish(null, []);
-
-  const useMyLocation = () => {
-    if (!('geolocation' in navigator)) return;
-    setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLocating(false);
-        const nearest = findNearestCity(pos.coords.latitude, pos.coords.longitude);
-        if (nearest) setSelectedCity(nearest);
-      },
-      () => setLocating(false),
-      { enableHighAccuracy: true, timeout: 8000 },
-    );
-  };
 
   const toggleTag = (tag: InterestTag) => {
     setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
@@ -89,14 +74,6 @@ export function OnboardingFlow({ onComplete, initialCity = null, initialTags = [
             <p className="text-sm text-muted-foreground leading-relaxed mb-5">
               On te montre ce qui se passe près de chez toi.
             </p>
-
-            <button
-              onClick={useMyLocation}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-secondary border border-border font-semibold text-sm mb-4 active:scale-[0.98] transition-transform"
-            >
-              <Navigation className={`w-4 h-4 ${locating ? 'animate-spin' : ''}`} />
-              {locating ? 'Localisation…' : 'Utiliser ma position'}
-            </button>
 
             <div className="flex items-center gap-2 h-10 px-3 rounded-xl bg-secondary border border-border mb-2">
               <Search className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
