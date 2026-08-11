@@ -62,7 +62,7 @@ export function EventCard({ event, href, dateLabel, variant = 'grid' }: EventCar
       className={`block group relative overflow-hidden rounded-3xl transition-transform active:scale-[0.98] ${
         isHero
           ? `aspect-[16/10] sm:aspect-[21/9] ${NEON_SHADOW_BY_VIBE[event.vibe] ?? 'shadow-xl shadow-black/30'}`
-          : 'aspect-[4/5] sm:aspect-square rounded-2xl hover:-translate-y-0.5'
+          : 'aspect-[4/5] sm:aspect-square rounded-2xl'
       }`}
     >
       {!photoFailed ? (
