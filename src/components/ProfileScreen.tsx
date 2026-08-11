@@ -87,6 +87,19 @@ export function ProfileScreen({ preferredCityObj = null, onboardingTags = [], on
     }
   };
 
+  const handleTogglePush = async () => {
+    try {
+      if (pushSubscribed) {
+        await unsubscribePush();
+      } else {
+        await subscribePush();
+      }
+    } catch (err) {
+      console.error('ProfileScreen: push toggle failed', err);
+      toast.error("Impossible d'activer les alertes pour le moment.");
+    }
+  };
+
   const saveUsername = async () => {
     const trimmed = editValue.trim();
     if (trimmed.length < 3) {
@@ -477,7 +490,17 @@ export function ProfileScreen({ preferredCityObj = null, onboardingTags = [], on
               </div>
               <ChevronRight size={14} className="text-muted-foreground" />
             </button>
-            {pushIOSNonPWA ? (
+            {!user ? (
+              <div
+                className="w-full flex items-center justify-between px-4 py-3 text-left"
+                style={{ borderBottom: '1px solid var(--profile-divider)' }}
+              >
+                <div>
+                  <p className="text-sm font-medium">Alertes push</p>
+                  <p className="text-xs text-muted-foreground">Connecte-toi pour activer les alertes</p>
+                </div>
+              </div>
+            ) : pushIOSNonPWA ? (
               <div
                 className="w-full flex items-center justify-between px-4 py-3 text-left"
                 style={{ borderBottom: '1px solid var(--profile-divider)' }}
@@ -513,7 +536,7 @@ export function ProfileScreen({ preferredCityObj = null, onboardingTags = [], on
               </div>
             ) : (
               <button
-                onClick={() => (pushSubscribed ? unsubscribePush() : subscribePush())}
+                onClick={handleTogglePush}
                 disabled={pushLoading}
                 className="w-full flex items-center justify-between px-4 py-3 text-left disabled:opacity-60"
                 style={{ borderBottom: '1px solid var(--profile-divider)' }}

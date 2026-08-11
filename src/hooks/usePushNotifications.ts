@@ -23,6 +23,19 @@ function isIOSNonPWADevice(): boolean {
   return /iPhone|iPad/.test(navigator.userAgent) && !navigator.standalone;
 }
 
+// navigator.serviceWorker.ready never resolves if no service worker is
+// active for this page (e.g. a dev server without devOptions, or a build
+// that hasn't registered one yet) — without a timeout, subscribe()/
+// unsubscribe() would hang forever with no feedback to the user.
+function getReadyRegistration(timeoutMs = 8000): Promise<ServiceWorkerRegistration> {
+  return Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise<ServiceWorkerRegistration>((_, reject) =>
+      setTimeout(() => reject(new Error('Service worker indisponible')), timeoutMs),
+    ),
+  ]);
+}
+
 interface UsePushNotificationsResult {
   isSupported: boolean;
   isIOSNonPWA: boolean;
@@ -58,18 +71,23 @@ export function usePushNotifications(): UsePushNotificationsResult {
     let cancelled = false;
 
     (async () => {
-      const registration = await navigator.serviceWorker.ready;
-      const existing = await registration.pushManager.getSubscription();
-      if (!existing) {
+      try {
+        const registration = await getReadyRegistration();
+        const existing = await registration.pushManager.getSubscription();
+        if (!existing) {
+          if (!cancelled) setIsSubscribed(false);
+          return;
+        }
+        const { count } = await supabase
+          .from('push_subscriptions')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('endpoint', existing.endpoint);
+        if (!cancelled) setIsSubscribed((count ?? 0) > 0);
+      } catch (err) {
+        console.error('usePushNotifications: failed to check subscription state', err);
         if (!cancelled) setIsSubscribed(false);
-        return;
       }
-      const { count } = await supabase
-        .from('push_subscriptions')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('endpoint', existing.endpoint);
-      if (!cancelled) setIsSubscribed((count ?? 0) > 0);
     })();
 
     return () => {
@@ -86,8 +104,13 @@ export function usePushNotifications(): UsePushNotificationsResult {
       setPermissionState(permission as PermissionState);
       if (permission !== 'granted') return false;
 
-      const registration = await navigator.serviceWorker.ready;
-      const applicationServerKey = urlBase64ToUint8Array(import.meta.env.VITE_VAPID_PUBLIC_KEY as string);
+      const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
+      if (!vapidPublicKey) {
+        throw new Error('VITE_VAPID_PUBLIC_KEY manquante — les alertes ne sont pas encore configurées.');
+      }
+
+      const registration = await getReadyRegistration();
+      const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey);
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey,
@@ -117,7 +140,7 @@ export function usePushNotifications(): UsePushNotificationsResult {
 
     setIsLoading(true);
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await getReadyRegistration();
       const subscription = await registration.pushManager.getSubscription();
       if (subscription) {
         await supabase.from('push_subscriptions').delete().eq('endpoint', subscription.endpoint);

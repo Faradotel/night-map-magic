@@ -1,12 +1,18 @@
 import { useEffect } from 'react';
 import { Bell } from 'lucide-react';
+import { toast } from 'sonner';
 import { usePushNotifications, useShouldShowPushPrompt } from '@/hooks/usePushNotifications';
+import { useAuth } from '@/hooks/useAuth';
 
 export function PushPermissionPrompt() {
+  const { user } = useAuth();
   const { isSupported, permissionState, subscribe } = usePushNotifications();
   const { show, dismiss } = useShouldShowPushPrompt();
 
-  const visible = show && isSupported && permissionState === 'default';
+  // A push subscription requires a signed-in user (push_subscriptions.user_id
+  // is a NOT NULL FK) — don't spend the one-time ask on someone who can't
+  // actually subscribe yet; it'll show once they open another event signed in.
+  const visible = show && isSupported && !!user && permissionState === 'default';
 
   useEffect(() => {
     if (!visible) return;
@@ -20,8 +26,16 @@ export function PushPermissionPrompt() {
   if (!visible) return null;
 
   const handleAccept = async () => {
-    await subscribe();
-    dismiss();
+    try {
+      // A false return without throwing just means the user declined the
+      // native permission prompt (or push isn't usable here) — not an error.
+      await subscribe();
+    } catch (err) {
+      console.error('PushPermissionPrompt: subscribe failed', err);
+      toast.error("Impossible d'activer les alertes pour le moment.");
+    } finally {
+      dismiss();
+    }
   };
 
   return (
