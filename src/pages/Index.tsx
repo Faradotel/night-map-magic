@@ -36,7 +36,7 @@ import { organizationLd, websiteLd } from '@/lib/seo/jsonld';
 import { OnboardingFlow } from '@/components/OnboardingFlow';
 import { useShouldShowOnboarding, useOnboardingPreferences, InterestTag, tagsToFilterPatch } from '@/hooks/useOnboardingPreferences';
 import { useAnalytics } from '@/hooks/useAnalytics';
-import { syncOnboardingPreferences } from '@/lib/notificationPreferencesSync';
+import { syncOnboardingPreferences, syncPreferredCity } from '@/lib/notificationPreferencesSync';
 
 type Tab = 'map' | 'search' | 'friends' | 'profile';
 
@@ -260,6 +260,12 @@ export default function Index() {
             setMapCenter([nearest.lat, nearest.lng]);
             setMapZoom(DEFAULT_ZOOM);
             setFilters((prev) => ({ ...prev, radiusKm: CITY_RADIUS_DEFAULT }));
+
+            if (user) {
+              syncPreferredCity(user.id, nearest.name).catch((err) => {
+                console.error('Index: failed to sync preferred city', err);
+              });
+            }
           }
         }
       },
@@ -380,7 +386,13 @@ export default function Index() {
     setMapCenter(cityCenter);
     setMapZoom(12);
     setFilters((prev) => ({ ...prev, radiusKm: CITY_RADIUS_DEFAULT }));
-  }, [setPreferredCity]);
+
+    if (user) {
+      syncPreferredCity(user.id, city.name).catch((err) => {
+        console.error('Index: failed to sync preferred city', err);
+      });
+    }
+  }, [setPreferredCity, user]);
 
   const handleLocate = useCallback(() => {
     if (!('geolocation' in navigator)) {
