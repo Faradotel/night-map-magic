@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
         });
         if (!res.ok) throw new Error(`send-push-notification returned ${res.status}`);
         const body = await res.json();
-        if (!body.sent || body.sent === 0) throw new Error('No notifications sent (all subscriptions expired or missing)');
+        if (!body.sent) throw new Error('No notifications sent (all subscriptions expired or missing)');
         return row.id;
       }),
     );
