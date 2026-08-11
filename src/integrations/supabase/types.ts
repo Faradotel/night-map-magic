@@ -560,6 +560,39 @@ export type Database = {
         }
         Relationships: []
       }
+      push_outbox: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          sent_at: string | null
+          status: string
+          title: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          sent_at?: string | null
+          status?: string
+          title: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          sent_at?: string | null
+          status?: string
+          title?: string
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth: string
