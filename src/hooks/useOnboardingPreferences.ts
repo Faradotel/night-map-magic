@@ -4,7 +4,9 @@ import { advancedGenreMap, categoryToVibes, categoryToSources, Filters } from '@
 const PREFS_STORAGE_KEY = 'pulsemap_onboarding_prefs_v1';
 const DONE_STORAGE_KEY = 'pulse_onboarding_done_v3';
 
-export type InterestTag = 'techno' | 'house' | 'hiphop' | 'rock' | 'concerts' | 'bars' | 'festivals';
+export type InterestTag =
+  | 'techno' | 'house' | 'hiphop' | 'rock' | 'concerts' | 'bars' | 'festivals'
+  | 'culture' | 'sport' | 'afterwork';
 
 export const INTEREST_TAG_OPTIONS: { key: InterestTag; label: string; emoji: string }[] = [
   { key: 'techno', label: 'Techno', emoji: '🎛️' },
@@ -14,11 +16,20 @@ export const INTEREST_TAG_OPTIONS: { key: InterestTag; label: string; emoji: str
   { key: 'concerts', label: 'Concerts', emoji: '🎵' },
   { key: 'bars', label: 'Bars', emoji: '🍹' },
   { key: 'festivals', label: 'Festivals', emoji: '🎪' },
+  { key: 'culture', label: 'Culture', emoji: '🎭' },
+  { key: 'sport', label: 'Sport', emoji: '⚽' },
+  { key: 'afterwork', label: 'Afterwork', emoji: '🥂' },
 ];
 
 // Union/dedupe each tag's genre/vibe/source contribution into a Filters patch,
 // reusing the same maps the manual filter panel uses (single source of truth).
 export function tagsToFilterPatch(tags: InterestTag[]): Pick<Filters, 'genres' | 'vibes' | 'sources'> {
+  // Selecting every option means "I'm into everything" — apply no restriction at
+  // all, rather than the union of each tag's (necessarily partial) genre mapping.
+  if (tags.length >= INTEREST_TAG_OPTIONS.length) {
+    return { genres: [], vibes: [], sources: [] };
+  }
+
   const genres = new Set<Filters['genres'][number]>();
   const vibes = new Set<Filters['vibes'][number]>();
   const sources = new Set<Filters['sources'][number]>();
@@ -46,6 +57,18 @@ export function tagsToFilterPatch(tags: InterestTag[]): Pick<Filters, 'genres' |
         break;
       case 'bars':
         categoryToVibes.afterwork.forEach((v) => vibes.add(v));
+        break;
+      case 'culture':
+        categoryToVibes.culture.forEach((v) => vibes.add(v));
+        categoryToSources.culture.forEach((s) => sources.add(s));
+        break;
+      case 'sport':
+        categoryToVibes.sport.forEach((v) => vibes.add(v));
+        categoryToSources.sport.forEach((s) => sources.add(s));
+        break;
+      case 'afterwork':
+        categoryToVibes.afterwork.forEach((v) => vibes.add(v));
+        categoryToSources.afterwork.forEach((s) => sources.add(s));
         break;
     }
   }
