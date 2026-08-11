@@ -70,10 +70,12 @@
       window.addEventListener('load', function(){ try { impactStat('transformLinks'); impactStat('trackImpression'); } catch(e){} });
     </script>
 
-    <!-- Plausible Analytics — no cookie, GDPR-friendly. Queue stub lets trackEvent()
-         calls land before the deferred script finishes loading. -->
-    <script>window.plausible = window.plausible || function () { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>
-    <script defer data-domain="pulse-map.live" src="https://plausible.io/js/script.js"></script>
+    <!-- Privacy-friendly analytics by Plausible -->
+    <script async src="https://plausible.io/js/pa-gofWnaobCCWHr5QSJFrAn.js"></script>
+    <script>
+      window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+      plausible.init()
+    </script>
   </head>
 
   <body>
