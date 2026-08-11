@@ -473,6 +473,24 @@ export type Database = {
         }
         Relationships: []
       }
+      notified_events: {
+        Row: {
+          event_id: string
+          notified_at: string
+          user_id: string
+        }
+        Insert: {
+          event_id: string
+          notified_at?: string
+          user_id: string
+        }
+        Update: {
+          event_id?: string
+          notified_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       page_index_status: {
         Row: {
           check_error: string | null
