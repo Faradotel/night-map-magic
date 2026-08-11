@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, MapPin } from 'lucide-react';
 import { vibeConfig, typeConfig, EventVibe } from '@/data/mockEvents';
+import { pickVibeStockPhoto } from '@/data/vibeStockPhotos';
 
 export interface EventCardData {
   id: string;
@@ -40,10 +42,19 @@ function priceColor(priceRange: string): string {
 }
 
 export function EventCard({ event, href, dateLabel, variant = 'grid' }: EventCardProps) {
-  const vibeInfo = vibeConfig[event.vibe as EventVibe] ?? vibeConfig.nightlife;
+  const resolvedVibe: EventVibe = (event.vibe as EventVibe) in vibeConfig ? (event.vibe as EventVibe) : 'nightlife';
+  const vibeInfo = vibeConfig[resolvedVibe];
   const typeInfo = typeConfig[event.type] ?? typeConfig.autre;
-  const accent = event.image_color || vibeInfo.color;
+  // image_color is a near-black scraper/upload placeholder (e.g. '#1a0f2e'),
+  // not a meaningful per-event hue — vibeConfig is the only reliably vivid
+  // color source, so it alone drives the card's background.
+  const accent = vibeInfo.color;
   const isHero = variant === 'hero';
+  // Real event photo if we have one, else a curated free-license stock photo
+  // for the vibe (see src/data/vibeStockPhotos.ts) — almost no scraped event
+  // has a real image_url, so this is what most cards actually show.
+  const photoUrl = event.image_url || pickVibeStockPhoto(resolvedVibe, event.id);
+  const [photoFailed, setPhotoFailed] = useState(false);
 
   return (
     <Link
@@ -54,22 +65,25 @@ export function EventCard({ event, href, dateLabel, variant = 'grid' }: EventCar
           : 'aspect-[4/5] sm:aspect-square rounded-2xl hover:-translate-y-0.5'
       }`}
     >
-      {event.image_url ? (
+      {!photoFailed ? (
         <img
-          src={event.image_url}
+          src={photoUrl}
           alt=""
           loading="lazy"
+          onError={() => setPhotoFailed(true)}
           className="absolute inset-0 w-full h-full object-cover"
         />
       ) : (
         <div
           className="absolute inset-0"
-          style={{ background: `linear-gradient(135deg, ${accent}, hsl(var(--surface-1)) 130%)` }}
+          style={{ background: `linear-gradient(135deg, ${accent}, hsl(var(--surface-1)) 200%)` }}
         />
       )}
+      {/* Fixed black scrim, not a theme token: --surface-1 flips to near-white
+          in light mode, which would wash out the white overlay text below. */}
       <div
         className="absolute inset-0"
-        style={{ background: 'linear-gradient(180deg, transparent 35%, hsl(var(--surface-1) / 0.9) 100%)' }}
+        style={{ background: 'linear-gradient(180deg, transparent 45%, rgba(0,0,0,0.72) 100%)' }}
       />
 
       {isHero && (
