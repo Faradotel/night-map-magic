@@ -409,6 +409,9 @@ export type Database = {
           created_at: string
           friend_attendance_enabled: boolean
           id: string
+          new_event_alerts_enabled: boolean
+          preferred_genres: string[]
+          preferred_vibes: string[]
           push_enabled: boolean
           user_id: string
         }
@@ -416,6 +419,9 @@ export type Database = {
           created_at?: string
           friend_attendance_enabled?: boolean
           id?: string
+          new_event_alerts_enabled?: boolean
+          preferred_genres?: string[]
+          preferred_vibes?: string[]
           push_enabled?: boolean
           user_id: string
         }
@@ -423,6 +429,9 @@ export type Database = {
           created_at?: string
           friend_attendance_enabled?: boolean
           id?: string
+          new_event_alerts_enabled?: boolean
+          preferred_genres?: string[]
+          preferred_vibes?: string[]
           push_enabled?: boolean
           user_id?: string
         }
@@ -548,6 +557,39 @@ export type Database = {
           updated_at?: string
           user_id?: string
           username?: string
+        }
+        Relationships: []
+      }
+      push_outbox: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          sent_at: string | null
+          status: string
+          title: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          sent_at?: string | null
+          status?: string
+          title: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          sent_at?: string | null
+          status?: string
+          title?: string
+          url?: string | null
+          user_id?: string
         }
         Relationships: []
       }

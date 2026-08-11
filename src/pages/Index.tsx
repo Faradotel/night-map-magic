@@ -36,6 +36,7 @@ import { organizationLd, websiteLd } from '@/lib/seo/jsonld';
 import { OnboardingFlow } from '@/components/OnboardingFlow';
 import { useShouldShowOnboarding, useOnboardingPreferences, InterestTag, tagsToFilterPatch } from '@/hooks/useOnboardingPreferences';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { syncOnboardingPreferences } from '@/lib/notificationPreferencesSync';
 
 type Tab = 'map' | 'search' | 'friends' | 'profile';
 
@@ -480,7 +481,13 @@ export default function Index() {
       ...tagsToFilterPatch(tags),
     }));
     completeOnboarding();
-  }, [setPreferredCity, setOnboardingTags, completeOnboarding]);
+
+    if (user) {
+      syncOnboardingPreferences({ userId: user.id, cityName: city?.name ?? null, tags }).catch((err) => {
+        console.error('Index: failed to sync onboarding preferences', err);
+      });
+    }
+  }, [setPreferredCity, setOnboardingTags, completeOnboarding, user]);
 
   return (
     <div className="relative w-full h-full overflow-hidden" style={{ background: 'var(--map-bg)' }}>
