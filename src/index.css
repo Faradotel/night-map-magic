@@ -218,6 +218,15 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-up {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 /* Leaflet custom styles */
 .leaflet-container {
   background: hsl(var(--background));

@@ -4,6 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { SEO } from '@/components/SEO';
 import { breadcrumbLd, eventLd, placeLd } from '@/lib/seo/jsonld';
 import { CITY_SLUGS, eventSlug } from '@/lib/seo/slug';
+import { EventCard } from '@/components/EventCard';
+import { EventCarousel } from '@/components/EventCarousel';
+import { FloatingMapButton } from '@/components/FloatingMapButton';
 
 interface CachedEvent {
   id: string;
@@ -17,9 +20,12 @@ interface CachedEvent {
   end_time: string | null;
   description: string;
   image_url: string | null;
+  image_color: string;
   ticket_url: string | null;
   price_range: string;
   type: string;
+  vibe: string;
+  genres: string[];
 }
 
 // English-language SEO page targeting tourist queries like "Paris nightlife",
@@ -38,7 +44,7 @@ export default function NightlifePage() {
       const nowIso = new Date().toISOString();
       const { data } = await supabase
         .from('cached_events')
-        .select('id,name,city,venue,address,lat,lng,start_time,end_time,description,image_url,ticket_url,price_range,type')
+        .select('id,name,city,venue,address,lat,lng,start_time,end_time,description,image_url,image_color,ticket_url,price_range,type,vibe,genres')
         .ilike('city', cityName)
         .or(`start_time.gte.${nowIso},end_time.gte.${nowIso}`)
         .order('start_time', { ascending: true })
@@ -52,6 +58,9 @@ export default function NightlifePage() {
   }, [cityName]);
 
   if (!cityName) return <Navigate to="/villes" replace />;
+
+  const eventsCount = events.length;
+  const eventsCountLabel = eventsCount === 60 ? '60+' : String(eventsCount);
 
   const canonical = `/en/nightlife/${slug.toLowerCase()}`;
   const title = `${cityName} Nightlife Tonight — Clubs, Bars & Live Music`;
@@ -140,45 +149,69 @@ export default function NightlifePage() {
         </nav>
 
         <h1 className="text-3xl font-black mb-2">{cityName} Nightlife Tonight</h1>
-        <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-          Looking for the best <strong>{cityName} nightlife</strong> tonight? PulseMap tracks
-          every club, bar, concert, party and festival happening right now in {cityName} on a
-          live interactive map — with times, venues and ticket links.
-        </p>
-
-        <Link
-          to={`/?city=${encodeURIComponent(cityName)}`}
-          className="inline-block mb-6 px-4 py-2 rounded-xl bg-accent text-accent-foreground font-bold text-sm"
-        >
-          Open the live {cityName} nightlife map
-        </Link>
+        {eventsCount > 0 && (
+          <p className="text-base font-bold text-accent mb-4">
+            {eventsCountLabel} {eventsCount === 1 ? 'event' : 'events'} in {cityName} tonight
+          </p>
+        )}
 
         <section aria-labelledby="evts-h2">
-          <h2 id="evts-h2" className="text-xl font-bold mb-3">Tonight in {cityName} — upcoming events</h2>
+          <h2 id="evts-h2" className="sr-only">Tonight in {cityName} — upcoming events</h2>
           {loading && <p className="text-sm text-muted-foreground">Loading…</p>}
           {!loading && events.length === 0 && (
             <p className="text-sm text-muted-foreground">No events listed yet.</p>
           )}
-          <ul className="space-y-2">
-            {events.map(e => (
-              <li key={e.id}>
-                <Link
-                  to={`/evenements/${eventSlug(e.name, e.id)}`}
-                  className="block p-3 rounded-xl border border-border bg-secondary hover:bg-accent/10 transition-colors"
-                >
-                  <h3 className="font-bold text-sm">{e.name}</h3>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(e.start_time).toLocaleString('en-GB', {
+          {!loading && events.length > 0 && (() => {
+            const [heroEvent, ...restEvents] = events;
+            return (
+              <>
+                <div className="mb-3 animate-fade-in">
+                  <EventCard
+                    event={heroEvent}
+                    variant="hero"
+                    href={`/evenements/${eventSlug(heroEvent.name, heroEvent.id)}`}
+                    dateLabel={new Date(heroEvent.start_time).toLocaleString('en-GB', {
                       weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-                    })} · {e.venue}
-                  </p>
-                </Link>
-              </li>
-            ))}
-          </ul>
+                    })}
+                  />
+                </div>
+                {restEvents.length > 0 && (
+                  <EventCarousel
+                    items={restEvents.map(e => ({
+                      event: e,
+                      href: `/evenements/${eventSlug(e.name, e.id)}`,
+                      dateLabel: new Date(e.start_time).toLocaleString('en-GB', {
+                        weekday: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+                      }),
+                    }))}
+                  />
+                )}
+              </>
+            );
+          })()}
         </section>
 
-        <section className="mt-10 text-sm text-muted-foreground leading-relaxed">
+        <Link
+          to={`/?city=${encodeURIComponent(cityName)}`}
+          className="flex items-center justify-center gap-2 w-full sm:w-auto mt-6 mb-6 px-6 py-3.5 rounded-2xl bg-accent text-accent-foreground font-black text-base shadow-lg shadow-accent/40 active:scale-[0.98] transition-transform"
+        >
+          🗺️ Open the live {cityName} nightlife map
+        </Link>
+
+        <details className="group mb-2 rounded-xl border border-border bg-secondary p-3 text-sm text-muted-foreground">
+          <summary className="cursor-pointer list-none font-semibold text-foreground flex items-center justify-between gap-2">
+            <span>More about {cityName} nightlife</span>
+            <span className="text-lg leading-none transition-transform group-open:rotate-45 text-accent" aria-hidden>+</span>
+          </summary>
+          <p className="mt-2 leading-relaxed">
+            Looking for the best <strong>{cityName} nightlife</strong> tonight? PulseMap tracks
+            every club, bar, concert, party and festival happening right now in {cityName} on a
+            live interactive map — with times, venues and ticket links.
+          </p>
+        </details>
+
+        <div className="mt-10 pt-8 border-t border-border/50 space-y-10">
+        <section className="text-sm text-muted-foreground leading-relaxed">
           <h2 className="text-base font-bold text-foreground mb-2">Where to go out tonight in {cityName}</h2>
           <p>
             Whether you're after a techno party, a live concert, a festival, an afterwork or
@@ -189,7 +222,7 @@ export default function NightlifePage() {
           </p>
         </section>
 
-        <section className="mt-10" aria-labelledby="other-cities-h2">
+        <section aria-labelledby="other-cities-h2">
           <h2 id="other-cities-h2" className="text-base font-bold text-foreground mb-3">
             Nightlife in other French cities
           </h2>
@@ -207,7 +240,7 @@ export default function NightlifePage() {
           </ul>
         </section>
 
-        <section className="mt-10">
+        <section>
           <h2 className="text-base font-bold text-foreground mb-3">FAQ — {cityName} nightlife</h2>
           <div className="space-y-2">
             {faqs.map((f, i) => (
@@ -221,6 +254,7 @@ export default function NightlifePage() {
             ))}
           </div>
         </section>
+        </div>
 
         <p className="mt-8 text-xs text-muted-foreground">
           <Link to={`/sortir-ce-soir/${slug.toLowerCase()}`} className="underline">
@@ -228,6 +262,7 @@ export default function NightlifePage() {
           </Link>
         </p>
       </main>
+      <FloatingMapButton cityName={cityName} />
     </>
   );
 }

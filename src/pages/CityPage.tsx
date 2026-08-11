@@ -4,6 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { SEO } from '@/components/SEO';
 import { breadcrumbLd, eventLd, placeLd } from '@/lib/seo/jsonld';
 import { CITY_SLUGS, CATEGORY_SLUGS, GENRE_SLUGS, VIBE_SLUGS, eventSlug } from '@/lib/seo/slug';
+import { EventCard } from '@/components/EventCard';
+import { EventCarousel } from '@/components/EventCarousel';
+import { FloatingMapButton } from '@/components/FloatingMapButton';
 
 interface CachedEvent {
   id: string;
@@ -17,9 +20,12 @@ interface CachedEvent {
   end_time: string | null;
   description: string;
   image_url: string | null;
+  image_color: string;
   ticket_url: string | null;
   price_range: string;
   type: string;
+  vibe: string;
+  genres: string[];
 }
 
 interface CitySeoIntro {
@@ -59,7 +65,7 @@ export default function CityPage() {
       const nowIso = new Date().toISOString();
       const { data } = await supabase
         .from('cached_events')
-        .select('id,name,city,venue,address,lat,lng,start_time,end_time,description,image_url,ticket_url,price_range,type')
+        .select('id,name,city,venue,address,lat,lng,start_time,end_time,description,image_url,image_color,ticket_url,price_range,type,vibe,genres')
         .ilike('city', cityName)
         .or(`start_time.gte.${nowIso},end_time.gte.${nowIso}`)
         .order('start_time', { ascending: true })
@@ -84,6 +90,7 @@ export default function CityPage() {
   // (Google distingue ainsi cette page d'un template dupliqué 115 fois).
   const topVenues = [...new Set(events.map(e => e.venue).filter(Boolean))].slice(0, 8);
   const eventsCount = events.length;
+  const eventsCountLabel = eventsCount === 60 ? '60+' : String(eventsCount);
 
   // Le titre couvre les 3 variantes qui ont du volume : « soirée <ville> »,
   // « sortir à <ville> » et « <ville> ce soir ».
@@ -187,64 +194,82 @@ export default function CityPage() {
           <span className="px-3 py-1.5 font-medium text-foreground">{cityName}</span>
         </nav>
 
-        
+
         <h1 className="text-3xl font-black mb-2">
           {aiIntro?.h1 || `Soirée ${cityName} : où sortir ce soir ?`}
         </h1>
-        {aiIntro?.intro_html ? (
-          <div
-            className="text-sm text-muted-foreground mb-6 leading-relaxed space-y-3 [&_strong]:text-foreground [&_ul]:list-disc [&_ul]:pl-5"
-            dangerouslySetInnerHTML={{ __html: aiIntro.intro_html }}
-          />
-        ) : (
-          <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-            Tu cherches <strong>où sortir ce soir à {cityName}</strong> ou une <strong>soirée à {cityName}</strong> ?
-            PulseMap référence en temps réel tous les concerts, soirées, clubs, festivals et bars animés
-            ouverts ce soir à {cityName}. La carte interactive te montre instantanément les meilleures
-            sorties autour de toi, avec horaires, lieux et liens billetterie.
-            {eventsCount > 0 && (
-              <> Actuellement <strong>{eventsCount} sorties à {cityName}</strong> sont référencées.</>
-            )}
+        {eventsCount > 0 && (
+          <p className="text-base font-bold text-accent mb-4">
+            {eventsCountLabel} {eventsCount === 1 ? 'sortie' : 'sorties'} à {cityName} ce soir
           </p>
         )}
 
-
-
-
-        <Link
-          to={`/?city=${encodeURIComponent(cityName)}`}
-          className="inline-block mb-6 px-4 py-2 rounded-xl bg-accent text-accent-foreground font-bold text-sm"
-        >
-          Voir la carte des sorties ce soir à {cityName}
-        </Link>
-
         <section aria-labelledby="evts-h2">
-          <h2 id="evts-h2" className="text-xl font-bold mb-3">Sorties ce soir à {cityName} — prochains événements</h2>
+          <h2 id="evts-h2" className="sr-only">Sorties ce soir à {cityName} — prochains événements</h2>
           {loading && <p className="text-sm text-muted-foreground">Chargement…</p>}
           {!loading && events.length === 0 && (
             <p className="text-sm text-muted-foreground">Aucun événement référencé pour le moment.</p>
           )}
-          <ul className="space-y-2">
-            {events.map(e => (
-              <li key={e.id}>
-                <Link
-                  to={`/evenements/${eventSlug(e.name, e.id)}`}
-                  className="block p-3 rounded-xl border border-border bg-secondary hover:bg-accent/10 transition-colors"
-                >
-                  <h3 className="font-bold text-sm">{e.name}</h3>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(e.start_time).toLocaleString('fr-FR', {
+          {!loading && events.length > 0 && (() => {
+            const [heroEvent, ...restEvents] = events;
+            return (
+              <>
+                <div className="mb-3 animate-fade-in">
+                  <EventCard
+                    event={heroEvent}
+                    variant="hero"
+                    href={`/evenements/${eventSlug(heroEvent.name, heroEvent.id)}`}
+                    dateLabel={new Date(heroEvent.start_time).toLocaleString('fr-FR', {
                       weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-                    })} · {e.venue}
-                  </p>
-                </Link>
-              </li>
-            ))}
-          </ul>
+                    })}
+                  />
+                </div>
+                {restEvents.length > 0 && (
+                  <EventCarousel
+                    items={restEvents.map(e => ({
+                      event: e,
+                      href: `/evenements/${eventSlug(e.name, e.id)}`,
+                      dateLabel: new Date(e.start_time).toLocaleString('fr-FR', {
+                        weekday: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+                      }),
+                    }))}
+                  />
+                )}
+              </>
+            );
+          })()}
         </section>
 
+        <Link
+          to={`/?city=${encodeURIComponent(cityName)}`}
+          className="flex items-center justify-center gap-2 w-full sm:w-auto mt-6 mb-6 px-6 py-3.5 rounded-2xl bg-accent text-accent-foreground font-black text-base shadow-lg shadow-accent/40 active:scale-[0.98] transition-transform"
+        >
+          🗺️ Voir la carte des sorties ce soir à {cityName}
+        </Link>
+
+        <details className="group mb-2 rounded-xl border border-border bg-secondary p-3 text-sm text-muted-foreground">
+          <summary className="cursor-pointer list-none font-semibold text-foreground flex items-center justify-between gap-2">
+            <span>En savoir plus sur les sorties à {cityName}</span>
+            <span className="text-lg leading-none transition-transform group-open:rotate-45 text-accent" aria-hidden>+</span>
+          </summary>
+          {aiIntro?.intro_html ? (
+            <div
+              className="mt-2 leading-relaxed space-y-3 [&_strong]:text-foreground [&_ul]:list-disc [&_ul]:pl-5"
+              dangerouslySetInnerHTML={{ __html: aiIntro.intro_html }}
+            />
+          ) : (
+            <p className="mt-2 leading-relaxed">
+              Tu cherches <strong>où sortir ce soir à {cityName}</strong> ou une <strong>soirée à {cityName}</strong> ?
+              PulseMap référence en temps réel tous les concerts, soirées, clubs, festivals et bars animés
+              ouverts ce soir à {cityName}. La carte interactive te montre instantanément les meilleures
+              sorties autour de toi, avec horaires, lieux et liens billetterie.
+            </p>
+          )}
+        </details>
+
+        <div className="mt-10 pt-8 border-t border-border/50 space-y-10">
         {topVenues.length > 0 && (
-          <section className="mt-10" aria-labelledby="venues-h2">
+          <section aria-labelledby="venues-h2">
             <h2 id="venues-h2" className="text-base font-bold text-foreground mb-3">
               Où sortir à {cityName} : les lieux programmés en ce moment
             </h2>
@@ -261,7 +286,7 @@ export default function CityPage() {
           </section>
         )}
 
-        <section className="mt-10 text-sm text-muted-foreground leading-relaxed">
+        <section className="text-sm text-muted-foreground leading-relaxed">
           <h2 className="text-base font-bold text-foreground mb-2">Sortir à {cityName} ce soir : que faire ?</h2>
 
           <p>
@@ -274,7 +299,7 @@ export default function CityPage() {
           </p>
         </section>
 
-        <section className="mt-10" aria-labelledby="cats-h2">
+        <section aria-labelledby="cats-h2">
           <h2 id="cats-h2" className="text-base font-bold text-foreground mb-3">
             Par type de sortie à {cityName}
           </h2>
@@ -292,7 +317,7 @@ export default function CityPage() {
           </ul>
         </section>
 
-        <section className="mt-10" aria-labelledby="genres-h2">
+        <section aria-labelledby="genres-h2">
           <h2 id="genres-h2" className="text-base font-bold text-foreground mb-3">
             Par genre musical à {cityName}
           </h2>
@@ -310,7 +335,7 @@ export default function CityPage() {
           </ul>
         </section>
 
-        <section className="mt-10" aria-labelledby="vibes-h2">
+        <section aria-labelledby="vibes-h2">
           <h2 id="vibes-h2" className="text-base font-bold text-foreground mb-3">
             Par ambiance à {cityName}
           </h2>
@@ -328,7 +353,7 @@ export default function CityPage() {
           </ul>
         </section>
 
-        <section className="mt-10" aria-labelledby="other-cities-h2">
+        <section aria-labelledby="other-cities-h2">
           <h2 id="other-cities-h2" className="text-base font-bold text-foreground mb-3">
             Sortir ce soir dans d'autres villes
           </h2>
@@ -346,7 +371,7 @@ export default function CityPage() {
           </ul>
         </section>
 
-        <section className="mt-10">
+        <section>
           <h2 className="text-base font-bold text-foreground mb-3">Questions fréquentes — sortir ce soir à {cityName}</h2>
           <div className="space-y-2">
             {faqs.map((f, i) => (
@@ -360,7 +385,9 @@ export default function CityPage() {
             ))}
           </div>
         </section>
+        </div>
       </main>
+      <FloatingMapButton cityName={cityName} />
     </>
   );
 }
