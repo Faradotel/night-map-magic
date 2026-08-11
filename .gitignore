@@ -30,3 +30,6 @@ client_secret_*.json
 # Capacitor / Android (generated - do not commit)
 android/
 .claude/
+
+# Git worktrees (superpowers subagent-driven-development)
+.worktrees/
