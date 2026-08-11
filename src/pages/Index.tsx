@@ -329,7 +329,10 @@ export default function Index() {
       if (filters.date === 'week' && eventDate > weekEnd) return false;
     }
 
-    if (filters.genres.length > 0 && !event.genres.some((g) => filters.genres.includes(g as any))) return false;
+    // Un event sans genre musical (ex: Culture/OpenAgenda, toujours genres: [])
+    // n'est pas exclu par un filtre de genre — le genre ne s'applique juste
+    // pas à lui, contrairement à un event qui A des genres mais aucun ne matche.
+    if (filters.genres.length > 0 && event.genres.length > 0 && !event.genres.some((g) => filters.genres.includes(g as any))) return false;
     if (filters.vibes.length > 0 && !filters.vibes.includes(event.vibe as any)) return false;
     if (filters.sources.length > 0) {
       const matches = filters.sources.some(src => {
