@@ -409,6 +409,9 @@ export type Database = {
           created_at: string
           friend_attendance_enabled: boolean
           id: string
+          new_event_alerts_enabled: boolean
+          preferred_genres: string[]
+          preferred_vibes: string[]
           push_enabled: boolean
           user_id: string
         }
@@ -416,6 +419,9 @@ export type Database = {
           created_at?: string
           friend_attendance_enabled?: boolean
           id?: string
+          new_event_alerts_enabled?: boolean
+          preferred_genres?: string[]
+          preferred_vibes?: string[]
           push_enabled?: boolean
           user_id: string
         }
@@ -423,6 +429,9 @@ export type Database = {
           created_at?: string
           friend_attendance_enabled?: boolean
           id?: string
+          new_event_alerts_enabled?: boolean
+          preferred_genres?: string[]
+          preferred_vibes?: string[]
           push_enabled?: boolean
           user_id?: string
         }
