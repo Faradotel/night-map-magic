@@ -51,6 +51,7 @@ export function ProfileScreen({ preferredCityObj = null, onboardingTags = [], on
   const [showAllBadges, setShowAllBadges] = useState(false);
   const [viewingPass, setViewingPass] = useState<{ eventId: string; eventName: string } | null>(null);
   const [friendNotifs, setFriendNotifs] = useState(true);
+  const [newEventAlerts, setNewEventAlerts] = useState(false);
 
   const badges = useUnlockedBadges(attended);
   const unlockedBadges = badges.filter(b => b.unlocked);
@@ -69,10 +70,13 @@ export function ProfileScreen({ preferredCityObj = null, onboardingTags = [], on
 
       const { data: prefs } = await supabase
         .from('notification_preferences')
-        .select('friend_attendance_enabled')
+        .select('friend_attendance_enabled, new_event_alerts_enabled')
         .eq('user_id', user.id)
         .maybeSingle();
-      if (prefs) setFriendNotifs(prefs.friend_attendance_enabled);
+      if (prefs) {
+        setFriendNotifs(prefs.friend_attendance_enabled);
+        setNewEventAlerts(prefs.new_event_alerts_enabled);
+      }
     })();
   }, [user]);
 
@@ -83,6 +87,17 @@ export function ProfileScreen({ preferredCityObj = null, onboardingTags = [], on
       await supabase
         .from('notification_preferences')
         .update({ friend_attendance_enabled: next })
+        .eq('user_id', user.id);
+    }
+  };
+
+  const toggleNewEventAlerts = async () => {
+    const next = !newEventAlerts;
+    setNewEventAlerts(next);
+    if (user) {
+      await supabase
+        .from('notification_preferences')
+        .update({ new_event_alerts_enabled: next })
         .eq('user_id', user.id);
     }
   };
@@ -416,6 +431,31 @@ export function ProfileScreen({ preferredCityObj = null, onboardingTags = [], on
                 <div
                   className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"
                   style={{ left: friendNotifs ? '18px' : '2px' }}
+                />
+              </div>
+            </button>
+            <button
+              onClick={toggleNewEventAlerts}
+              className="w-full flex items-center justify-between px-4 py-3 text-left"
+            >
+              <div className="flex items-center gap-3">
+                <Bell size={16} style={{ color: 'hsl(var(--accent))' }} />
+                <div>
+                  <p className="text-sm font-medium">Alertes nouveaux events</p>
+                  <p className="text-xs text-muted-foreground">
+                    {newEventAlerts ? 'Notifié quand un nouvel event est ajouté' : 'Notifications désactivées'}
+                  </p>
+                </div>
+              </div>
+              <div
+                className="w-10 h-6 rounded-full relative transition-colors"
+                style={{
+                  background: newEventAlerts ? 'hsl(var(--accent))' : 'hsl(var(--surface-4))',
+                }}
+              >
+                <div
+                  className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"
+                  style={{ left: newEventAlerts ? '18px' : '2px' }}
                 />
               </div>
             </button>
