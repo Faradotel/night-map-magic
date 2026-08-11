@@ -18,6 +18,7 @@ import { formatDate } from '@/data/mockEvents';
 import { PassViewerScreen } from '@/components/PassViewerScreen';
 import { City } from '@/components/LocationMode';
 import { InterestTag } from '@/hooks/useOnboardingPreferences';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 interface ProfileScreenProps {
   preferredCityObj?: City | null;
@@ -32,6 +33,15 @@ export function ProfileScreen({ preferredCityObj = null, onboardingTags = [], on
   const { preferredCity } = usePreferredCity();
   const { favorites, toggleFavorite } = useFavorites();
   const { user, signOut } = useAuth();
+  const {
+    isSupported: pushSupported,
+    isIOSNonPWA: pushIOSNonPWA,
+    isSubscribed: pushSubscribed,
+    isLoading: pushLoading,
+    permissionState: pushPermissionState,
+    subscribe: subscribePush,
+    unsubscribe: unsubscribePush,
+  } = usePushNotifications();
   const [username, setUsername] = useState(() => {
     const funnyNames = ['Fantôme Dansant 👻', 'Hibou Anonyme 🦉', 'Ninja du Dancefloor 🥷', 'Licorne Nocturne 🦄', 'Loup Solitaire 🐺'];
     return funnyNames[Math.floor(Math.random() * funnyNames.length)];
@@ -467,6 +477,69 @@ export function ProfileScreen({ preferredCityObj = null, onboardingTags = [], on
               </div>
               <ChevronRight size={14} className="text-muted-foreground" />
             </button>
+            {pushIOSNonPWA ? (
+              <div
+                className="w-full flex items-center justify-between px-4 py-3 text-left"
+                style={{ borderBottom: '1px solid var(--profile-divider)' }}
+              >
+                <div>
+                  <p className="text-sm font-medium">Alertes push</p>
+                  <p className="text-xs text-muted-foreground">
+                    Ajoute PulseMap à l'écran d'accueil pour activer les alertes
+                  </p>
+                </div>
+              </div>
+            ) : !pushSupported ? (
+              <div
+                className="w-full flex items-center justify-between px-4 py-3 text-left"
+                style={{ borderBottom: '1px solid var(--profile-divider)' }}
+              >
+                <div>
+                  <p className="text-sm font-medium">Alertes push</p>
+                  <p className="text-xs text-muted-foreground">Non disponible sur ce navigateur</p>
+                </div>
+              </div>
+            ) : pushPermissionState === 'denied' ? (
+              <div
+                className="w-full flex items-center justify-between px-4 py-3 text-left"
+                style={{ borderBottom: '1px solid var(--profile-divider)' }}
+              >
+                <div>
+                  <p className="text-sm font-medium">Alertes push</p>
+                  <p className="text-xs text-muted-foreground">
+                    Bloqué — active les notifications dans les réglages de ton navigateur
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => (pushSubscribed ? unsubscribePush() : subscribePush())}
+                disabled={pushLoading}
+                className="w-full flex items-center justify-between px-4 py-3 text-left disabled:opacity-60"
+                style={{ borderBottom: '1px solid var(--profile-divider)' }}
+              >
+                <div className="flex items-center gap-3">
+                  <Bell size={16} style={{ color: 'hsl(var(--accent))' }} />
+                  <div>
+                    <p className="text-sm font-medium">Activer les alertes 🔔</p>
+                    <p className="text-xs text-muted-foreground">
+                      {pushSubscribed ? 'Alertes activées' : 'Reçois une alerte pour les events près de toi'}
+                    </p>
+                  </div>
+                </div>
+                <div
+                  className="w-10 h-6 rounded-full relative transition-colors"
+                  style={{
+                    background: pushSubscribed ? 'hsl(var(--accent))' : 'hsl(var(--surface-4))',
+                  }}
+                >
+                  <div
+                    className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"
+                    style={{ left: pushSubscribed ? '18px' : '2px' }}
+                  />
+                </div>
+              </button>
+            )}
             <Link
               to="/privacy-policy"
               className="w-full flex items-center justify-between px-4 py-3 text-left"

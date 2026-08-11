@@ -78,24 +78,6 @@
 
   <body>
     <div id="root"></div>
-    <script>
-      // Unregister any stale service worker from prior versions of the app.
-      // Lovable preview/iframe contexts are skipped.
-      (function () {
-        try {
-          if (!('serviceWorker' in navigator)) return;
-          var h = location.hostname;
-          var inIframe = window.top !== window.self;
-          var isPreview = h.startsWith('id-preview--') || h.startsWith('preview--') ||
-            h === 'lovableproject.com' || h.endsWith('.lovableproject.com') ||
-            h === 'beta.lovable.dev' || h.endsWith('.beta.lovable.dev');
-          if (inIframe || isPreview) return;
-          navigator.serviceWorker.getRegistrations().then(function (regs) {
-            regs.forEach(function (r) { r.unregister().catch(function () {}); });
-          }).catch(function () {});
-        } catch (e) {}
-      })();
-    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

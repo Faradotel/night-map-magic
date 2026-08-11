@@ -7,6 +7,7 @@ import { NightEvent, vibeConfig, typeConfig, formatTime, formatDate } from '@/da
 import { getSourceEmoji } from '@/lib/sourceEmoji';
 import { useEventAttendanceCount } from '@/hooks/useEventAttendanceCount';
 import { EventPassUpload } from '@/components/EventPassUpload';
+import { PushPermissionPrompt } from '@/components/PushPermissionPrompt';
 import type { useAttendance } from '@/hooks/useAttendance';
 import type { useFavorites } from '@/hooks/useFavorites';
 
@@ -80,6 +81,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
 
   return (
     <div ref={scrollRef} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} className="absolute inset-0 z-[600] flex flex-col overflow-y-auto" style={{ background: 'hsl(var(--background))' }}>
+      <PushPermissionPrompt />
       {/* Hero header */}
       <div className="relative shrink-0">
         {/* Gradient bg */}
