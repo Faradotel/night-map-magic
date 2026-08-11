@@ -34,7 +34,7 @@ function createEventIcon(
   liveMode: boolean = false,
 ): L.DivIcon {
   const vibe = vibeConfig[event.vibe];
-  const typeEmoji = getSourceEmoji(event.id, typeConfig[event.type]?.emoji ?? '📍', event.type);
+  const typeEmoji = getSourceEmoji(event.id, typeConfig[event.type]?.emoji ?? '📍', event.type, event.name);
   const color = vibe.color;
   // +15% larger markers for stronger map presence; +6px in LIVE mode
   const baseSize = isSelected ? 60 : 48;
