@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
+import { MapCtaLink } from '@/components/MapCtaLink';
 import { supabase } from '@/integrations/supabase/client';
 import { SEO } from '@/components/SEO';
 import { breadcrumbLd, eventLd } from '@/lib/seo/jsonld';
@@ -166,9 +167,15 @@ export default function EventPage() {
         </p>
 
         <div className="flex flex-wrap gap-2 mb-6">
-          <Link to={`/?event=${event.id}`} className="px-4 py-2 rounded-xl bg-accent text-accent-foreground font-bold text-sm">
+          <MapCtaLink
+            to={`/?event=${event.id}`}
+            sourcePage="event"
+            sourceSlug={event.id}
+            city={event.city}
+            className="px-4 py-2 rounded-xl bg-accent text-accent-foreground font-bold text-sm"
+          >
             Voir sur la carte
-          </Link>
+          </MapCtaLink>
           {event.ticket_url && (
             <a href={event.ticket_url} target="_blank" rel="noopener noreferrer"
                className="px-4 py-2 rounded-xl border border-border font-bold text-sm">

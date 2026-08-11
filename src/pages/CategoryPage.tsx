@@ -5,10 +5,15 @@ import { SEO } from '@/components/SEO';
 import { breadcrumbLd } from '@/lib/seo/jsonld';
 import { CATEGORY_SLUGS, CITY_SLUGS, GENRE_SLUGS, VIBE_SLUGS, eventSlug } from '@/lib/seo/slug';
 import { SITE } from '@/components/SEO';
+import { MapCtaLink } from '@/components/MapCtaLink';
+import { EventCard } from '@/components/EventCard';
+import { EventCarousel } from '@/components/EventCarousel';
+import { SeoChipList } from '@/components/SeoChipList';
 
 interface CachedEvent {
   id: string; name: string; city: string; venue: string;
   start_time: string; type: string;
+  price_range: string; vibe: string; image_url: string | null; image_color: string;
 }
 
 interface CitySeoIntro {
@@ -34,7 +39,7 @@ export default function CategoryPage() {
       const nowIso = new Date().toISOString();
       let q = supabase
         .from('cached_events')
-        .select('id,name,city,venue,start_time,type')
+        .select('id,name,city,venue,start_time,type,price_range,vibe,image_url,image_color')
         .in('type', cat.types)
         .or(`start_time.gte.${nowIso},end_time.gte.${nowIso}`)
         .order('start_time', { ascending: true })
@@ -283,12 +288,15 @@ export default function CategoryPage() {
         )}
 
 
-        <Link
+        <MapCtaLink
           to={mapHref}
+          sourcePage="category"
+          sourceSlug={slug.toLowerCase()}
+          city={cityName}
           className="inline-block mb-6 px-4 py-2 rounded-xl bg-accent text-accent-foreground font-bold text-sm"
         >
           Voir la carte des {labelLower}{cityName ? ` à ${cityName}` : ''}
-        </Link>
+        </MapCtaLink>
 
         <section aria-labelledby="evts-h2">
           <h2 id="evts-h2" className="text-xl font-bold mb-3">
@@ -301,101 +309,88 @@ export default function CategoryPage() {
           {!loading && events.length === 0 && (
             <p className="text-sm text-muted-foreground">Aucun événement référencé pour le moment.</p>
           )}
-          <ul className="space-y-2">
-            {events.map(e => (
-              <li key={e.id}>
-                <Link
-                  to={`/evenements/${eventSlug(e.name, e.id)}`}
-                  className="block p-3 rounded-xl border border-border bg-secondary hover:bg-accent/10"
-                >
-                  <h3 className="font-bold text-sm">{e.name}</h3>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(e.start_time).toLocaleString('fr-FR', {
+          {!loading && events.length > 0 && (() => {
+            const [heroEvent, ...restEvents] = events;
+            return (
+              <>
+                <div className="mb-3 animate-fade-in">
+                  <EventCard
+                    event={heroEvent}
+                    variant="hero"
+                    href={`/evenements/${eventSlug(heroEvent.name, heroEvent.id)}`}
+                    dateLabel={new Date(heroEvent.start_time).toLocaleString('fr-FR', {
                       weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-                    })} · {e.venue}, {e.city}
-                  </p>
-                </Link>
-              </li>
-            ))}
-          </ul>
+                    })}
+                  />
+                </div>
+                {restEvents.length > 0 && (
+                  <EventCarousel
+                    items={restEvents.map(e => ({
+                      event: e,
+                      href: `/evenements/${eventSlug(e.name, e.id)}`,
+                      dateLabel: new Date(e.start_time).toLocaleString('fr-FR', {
+                        weekday: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+                      }),
+                    }))}
+                  />
+                )}
+              </>
+            );
+          })()}
         </section>
 
         {cityName ? (
-          <section className="mt-10" aria-labelledby="othercat-h2">
-            <h2 id="othercat-h2" className="text-base font-bold text-foreground mb-3">
+          <section className="mt-8" aria-labelledby="othercat-h2">
+            <h2 id="othercat-h2" className="text-sm font-semibold text-muted-foreground mb-2">
               Autres sorties à {cityName}
             </h2>
-            <ul className="grid grid-cols-2 gap-2">
-              {otherCategories.map(([s, c]) => (
-                <li key={s}>
-                  <Link
-                    to={`/categories/${s}/${citySlug}`}
-                    className="block px-3 py-2 rounded-lg border border-border bg-secondary hover:bg-accent/10 text-sm"
-                  >
-                    <span className="font-semibold">{c.label} à {cityName}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <SeoChipList
+              items={otherCategories.map(([s, c]) => ({
+                to: `/categories/${s}/${citySlug}`,
+                label: `${c.label} à ${cityName}`,
+              }))}
+            />
           </section>
         ) : null}
 
         {isSoirees && cityName && (
           <>
-            <section className="mt-10" aria-labelledby="genres-h2">
-              <h2 id="genres-h2" className="text-base font-bold text-foreground mb-3">
+            <section className="mt-8" aria-labelledby="genres-h2">
+              <h2 id="genres-h2" className="text-sm font-semibold text-muted-foreground mb-2">
                 Soirées par genre musical à {cityName}
               </h2>
-              <ul className="flex flex-wrap gap-2">
-                {Object.entries(GENRE_SLUGS).map(([gSlug, g]) => (
-                  <li key={gSlug}>
-                    <Link
-                      to={`/genres/${gSlug}/${citySlug}`}
-                      className="inline-block px-3 py-1.5 rounded-lg border border-border bg-secondary hover:bg-accent/10 text-xs font-medium"
-                    >
-                      Soirée {g.label} {cityName}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+              <SeoChipList
+                items={Object.entries(GENRE_SLUGS).map(([gSlug, g]) => ({
+                  to: `/genres/${gSlug}/${citySlug}`,
+                  label: `Soirée ${g.label} ${cityName}`,
+                }))}
+              />
             </section>
 
-            <section className="mt-10" aria-labelledby="vibes-h2">
-              <h2 id="vibes-h2" className="text-base font-bold text-foreground mb-3">
+            <section className="mt-8" aria-labelledby="vibes-h2">
+              <h2 id="vibes-h2" className="text-sm font-semibold text-muted-foreground mb-2">
                 Soirées par ambiance à {cityName}
               </h2>
-              <ul className="flex flex-wrap gap-2">
-                {Object.entries(VIBE_SLUGS).map(([vSlug, v]) => (
-                  <li key={vSlug}>
-                    <Link
-                      to={`/ambiances/${vSlug}/${citySlug}`}
-                      className="inline-block px-3 py-1.5 rounded-lg border border-border bg-secondary hover:bg-accent/10 text-xs font-medium"
-                    >
-                      {v.label} {cityName}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+              <SeoChipList
+                items={Object.entries(VIBE_SLUGS).map(([vSlug, v]) => ({
+                  to: `/ambiances/${vSlug}/${citySlug}`,
+                  label: `${v.label} ${cityName}`,
+                }))}
+              />
             </section>
           </>
         )}
 
-        <section className="mt-10" aria-labelledby="cities-h2">
-          <h2 id="cities-h2" className="text-base font-bold text-foreground mb-3">
+        <section className="mt-8" aria-labelledby="cities-h2">
+          <h2 id="cities-h2" className="text-sm font-semibold text-muted-foreground mb-2">
             {cat.label} par ville
           </h2>
-          <ul className="grid grid-cols-2 gap-2">
-            {cities.map(([cSlug, cName]) => (
-              <li key={cSlug}>
-                <Link
-                  to={`/categories/${slug.toLowerCase()}/${cSlug}`}
-                  className="block px-3 py-2 rounded-lg border border-border bg-secondary hover:bg-accent/10 text-sm"
-                >
-                  <span className="font-semibold">{cat.label} à {cName}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <SeoChipList
+            items={cities.map(([cSlug, cName]) => ({
+              to: `/categories/${slug.toLowerCase()}/${cSlug}`,
+              label: `${cat.label} à ${cName}`,
+            }))}
+          />
         </section>
 
         <section className="mt-10">

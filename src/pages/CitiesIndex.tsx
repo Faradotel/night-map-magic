@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { SEO, SITE } from '@/components/SEO';
 import { breadcrumbLd, organizationLd, websiteLd } from '@/lib/seo/jsonld';
 import { CITY_SLUGS, CATEGORY_SLUGS } from '@/lib/seo/slug';
+import { MapCtaLink } from '@/components/MapCtaLink';
 
 export default function CitiesIndex() {
   const cities = Object.entries(CITY_SLUGS);
@@ -29,11 +30,19 @@ export default function CitiesIndex() {
           <span className="px-3 py-1.5 font-medium text-foreground">Villes</span>
         </nav>
         <h1 className="text-3xl font-black mb-3">Où sortir ce soir en France ?</h1>
-        <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
+        <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
           PulseMap référence en temps réel les soirées, concerts, festivals, bars animés et événements
           culturels qui se passent autour de vous, partout en France. Sélectionnez votre ville pour voir
           où sortir ce soir.
         </p>
+
+        <MapCtaLink
+          to="/"
+          sourcePage="cities_index"
+          className="inline-block mb-8 px-4 py-2 rounded-xl bg-accent text-accent-foreground font-bold text-sm"
+        >
+          🗺️ Voir la carte
+        </MapCtaLink>
 
         <section aria-labelledby="cities-h2" className="mb-10">
           <h2 id="cities-h2" className="text-xl font-bold mb-3">Sortir ce soir, par ville</h2>
@@ -68,10 +77,6 @@ export default function CitiesIndex() {
             ))}
           </ul>
         </section>
-
-        <p className="text-xs text-muted-foreground mt-10">
-          <Link to="/" className="underline hover:text-foreground">Retour à la carte</Link>
-        </p>
       </main>
     </>
   );

@@ -7,6 +7,8 @@ import { CITY_SLUGS, CATEGORY_SLUGS, GENRE_SLUGS, VIBE_SLUGS, eventSlug } from '
 import { EventCard } from '@/components/EventCard';
 import { EventCarousel } from '@/components/EventCarousel';
 import { FloatingMapButton } from '@/components/FloatingMapButton';
+import { MapCtaLink } from '@/components/MapCtaLink';
+import { SeoChipList } from '@/components/SeoChipList';
 
 interface CachedEvent {
   id: string;
@@ -240,12 +242,15 @@ export default function CityPage() {
           })()}
         </section>
 
-        <Link
+        <MapCtaLink
           to={`/?city=${encodeURIComponent(cityName)}`}
+          sourcePage="city"
+          sourceSlug={slug.toLowerCase()}
+          city={cityName}
           className="flex items-center justify-center gap-2 w-full sm:w-auto mt-6 mb-6 px-6 py-3.5 rounded-2xl bg-accent text-accent-foreground font-black text-base shadow-lg shadow-accent/40 active:scale-[0.98] transition-transform"
         >
           🗺️ Voir la carte des sorties ce soir à {cityName}
-        </Link>
+        </MapCtaLink>
 
         <details className="group mb-2 rounded-xl border border-border bg-secondary p-3 text-sm text-muted-foreground">
           <summary className="cursor-pointer list-none font-semibold text-foreground flex items-center justify-between gap-2">
@@ -267,27 +272,28 @@ export default function CityPage() {
           )}
         </details>
 
-        <div className="mt-10 pt-8 border-t border-border/50 space-y-10">
+        <MapCtaLink
+          to={`/?city=${encodeURIComponent(cityName)}`}
+          sourcePage="city"
+          sourceSlug={slug.toLowerCase()}
+          city={cityName}
+          className="flex items-center justify-center gap-2 w-full sm:w-auto mt-4 mb-6 px-6 py-3.5 rounded-2xl bg-accent text-accent-foreground font-black text-base shadow-lg shadow-accent/40 active:scale-[0.98] transition-transform"
+        >
+          🗺️ Prêt à sortir ? Ouvre la carte de {cityName}
+        </MapCtaLink>
+
+        <div className="mt-10 pt-8 border-t border-border/50 space-y-8">
         {topVenues.length > 0 && (
           <section aria-labelledby="venues-h2">
-            <h2 id="venues-h2" className="text-base font-bold text-foreground mb-3">
-              Où sortir à {cityName} : les lieux programmés en ce moment
+            <h2 id="venues-h2" className="text-sm font-semibold text-muted-foreground mb-2">
+              Lieux programmés en ce moment à {cityName}
             </h2>
-            <ul className="flex flex-wrap gap-2">
-              {topVenues.map(v => (
-                <li
-                  key={v}
-                  className="px-3 py-1.5 rounded-lg border border-border bg-secondary text-xs font-medium"
-                >
-                  {v}
-                </li>
-              ))}
-            </ul>
+            <p className="text-sm text-muted-foreground">{topVenues.join(' · ')}</p>
           </section>
         )}
 
         <section className="text-sm text-muted-foreground leading-relaxed">
-          <h2 className="text-base font-bold text-foreground mb-2">Sortir à {cityName} ce soir : que faire ?</h2>
+          <h2 className="text-sm font-semibold text-muted-foreground mb-2">Sortir à {cityName} ce soir : que faire ?</h2>
 
           <p>
             Que tu cherches une soirée techno, un concert live, un festival, un afterwork ou
@@ -300,75 +306,51 @@ export default function CityPage() {
         </section>
 
         <section aria-labelledby="cats-h2">
-          <h2 id="cats-h2" className="text-base font-bold text-foreground mb-3">
+          <h2 id="cats-h2" className="text-sm font-semibold text-muted-foreground mb-2">
             Par type de sortie à {cityName}
           </h2>
-          <ul className="grid grid-cols-2 gap-2">
-            {Object.entries(CATEGORY_SLUGS).map(([catSlug, cat]) => (
-              <li key={catSlug}>
-                <Link
-                  to={`/categories/${catSlug}/${slug}`}
-                  className="block px-3 py-2 rounded-lg border border-border bg-secondary hover:bg-accent/10 text-sm"
-                >
-                  <span className="font-semibold">{cat.label} à {cityName}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <SeoChipList
+            items={Object.entries(CATEGORY_SLUGS).map(([catSlug, cat]) => ({
+              to: `/categories/${catSlug}/${slug}`,
+              label: `${cat.label} à ${cityName}`,
+            }))}
+          />
         </section>
 
         <section aria-labelledby="genres-h2">
-          <h2 id="genres-h2" className="text-base font-bold text-foreground mb-3">
+          <h2 id="genres-h2" className="text-sm font-semibold text-muted-foreground mb-2">
             Par genre musical à {cityName}
           </h2>
-          <ul className="flex flex-wrap gap-2">
-            {Object.entries(GENRE_SLUGS).map(([gSlug, g]) => (
-              <li key={gSlug}>
-                <Link
-                  to={`/genres/${gSlug}/${slug.toLowerCase()}`}
-                  className="inline-block px-3 py-1.5 rounded-lg border border-border bg-secondary hover:bg-accent/10 text-xs font-medium"
-                >
-                  {g.label} à {cityName}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <SeoChipList
+            items={Object.entries(GENRE_SLUGS).map(([gSlug, g]) => ({
+              to: `/genres/${gSlug}/${slug.toLowerCase()}`,
+              label: `${g.label} à ${cityName}`,
+            }))}
+          />
         </section>
 
         <section aria-labelledby="vibes-h2">
-          <h2 id="vibes-h2" className="text-base font-bold text-foreground mb-3">
+          <h2 id="vibes-h2" className="text-sm font-semibold text-muted-foreground mb-2">
             Par ambiance à {cityName}
           </h2>
-          <ul className="flex flex-wrap gap-2">
-            {Object.entries(VIBE_SLUGS).map(([vSlug, v]) => (
-              <li key={vSlug}>
-                <Link
-                  to={`/ambiances/${vSlug}/${slug.toLowerCase()}`}
-                  className="inline-block px-3 py-1.5 rounded-lg border border-border bg-secondary hover:bg-accent/10 text-xs font-medium"
-                >
-                  {v.label} à {cityName}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <SeoChipList
+            items={Object.entries(VIBE_SLUGS).map(([vSlug, v]) => ({
+              to: `/ambiances/${vSlug}/${slug.toLowerCase()}`,
+              label: `${v.label} à ${cityName}`,
+            }))}
+          />
         </section>
 
         <section aria-labelledby="other-cities-h2">
-          <h2 id="other-cities-h2" className="text-base font-bold text-foreground mb-3">
+          <h2 id="other-cities-h2" className="text-sm font-semibold text-muted-foreground mb-2">
             Sortir ce soir dans d'autres villes
           </h2>
-          <ul className="flex flex-wrap gap-2">
-            {Object.entries(CITY_SLUGS).filter(([s]) => s !== slug.toLowerCase()).map(([s, n]) => (
-              <li key={s}>
-                <Link
-                  to={`/sortir-ce-soir/${s}`}
-                  className="inline-block px-3 py-1.5 rounded-lg border border-border bg-secondary hover:bg-accent/10 text-xs font-medium"
-                >
-                  {n}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <SeoChipList
+            items={Object.entries(CITY_SLUGS).filter(([s]) => s !== slug.toLowerCase()).map(([s, n]) => ({
+              to: `/sortir-ce-soir/${s}`,
+              label: n,
+            }))}
+          />
         </section>
 
         <section>
@@ -387,7 +369,7 @@ export default function CityPage() {
         </section>
         </div>
       </main>
-      <FloatingMapButton cityName={cityName} />
+      <FloatingMapButton cityName={cityName} citySlug={slug.toLowerCase()} />
     </>
   );
 }

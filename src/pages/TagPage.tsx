@@ -3,6 +3,10 @@ import { Link, useParams, Navigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { SEO } from '@/components/SEO';
 import { breadcrumbLd } from '@/lib/seo/jsonld';
+import { MapCtaLink } from '@/components/MapCtaLink';
+import { EventCard } from '@/components/EventCard';
+import { EventCarousel } from '@/components/EventCarousel';
+import { SeoChipList } from '@/components/SeoChipList';
 import {
   CITY_SLUGS,
   GENRE_SLUGS,
@@ -13,6 +17,7 @@ import {
 interface CachedEvent {
   id: string; name: string; city: string; venue: string;
   start_time: string; vibe: string; genres: string[] | null;
+  type: string; price_range: string; image_url: string | null; image_color: string;
 }
 
 type Kind = 'genre' | 'vibe';
@@ -63,7 +68,7 @@ export default function TagPage({ kind }: { kind: Kind }) {
       const nowIso = new Date().toISOString();
       let query: any = supabase
         .from('cached_events')
-        .select('id,name,city,venue,start_time,vibe,genres');
+        .select('id,name,city,venue,start_time,vibe,genres,type,price_range,image_url,image_color');
       query = tag.filter(query);
       if (cityName) query = query.ilike('city', cityName);
       query = query
@@ -235,12 +240,15 @@ export default function TagPage({ kind }: { kind: Kind }) {
         </p>
 
 
-        <Link
+        <MapCtaLink
           to={`/?${kind === 'genre' ? 'genre' : 'vibe'}=${tagSlug}${cityName ? `&city=${encodeURIComponent(cityName)}` : ''}`}
+          sourcePage={kind}
+          sourceSlug={tagSlug}
+          city={cityName ?? undefined}
           className="inline-block mb-6 px-4 py-2 rounded-xl bg-accent text-accent-foreground font-bold text-sm"
         >
           Voir sur la carte
-        </Link>
+        </MapCtaLink>
 
         <section aria-labelledby="evts-h2">
           <h2 id="evts-h2" className="text-xl font-bold mb-3">
@@ -250,58 +258,62 @@ export default function TagPage({ kind }: { kind: Kind }) {
           {!loading && events.length === 0 && (
             <p className="text-sm text-muted-foreground">Aucun événement référencé pour le moment.</p>
           )}
-          <ul className="space-y-2">
-            {events.map(e => (
-              <li key={e.id}>
-                <Link
-                  to={`/evenements/${eventSlug(e.name, e.id)}`}
-                  className="block p-3 rounded-xl border border-border bg-secondary hover:bg-accent/10"
-                >
-                  <h3 className="font-bold text-sm">{e.name}</h3>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(e.start_time).toLocaleString('fr-FR', {
+          {!loading && events.length > 0 && (() => {
+            const [heroEvent, ...restEvents] = events;
+            return (
+              <>
+                <div className="mb-3 animate-fade-in">
+                  <EventCard
+                    event={heroEvent}
+                    variant="hero"
+                    href={`/evenements/${eventSlug(heroEvent.name, heroEvent.id)}`}
+                    dateLabel={new Date(heroEvent.start_time).toLocaleString('fr-FR', {
                       weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-                    })} · {e.venue}, {e.city}
-                  </p>
-                </Link>
-              </li>
-            ))}
-          </ul>
+                    })}
+                  />
+                </div>
+                {restEvents.length > 0 && (
+                  <EventCarousel
+                    items={restEvents.map(e => ({
+                      event: e,
+                      href: `/evenements/${eventSlug(e.name, e.id)}`,
+                      dateLabel: new Date(e.start_time).toLocaleString('fr-FR', {
+                        weekday: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+                      }),
+                    }))}
+                  />
+                )}
+              </>
+            );
+          })()}
         </section>
 
         {!cityName && (
-          <section className="mt-10" aria-labelledby="cities-h2">
-            <h2 id="cities-h2" className="text-base font-bold text-foreground mb-3">
+          <section className="mt-8" aria-labelledby="cities-h2">
+            <h2 id="cities-h2" className="text-sm font-semibold text-muted-foreground mb-2">
               {tag.label} par ville
             </h2>
-            <ul className="grid grid-cols-2 gap-2">
-              {cities.map(([s, n]) => (
-                <li key={s}>
-                  <Link
-                    to={`/${prefix}/${tagSlug}/${s}`}
-                    className="block px-3 py-2 rounded-lg border border-border bg-secondary hover:bg-accent/10 text-sm"
-                  >
-                    <span className="font-semibold">{tag.label} à {n}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <SeoChipList
+              items={cities.map(([s, n]) => ({
+                to: `/${prefix}/${tagSlug}/${s}`,
+                label: `${tag.label} à ${n}`,
+              }))}
+            />
           </section>
         )}
 
         {cityName && (
-          <section className="mt-10" aria-labelledby="more-h2">
-            <h2 id="more-h2" className="text-base font-bold text-foreground mb-3">
+          <section className="mt-8" aria-labelledby="more-h2">
+            <h2 id="more-h2" className="text-sm font-semibold text-muted-foreground mb-2">
               Plus de sorties à {cityName}
             </h2>
-            <div className="flex flex-wrap gap-2">
-              <Link to={`/sortir-ce-soir/${citySlug}`} className="px-3 py-1.5 rounded-lg border border-border bg-secondary hover:bg-accent/10 text-xs font-medium">
-                Toutes les sorties ce soir à {cityName}
-              </Link>
-              <Link to={`/${prefix}/${tagSlug}`} className="px-3 py-1.5 rounded-lg border border-border bg-secondary hover:bg-accent/10 text-xs font-medium">
-                {tag.label} dans toute la France
-              </Link>
-            </div>
+            <SeoChipList
+              columns={1}
+              items={[
+                { to: `/sortir-ce-soir/${citySlug}`, label: `Toutes les sorties ce soir à ${cityName}` },
+                { to: `/${prefix}/${tagSlug}`, label: `${tag.label} dans toute la France` },
+              ]}
+            />
           </section>
         )}
       </main>

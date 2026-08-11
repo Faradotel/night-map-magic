@@ -9,7 +9,8 @@ export type AnalyticsEventName =
   | 'onboarding_skipped'
   | 'filter_applied'
   | 'event_clicked'
-  | 'map_interaction';
+  | 'map_interaction'
+  | 'map_cta_clicked';
 
 export function useAnalytics() {
   const trackEvent = (name: AnalyticsEventName, props?: Record<string, string | number | boolean>) => {
