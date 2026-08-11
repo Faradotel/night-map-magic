@@ -288,8 +288,14 @@ export default function TagPage({ kind }: { kind: Kind }) {
           })()}
         </section>
 
+        <details className="group mt-8 mb-2 rounded-xl border border-border bg-secondary p-3 text-sm text-muted-foreground">
+          <summary className="cursor-pointer list-none font-semibold text-foreground flex items-center justify-between gap-2">
+            <span>Plus de sorties</span>
+            <span className="text-lg leading-none transition-transform group-open:rotate-45 text-accent" aria-hidden>+</span>
+          </summary>
+          <div className="mt-3">
         {!cityName && (
-          <section className="mt-8" aria-labelledby="cities-h2">
+          <section aria-labelledby="cities-h2">
             <h2 id="cities-h2" className="text-sm font-semibold text-muted-foreground mb-2">
               {tag.label} par ville
             </h2>
@@ -303,7 +309,7 @@ export default function TagPage({ kind }: { kind: Kind }) {
         )}
 
         {cityName && (
-          <section className="mt-8" aria-labelledby="more-h2">
+          <section aria-labelledby="more-h2">
             <h2 id="more-h2" className="text-sm font-semibold text-muted-foreground mb-2">
               Plus de sorties à {cityName}
             </h2>
@@ -316,6 +322,8 @@ export default function TagPage({ kind }: { kind: Kind }) {
             />
           </section>
         )}
+          </div>
+        </details>
       </main>
     </>
   );

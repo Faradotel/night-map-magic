@@ -272,17 +272,12 @@ export default function CityPage() {
           )}
         </details>
 
-        <MapCtaLink
-          to={`/?city=${encodeURIComponent(cityName)}`}
-          sourcePage="city"
-          sourceSlug={slug.toLowerCase()}
-          city={cityName}
-          className="flex items-center justify-center gap-2 w-full sm:w-auto mt-4 mb-6 px-6 py-3.5 rounded-2xl bg-accent text-accent-foreground font-black text-base shadow-lg shadow-accent/40 active:scale-[0.98] transition-transform"
-        >
-          🗺️ Prêt à sortir ? Ouvre la carte de {cityName}
-        </MapCtaLink>
-
-        <div className="mt-10 pt-8 border-t border-border/50 space-y-8">
+        <details className="group mt-4 mb-6 rounded-xl border border-border bg-secondary p-3 text-sm text-muted-foreground">
+          <summary className="cursor-pointer list-none font-semibold text-foreground flex items-center justify-between gap-2">
+            <span>Plus de sorties, genres et villes</span>
+            <span className="text-lg leading-none transition-transform group-open:rotate-45 text-accent" aria-hidden>+</span>
+          </summary>
+          <div className="mt-3 space-y-8">
         {topVenues.length > 0 && (
           <section aria-labelledby="venues-h2">
             <h2 id="venues-h2" className="text-sm font-semibold text-muted-foreground mb-2">
@@ -354,10 +349,10 @@ export default function CityPage() {
         </section>
 
         <section>
-          <h2 className="text-base font-bold text-foreground mb-3">Questions fréquentes — sortir ce soir à {cityName}</h2>
+          <h2 className="text-sm font-semibold text-muted-foreground mb-2">Questions fréquentes — sortir ce soir à {cityName}</h2>
           <div className="space-y-2">
             {faqs.map((f, i) => (
-              <details key={i} className="group rounded-xl border border-border bg-secondary p-3">
+              <details key={i} className="group rounded-xl border border-border bg-background p-3">
                 <summary className="cursor-pointer list-none text-sm font-semibold text-foreground flex items-center justify-between gap-2">
                   <span>{f.q}</span>
                   <span className="text-lg leading-none transition-transform group-open:rotate-45 text-accent" aria-hidden>+</span>
@@ -367,7 +362,8 @@ export default function CityPage() {
             ))}
           </div>
         </section>
-        </div>
+          </div>
+        </details>
       </main>
       <FloatingMapButton cityName={cityName} citySlug={slug.toLowerCase()} />
     </>

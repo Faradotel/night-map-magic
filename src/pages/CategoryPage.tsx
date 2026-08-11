@@ -339,8 +339,14 @@ export default function CategoryPage() {
           })()}
         </section>
 
+        <details className="group mt-8 mb-2 rounded-xl border border-border bg-secondary p-3 text-sm text-muted-foreground">
+          <summary className="cursor-pointer list-none font-semibold text-foreground flex items-center justify-between gap-2">
+            <span>Plus de sorties et villes</span>
+            <span className="text-lg leading-none transition-transform group-open:rotate-45 text-accent" aria-hidden>+</span>
+          </summary>
+          <div className="mt-3 space-y-8">
         {cityName ? (
-          <section className="mt-8" aria-labelledby="othercat-h2">
+          <section aria-labelledby="othercat-h2">
             <h2 id="othercat-h2" className="text-sm font-semibold text-muted-foreground mb-2">
               Autres sorties à {cityName}
             </h2>
@@ -355,7 +361,7 @@ export default function CategoryPage() {
 
         {isSoirees && cityName && (
           <>
-            <section className="mt-8" aria-labelledby="genres-h2">
+            <section aria-labelledby="genres-h2">
               <h2 id="genres-h2" className="text-sm font-semibold text-muted-foreground mb-2">
                 Soirées par genre musical à {cityName}
               </h2>
@@ -367,7 +373,7 @@ export default function CategoryPage() {
               />
             </section>
 
-            <section className="mt-8" aria-labelledby="vibes-h2">
+            <section aria-labelledby="vibes-h2">
               <h2 id="vibes-h2" className="text-sm font-semibold text-muted-foreground mb-2">
                 Soirées par ambiance à {cityName}
               </h2>
@@ -381,7 +387,7 @@ export default function CategoryPage() {
           </>
         )}
 
-        <section className="mt-8" aria-labelledby="cities-h2">
+        <section aria-labelledby="cities-h2">
           <h2 id="cities-h2" className="text-sm font-semibold text-muted-foreground mb-2">
             {cat.label} par ville
           </h2>
@@ -393,13 +399,13 @@ export default function CategoryPage() {
           />
         </section>
 
-        <section className="mt-10">
-          <h2 className="text-base font-bold text-foreground mb-3">
+        <section>
+          <h2 className="text-sm font-semibold text-muted-foreground mb-2">
             Questions fréquentes — {cat.label}{cityName ? ` à ${cityName}` : ''}
           </h2>
           <div className="space-y-2">
             {faqs.map((f, i) => (
-              <details key={i} className="group rounded-xl border border-border bg-secondary p-3">
+              <details key={i} className="group rounded-xl border border-border bg-background p-3">
                 <summary className="cursor-pointer list-none text-sm font-semibold text-foreground flex items-center justify-between gap-2">
                   <span>{f.q}</span>
                   <span className="text-lg leading-none transition-transform group-open:rotate-45 text-accent" aria-hidden>+</span>
@@ -409,6 +415,8 @@ export default function CategoryPage() {
             ))}
           </div>
         </section>
+          </div>
+        </details>
       </main>
     </>
   );
