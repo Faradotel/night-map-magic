@@ -57,8 +57,6 @@
   <url><loc>https://pulse-map.live/categories/soirees/poitiers</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/soirees/la-rochelle</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/soirees/pau</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/festivals/nancy</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/festivals/avignon</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/festivals/la-rochelle</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/toulon</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/angers</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
@@ -66,12 +64,13 @@
   <url><loc>https://pulse-map.live/categories/bars/antibes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/toulon</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/chambery</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
+  <url><loc>https://pulse-map.live/categories/sport/cannes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/antibes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/toulon</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/chambery</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/cannes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/antibes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/brocantes/cannes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
+  <url><loc>https://pulse-map.live/categories/brocantes/avignon</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/genres/rock/le-havre</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/genres/rock/angers</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/genres/rock/dijon</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
@@ -123,5 +122,6 @@
   <url><loc>https://pulse-map.live/ambiances/culture/antibes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/sport/toulon</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/sport/chambery</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://pulse-map.live/ambiances/sport/cannes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/sport/antibes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
 </urlset>
