@@ -105,6 +105,17 @@ function createUserIcon(): L.DivIcon {
   });
 }
 
+// Fond de carte Esri (gratuit, sans clé API). CARTO impose désormais une clé
+// et tamponne ses tuiles avec "API KEY REQUIRED".
+const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas';
+function getTileUrls(isDarkTheme: boolean) {
+  const variant = isDarkTheme ? 'Dark' : 'Light';
+  return {
+    base: `${ESRI}/World_${variant}_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
+    labels: `${ESRI}/World_${variant}_Gray_Reference/MapServer/tile/{z}/{y}/{x}`,
+  };
+}
+
 export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, userLocation, radiusKm, livePulseMap, liveMode, safePlaces, showSafePlaces }: EventMapProps) {
   const { trackEvent } = useAnalytics();
   const { theme } = useTheme();
@@ -112,6 +123,7 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
+  const labelLayerRef = useRef<L.TileLayer | null>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
   const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
   const prevSelectedRef = useRef<string | null>(null);
@@ -135,11 +147,10 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       attributionControl: false,
     });
 
-    const tileUrl = theme === 'dark'
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png?language=fr'
-      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png?language=fr';
+    const { base, labels } = getTileUrls(theme === 'dark');
+    tileLayerRef.current = L.tileLayer(base, { maxZoom: 19 }).addTo(map);
+    labelLayerRef.current = L.tileLayer(labels, { maxZoom: 19, pane: 'shadowPane' }).addTo(map);
 
-    tileLayerRef.current = L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(map);
 
     mapRef.current = map;
 
@@ -164,10 +175,10 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
     const map = mapRef.current;
     if (!map) return;
     if (tileLayerRef.current) map.removeLayer(tileLayerRef.current);
-    const tileUrl = theme === 'dark'
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png?language=fr'
-      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png?language=fr';
-    tileLayerRef.current = L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(map);
+    if (labelLayerRef.current) map.removeLayer(labelLayerRef.current);
+    const { base, labels } = getTileUrls(theme === 'dark');
+    tileLayerRef.current = L.tileLayer(base, { maxZoom: 19 }).addTo(map);
+    labelLayerRef.current = L.tileLayer(labels, { maxZoom: 19, pane: 'shadowPane' }).addTo(map);
   }, [theme]);
 
   // Update center/zoom — preserve user's manual zoom when only center changes.

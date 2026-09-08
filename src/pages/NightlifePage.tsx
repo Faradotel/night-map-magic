@@ -262,7 +262,7 @@ export default function NightlifePage() {
           </Link>
         </p>
       </main>
-      <FloatingMapButton cityName={cityName} />
+      <FloatingMapButton cityName={cityName} citySlug={slug.toLowerCase()} />
     </>
   );
 }
