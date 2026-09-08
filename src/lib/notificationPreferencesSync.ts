@@ -35,7 +35,7 @@ export interface SyncOnboardingPreferencesInput {
 // that trigger or otherwise lacks a row.
 export async function syncOnboardingPreferences({ userId, cityName, tags }: SyncOnboardingPreferencesInput): Promise<void> {
   const { new_event_alerts_enabled, preferred_genres, preferred_vibes } = buildNotificationPrefsPayload(tags);
-  const notificationPrefsPayload: Record<string, unknown> = { user_id: userId, preferred_genres, preferred_vibes };
+  const notificationPrefsPayload: { user_id: string; preferred_genres: string[]; preferred_vibes: string[]; new_event_alerts_enabled?: boolean } = { user_id: userId, preferred_genres, preferred_vibes };
   if (new_event_alerts_enabled) {
     // Onboarding can opt a user IN when their tags imply real interest, but never
     // opts them OUT — turning alerts off is the profile toggle's job alone, so a

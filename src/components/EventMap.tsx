@@ -136,11 +136,10 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       attributionControl: false,
     });
 
-    const tileUrl = theme === 'dark'
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png?language=fr'
-      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png?language=fr';
+    const { base, labels } = getTileUrls(theme === 'dark');
+    tileLayerRef.current = L.tileLayer(base, { maxZoom: 19 }).addTo(map);
+    labelLayerRef.current = L.tileLayer(labels, { maxZoom: 19, pane: 'shadowPane' }).addTo(map);
 
-    tileLayerRef.current = L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(map);
 
     mapRef.current = map;
 
