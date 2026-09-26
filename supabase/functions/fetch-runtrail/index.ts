@@ -1,3 +1,4 @@
+import { geoFetch } from '../_shared/geocode.ts';
 // Scrape RunTrail running/trail events by department using Firecrawl
 
 const ALLOWED_ORIGINS = [
@@ -76,7 +77,7 @@ function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): num
 
 async function geocode(city: string): Promise<{ lat: number; lng: number } | null> {
   try {
-    const res = await fetch(
+    const res = await geoFetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city + ', France')}&countrycodes=fr&limit=1`,
       { headers: { 'User-Agent': 'PulseMap/1.0' } }
     );

@@ -1,3 +1,4 @@
+import { geoFetch } from '../_shared/geocode.ts';
 const ALLOWED_ORIGINS = [
   'https://pulse-map.live',
   'https://www.pulse-map.live',
@@ -353,7 +354,7 @@ Deno.serve(async (req) => {
     // Get city center coordinates
     let cityLat = 0, cityLng = 0;
     try {
-      const cityGeo = await fetch(
+      const cityGeo = await geoFetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city + ', France')}&limit=1`,
         { headers: { 'User-Agent': 'PulseMap/1.0' } }
       );
@@ -422,7 +423,7 @@ Deno.serve(async (req) => {
           for (const query of queries) {
             if (geocoded) break;
             try {
-              const geoRes = await fetch(
+              const geoRes = await geoFetch(
                 `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&addressdetails=1&countrycodes=fr`,
                 { headers: { 'User-Agent': 'PulseMap/1.0' } }
               );
