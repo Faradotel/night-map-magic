@@ -19,7 +19,8 @@ import {
   type SeoRoute,
   type Tier,
 } from '../supabase/functions/_shared/seo-routes.ts';
-import { CITY_SLUGS, CATEGORY_SLUGS, GENRE_SLUGS, VIBE_SLUGS, slugify } from '../src/lib/seo/slug.ts';
+import { CITY_SLUGS, CATEGORY_SLUGS, GENRE_SLUGS, VIBE_SLUGS, slugify, eventSlug } from '../src/lib/seo/slug.ts';
+import { isEventIndexable, type IndexableEventInput } from '../src/lib/seo/eventIndexability.ts';
 
 function esc(s: string): string {
   return s.replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c]!));
@@ -194,6 +195,41 @@ function writeIndex(): void {
   writeFileSync(resolve('public/sitemap.xml'), xml);
 }
 
+// Events sitemap: only upcoming, non-permanent events with real content.
+// No <lastmod>: updated_at is bumped by every refresh, so it is not a real content signal.
+async function writeEventsSitemap(): Promise<number | null> {
+  const url = process.env.VITE_SUPABASE_URL;
+  const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !key) return null;
+  try {
+    const nowIso = new Date().toISOString();
+    const rows: (IndexableEventInput & { id: string })[] = [];
+    let from = 0;
+    while (true) {
+      const r = await fetch(
+        `${url}/rest/v1/cached_events?select=id,name,description,start_time,end_time,source&or=(start_time.gte.${nowIso},end_time.gte.${nowIso})&order=start_time.asc`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}`, Range: `${from}-${from + 999}` } },
+      );
+      if (!r.ok) return null;
+      const batch = await r.json();
+      rows.push(...batch);
+      if (batch.length < 1000 || from > 40000) break;
+      from += 1000;
+    }
+    const kept = (rows as (IndexableEventInput & { id: string })[]).filter(e => isEventIndexable(e));
+    const body = kept
+      .map(e => `  <url><loc>${esc(`${SITE}/evenements/${eventSlug(e.name, e.id)}`)}</loc><changefreq>daily</changefreq><priority>0.6</priority></url>`)
+      .join('\n');
+    writeFileSync(
+      resolve('public/sitemap-events.xml'),
+      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`,
+    );
+    return kept.length;
+  } catch {
+    return null;
+  }
+}
+
 const retired = await fetchRetiredUrls();
 const sets = await fetchContentSets();
 const counts = {
@@ -202,6 +238,8 @@ const counts = {
   t3: writeTier(3, retired, sets),
 };
 writeIndex();
+const eventsCount = await writeEventsSitemap();
+console.log(`sitemap-events.xml: ${eventsCount ?? 'non régénéré (pas de DB)'}`);
 
 void existsSync;
 
