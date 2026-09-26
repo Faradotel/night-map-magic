@@ -47,12 +47,14 @@ async function fetchRetiredUrls(): Promise<Set<string>> {
 // que GSC signale "URL soumise mais marquée 'noindex'".
 // Les combos tag×ville sous MIN_TAG_EVENTS canonicalisent vers la page ville
 // (voir TagPage.tsx) : on ne les soumet donc pas non plus.
-const MIN_TAG_EVENTS = 3;
+const MIN_TAG_EVENTS = 5;
+const MIN_CITY_EVENTS = 5;
 
 interface ContentSets {
   citiesWithCategory: Map<string, Map<string, number>>; // catSlug -> citySlug -> count
   citiesWithGenre: Map<string, Map<string, number>>;
   citiesWithVibe: Map<string, Map<string, number>>;
+  cityCounts: Map<string, number>;
 }
 
 
@@ -118,6 +120,7 @@ async function fetchContentSets(): Promise<ContentSets | null> {
     const citiesWithCategory = new Map<string, Map<string, number>>();
     const citiesWithGenre = new Map<string, Map<string, number>>();
     const citiesWithVibe = new Map<string, Map<string, number>>();
+    const cityCounts = new Map<string, number>();
 
     const add = (m: Map<string, Map<string, number>>, k: string, v: string) => {
       if (!m.has(k)) m.set(k, new Map());
@@ -130,6 +133,7 @@ async function fetchContentSets(): Promise<ContentSets | null> {
       if (!row.city) continue;
       const citySlug = labelToSlug.get(row.city.toLowerCase()) || labelToSlug.get(slugify(row.city));
       if (!citySlug) continue;
+      cityCounts.set(citySlug, (cityCounts.get(citySlug) || 0) + 1);
 
       if (row.type) {
         const cats = typeToCategory.get(row.type.toLowerCase()) || [];
@@ -147,7 +151,7 @@ async function fetchContentSets(): Promise<ContentSets | null> {
       }
     }
 
-    return { citiesWithCategory, citiesWithGenre, citiesWithVibe };
+    return { citiesWithCategory, citiesWithGenre, citiesWithVibe, cityCounts };
   } catch {
     return null;
   }
@@ -160,8 +164,10 @@ function filterEmptyCombos(routes: SeoRoute[], sets: ContentSets | null): SeoRou
   const enough = (m: Map<string, Map<string, number>>, tag: string, city: string, min: number) =>
     (m.get(tag)?.get(city) ?? 0) >= min;
   return routes.filter(r => {
-    let m = r.path.match(/^\/categories\/([^/]+)\/([^/]+)$/);
-    if (m) return enough(sets.citiesWithCategory, m[1], m[2], 1);
+    let m = r.path.match(/^\/sortir-ce-soir\/([^/]+)$/);
+    if (m) return (sets.cityCounts.get(m[1]) ?? 0) >= MIN_CITY_EVENTS;
+    m = r.path.match(/^\/categories\/([^/]+)\/([^/]+)$/);
+    if (m) return enough(sets.citiesWithCategory, m[1], m[2], MIN_TAG_EVENTS);
     m = r.path.match(/^\/genres\/([^/]+)\/([^/]+)$/);
     if (m) return enough(sets.citiesWithGenre, m[1], m[2], MIN_TAG_EVENTS);
     m = r.path.match(/^\/ambiances\/([^/]+)\/([^/]+)$/);
