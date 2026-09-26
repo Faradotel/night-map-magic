@@ -1,3 +1,4 @@
+import { geoFetch } from '../_shared/geocode.ts';
 // Scrape Brocabrac listings (brocantes, vide-greniers) for a department using Firecrawl markdown
 
 const ALLOWED_ORIGINS = [
@@ -202,7 +203,7 @@ function parseMarkdown(md: string, dept: string): any[] {
 async function geocodeQuery(q: string): Promise<{ lat: number; lng: number } | null> {
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const res = await fetch(
+      const res = await geoFetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&limit=1`,
         { headers: { 'User-Agent': 'PulseMap/1.0' } }
       );

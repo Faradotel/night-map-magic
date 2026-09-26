@@ -1,3 +1,4 @@
+import { geoFetch } from '../_shared/geocode.ts';
 // InfoConcert festival scraper — BULK mode (single call per refresh).
 // Source: https://www.infoconcert.com/festival-concerts-saison/<year>
 // Lists ~500+ upcoming festivals with name, dates, city (dept), festival URL.
@@ -122,7 +123,7 @@ function parseListing(markdown: string): RawFestival[] {
 
 async function geocode(q: string): Promise<{ lat: number; lng: number; address: string } | null> {
   try {
-    const res = await fetch(
+    const res = await geoFetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&limit=1&addressdetails=1`,
       { headers: { 'User-Agent': 'PulseMap/1.0 (pulse-map.live)' } }
     );

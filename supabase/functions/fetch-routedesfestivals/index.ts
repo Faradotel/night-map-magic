@@ -1,3 +1,4 @@
+import { geoFetch } from '../_shared/geocode.ts';
 // Scrape Route des Festivals listings for a city using Firecrawl map + extract
 
 const ALLOWED_ORIGINS = [
@@ -135,7 +136,7 @@ function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): num
 async function geocode(address: string, city: string): Promise<{ lat: number; lng: number } | null> {
   try {
     const q = `${address}, ${city}, France`;
-    const res = await fetch(
+    const res = await geoFetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&limit=1`,
       { headers: { 'User-Agent': 'PulseMap/1.0' } }
     );

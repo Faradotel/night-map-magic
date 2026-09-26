@@ -1,3 +1,4 @@
+import { geoFetch } from '../_shared/geocode.ts';
 // InfoConcert HTML scraper — direct parsing (no Firecrawl) for maximum speed.
 // La page /ville/<slug>-<id> est entièrement server-rendered : on parse en regex.
 
@@ -113,7 +114,7 @@ function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): num
 
 async function geocodeOnce(q: string): Promise<{ lat: number; lng: number } | null> {
   try {
-    const res = await fetch(
+    const res = await geoFetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=fr&limit=1`,
       { headers: { 'User-Agent': 'PulseMap/1.0 (pulse-map.live)' } }
     );
