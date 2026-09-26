@@ -242,6 +242,20 @@ export default function CityPage() {
           })()}
         </section>
 
+        {events.length > 1 && (
+          <section aria-labelledby="all-evts-h2" className="mt-6">
+            <h2 id="all-evts-h2" className="text-lg font-bold mb-2">Tous les prochains événements à {cityName}</h2>
+            <ul className="grid sm:grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+              {events.slice(0, 30).map(e => (
+                <li key={e.id} className="truncate">
+                  <Link to={`/evenements/${eventSlug(e.name, e.id)}`} className="text-accent underline">{e.name}</Link>
+                  <span className="text-muted-foreground"> · {e.venue}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <MapCtaLink
           to={`/?city=${encodeURIComponent(cityName)}`}
           sourcePage="city"
