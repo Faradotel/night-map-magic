@@ -4,8 +4,13 @@ import { MapCtaLink } from '@/components/MapCtaLink';
 import { supabase } from '@/integrations/supabase/client';
 import { SEO } from '@/components/SEO';
 import { breadcrumbLd, eventLd } from '@/lib/seo/jsonld';
-import { parseEventSlug } from '@/lib/seo/slug';
+import { parseEventSlug, eventSlug } from '@/lib/seo/slug';
 import { isEventIndexable } from '@/lib/seo/eventIndexability';
+
+interface RelatedEvent { id: string; name: string; venue: string; start_time: string }
+
+const shortDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Europe/Paris' });
 
 interface CachedEvent {
   id: string;
@@ -32,6 +37,8 @@ export default function EventPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [engagement, setEngagement] = useState<{ favorites: number; attendances: number }>({ favorites: 0, attendances: 0 });
+  const [sameVenue, setSameVenue] = useState<RelatedEvent[]>([]);
+  const [sameCity, setSameCity] = useState<RelatedEvent[]>([]);
 
   useEffect(() => {
     let cancel = false;
@@ -63,6 +70,27 @@ export default function EventPage() {
     })();
     return () => { cancel = true; };
   }, [id]);
+
+  // Maillage interne : événements du même lieu et de la même ville.
+  useEffect(() => {
+    if (!event) return;
+    let cancel = false;
+    (async () => {
+      const nowIso = new Date().toISOString();
+      const cols = 'id,name,venue,start_time';
+      const [v, c] = await Promise.all([
+        supabase.from('cached_events').select(cols).eq('venue', event.venue).neq('id', event.id)
+          .gte('start_time', nowIso).order('start_time').limit(6),
+        supabase.from('cached_events').select(cols).ilike('city', event.city).neq('id', event.id)
+          .neq('venue', event.venue).gte('start_time', nowIso).order('priority', { ascending: false })
+          .order('start_time').limit(10),
+      ]);
+      if (cancel) return;
+      setSameVenue((v.data as RelatedEvent[]) || []);
+      setSameCity((c.data as RelatedEvent[]) || []);
+    })();
+    return () => { cancel = true; };
+  }, [event]);
 
   if (notFound) {
     return (
@@ -205,8 +233,38 @@ export default function EventPage() {
           </a>
         </section>
 
+        {sameVenue.length > 0 && (
+          <section aria-labelledby="venue-h2" className="mt-8">
+            <h2 id="venue-h2" className="text-lg font-bold mb-2">Au même endroit : {event.venue}</h2>
+            <ul className="space-y-1.5 text-sm">
+              {sameVenue.map(r => (
+                <li key={r.id}>
+                  <Link to={`/evenements/${eventSlug(r.name, r.id)}`} className="text-accent underline">{r.name}</Link>
+                  <span className="text-muted-foreground"> · {shortDate(r.start_time)}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {sameCity.length > 0 && (
+          <section aria-labelledby="city-h2" className="mt-8">
+            <h2 id="city-h2" className="text-lg font-bold mb-2">Autres sorties à {event.city}</h2>
+            <ul className="space-y-1.5 text-sm">
+              {sameCity.map(r => (
+                <li key={r.id}>
+                  <Link to={`/evenements/${eventSlug(r.name, r.id)}`} className="text-accent underline">{r.name}</Link>
+                  <span className="text-muted-foreground"> · {r.venue} · {shortDate(r.start_time)}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <p className="text-xs text-muted-foreground mt-10">
           Plus de sorties à <Link to={`/sortir-ce-soir/${cityLower}`} className="underline">{event.city}</Link>
+          {' · '}
+          <Link to={`/categories/soirees/${cityLower}`} className="underline">Soirées à {event.city}</Link>
           {' · '}
           <Link to="/villes" className="underline">Toutes les villes</Link>
         </p>
