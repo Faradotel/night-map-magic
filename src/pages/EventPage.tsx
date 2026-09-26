@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { SEO } from '@/components/SEO';
 import { breadcrumbLd, eventLd } from '@/lib/seo/jsonld';
 import { parseEventSlug } from '@/lib/seo/slug';
+import { isEventIndexable } from '@/lib/seo/eventIndexability';
 
 interface CachedEvent {
   id: string;
@@ -141,6 +142,7 @@ export default function EventPage() {
         image={event.image_url || undefined}
         type="event"
         jsonLd={ld}
+        noindex={!isEventIndexable(event)}
       />
       <main className="h-full overflow-y-auto bg-background text-foreground px-5 py-6 max-w-2xl mx-auto">
         <nav aria-label="Fil d'ariane" className="flex items-center gap-2 text-sm text-muted-foreground mb-5">
