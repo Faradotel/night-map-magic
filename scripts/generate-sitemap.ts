@@ -203,7 +203,7 @@ async function writeEventsSitemap(): Promise<number | null> {
   if (!url || !key) return null;
   try {
     const nowIso = new Date().toISOString();
-    const rows: IndexableEventInput[] & { id: string }[] = [] as never;
+    const rows: (IndexableEventInput & { id: string })[] = [];
     let from = 0;
     while (true) {
       const r = await fetch(
