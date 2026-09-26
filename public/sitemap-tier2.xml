@@ -1,108 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://pulse-map.live/sortir-ce-soir/reims</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/toulon</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/le-havre</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/angers</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/dijon</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/brest</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/nimes</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/clermont-ferrand</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/le-mans</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/tours</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/limoges</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/perpignan</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/metz</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/besancon</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/orleans</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/rouen</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/mulhouse</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/caen</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/nancy</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/amiens</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/avignon</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/poitiers</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/la-rochelle</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/annecy</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/chambery</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/pau</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/bayonne</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/biarritz</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/valence</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/cannes</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/antibes</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/ajaccio</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/bastia</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/colmar</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/troyes</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://pulse-map.live/categories/concerts/reims</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/concerts/toulon</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/concerts/le-havre</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/concerts/angers</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/concerts/dijon</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/concerts/caen</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/soirees/brest</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/soirees/nimes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/soirees/tours</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/soirees/limoges</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/soirees/perpignan</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/soirees/metz</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/soirees/besancon</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/soirees/orleans</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/soirees/caen</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/soirees/nancy</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/soirees/amiens</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/soirees/avignon</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/soirees/poitiers</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/soirees/la-rochelle</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/soirees/pau</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/bars/toulon</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/bars/caen</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/cannes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/bars/antibes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/sport/caen</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/cannes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/sport/antibes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/toulon</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/le-havre</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/dijon</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/culture/caen</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/culture/cannes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/categories/culture/antibes</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://pulse-map.live/genres/rock/toulon</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/genres/rock/le-havre</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/genres/rock/angers</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/genres/rock/dijon</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/genres/rock/nimes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/genres/rock/limoges</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/genres/rock/nancy</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/genres/rock/amiens</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/genres/pop/toulon</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/le-havre</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/angers</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/dijon</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/brest</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/genres/pop/nimes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/tours</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/limoges</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/orleans</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/caen</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/nancy</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/amiens</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/genres/pop/avignon</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/genres/pop/pau</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/ambiances/rave/brest</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/ambiances/rave/nimes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/ambiances/rave/tours</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/rave/limoges</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/rave/orleans</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/rave/caen</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/rave/nancy</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/rave/amiens</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/ambiances/rave/pau</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/ambiances/chill/dijon</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/ambiances/chill/caen</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/ambiances/afterwork/toulon</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/afterwork/cannes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/afterwork/antibes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/concert/toulon</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
@@ -112,9 +54,5 @@
   <url><loc>https://pulse-map.live/ambiances/culture/toulon</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/culture/le-havre</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/culture/dijon</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/ambiances/culture/caen</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/ambiances/culture/cannes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/ambiances/culture/antibes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/ambiances/sport/cannes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/ambiances/sport/antibes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
 </urlset>
