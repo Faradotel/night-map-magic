@@ -348,7 +348,7 @@ Deno.serve(async (req) => {
     ];
 
     // Process cities in parallel batches of 3 (~3x faster than sequential)
-    const BATCH_SIZE = 3;
+    const BATCH_SIZE = 2; // limite les rafales Firecrawl (quota/minute)
     for (let i = 0; i < citiesToRefresh.length; i += BATCH_SIZE) {
       const cityBatch = citiesToRefresh.slice(i, i + BATCH_SIZE);
       const results = await Promise.allSettled(cityBatch.map(processCity));

@@ -291,14 +291,14 @@ Deno.serve(async (req) => {
     const scrapeBody = JSON.stringify({
       url: shotgunUrl,
       formats: ['markdown'],
-      waitFor: 8000,
-      timeout: 90000,
+      waitFor: 3000,
+      timeout: 60000,
       // Shotgun lazy-loads its event list: scroll repeatedly to load all events
       actions: [
-        { type: 'wait', milliseconds: 5000 },
-        ...Array.from({ length: 14 }, () => ([
+        { type: 'wait', milliseconds: 2000 },
+        ...Array.from({ length: 8 }, () => ([
           { type: 'scroll', direction: 'down' },
-          { type: 'wait', milliseconds: 1500 },
+          { type: 'wait', milliseconds: 1000 },
         ])).flat(),
       ],
     });
@@ -323,7 +323,9 @@ Deno.serve(async (req) => {
         /rate limit/i.test(String(scrapeData?.error ?? ''));
       console.error(`Firecrawl attempt ${attempt + 1} failed (${scrapeResponse.status}):`, JSON.stringify(scrapeData));
       if (!isRateLimited || attempt === 2) break;
-      await new Promise((r) => setTimeout(r, 20000));
+      const m = /retry after (\d+)s/i.exec(String(scrapeData?.error ?? ''));
+      const waitMs = Math.min(Math.max(m ? Number(m[1]) + 2 : 25, 5), 45) * 1000;
+      await new Promise((r) => setTimeout(r, waitMs));
     }
 
     if (!scrapeResponse!.ok) {
