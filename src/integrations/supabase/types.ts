@@ -404,6 +404,21 @@ export type Database = {
         }
         Relationships: []
       }
+      indexnow_submitted: {
+        Row: {
+          submitted_at: string
+          url: string
+        }
+        Insert: {
+          submitted_at?: string
+          url: string
+        }
+        Update: {
+          submitted_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           created_at: string

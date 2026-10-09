@@ -547,13 +547,17 @@ Deno.serve(async (req) => {
     console.log(`Total: ${totalInserted} events cached`);
 
 
-    // Ping IndexNow (Bing/Yandex) so new events are discovered ASAP — fire-and-forget
-    if (totalInserted > 0) {
-      fetch(
-        `${supabaseUrl}/functions/v1/indexnow-submit`,
-        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }
-      ).catch(() => {});
-    }
+    // IndexNow (Bing, DuckDuckGo, Ecosia, Yahoo, Qwant) : fire-and-forget, n'allonge pas
+    // le refresh et une erreur ne le casse jamais. indexnow-ping dédoublonne lui-même.
+    try {
+      const ping = fetch(`${supabaseUrl}/functions/v1/indexnow-ping`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${supabaseKey}` },
+        body: '{}',
+      }).catch((e) => console.error('indexnow-ping dispatch failed:', e));
+      // @ts-ignore EdgeRuntime est fourni par le runtime
+      if (typeof EdgeRuntime !== 'undefined') EdgeRuntime.waitUntil(ping);
+    } catch (_) { /* jamais bloquant */ }
 
     return new Response(
       JSON.stringify({ success: true, total: totalInserted }),
