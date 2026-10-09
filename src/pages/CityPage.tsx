@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams, Navigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { SEO } from '@/components/SEO';
+import { buildCityMeta } from '@/lib/seo/pageMeta';
 import { breadcrumbLd, eventLd, placeLd } from '@/lib/seo/jsonld';
 import { CITY_SLUGS, CATEGORY_SLUGS, GENRE_SLUGS, VIBE_SLUGS, eventSlug } from '@/lib/seo/slug';
 import { EventCard } from '@/components/EventCard';
@@ -82,95 +83,11 @@ export default function CityPage() {
 
   if (!cityName) return <Navigate to="/villes" replace />;
 
-  // Canonical: always point to /sortir-ce-soir/<slug> — it's the URL we want
-  // Google to rank for the high-intent query "où sortir ce soir à <ville>".
-  // /villes/<slug> consolidates its signals into the canonical URL.
-  const canonical = `/sortir-ce-soir/${slug.toLowerCase()}`;
+  // Canonical: always /sortir-ce-soir/<slug>. Meta and JSON-LD built in
+  // src/lib/seo/pageMeta.ts (shared with the build-time prerender).
   const isSortirRoute = location.pathname.startsWith('/sortir-ce-soir');
-
-  // Lieux récurrents réellement programmés — contenu unique par ville
-  // (Google distingue ainsi cette page d'un template dupliqué 115 fois).
-  const topVenues = [...new Set(events.map(e => e.venue).filter(Boolean))].slice(0, 8);
-  const eventsCount = events.length;
-  const eventsCountLabel = eventsCount === 60 ? '60+' : String(eventsCount);
-
-  // Le titre couvre les 3 variantes qui ont du volume : « soirée <ville> »,
-  // « sortir à <ville> » et « <ville> ce soir ».
-  const title = isSortirRoute
-    ? `Soirée ${cityName} : sortir ce soir à ${cityName}`
-    : `Sortir ce soir à ${cityName} : que faire ? | PulseMap`;
-  const description = aiIntro?.meta_description
-    ? aiIntro.meta_description
-    : eventsCount > 0
-    ? `${eventsCount} sorties à ${cityName} ce soir et dans les jours à venir : soirées, concerts, clubs et bars${topVenues.length ? ` (${topVenues.slice(0, 2).join(', ')})` : ''}. Carte live, gratuit sans inscription.`
-    : `Où sortir ce soir à ${cityName} ? Carte temps réel des concerts, soirées, clubs, festivals et bars animés ouverts ce soir à ${cityName}. Gratuit, sans inscription.`;
-
-  const ogTitle = `Soirée ${cityName} — Où sortir ce soir à ${cityName} ?`;
-  const ogDescription = `Tu cherches où sortir ce soir à ${cityName} ? PulseMap te montre tous les événements live ce soir sur une carte interactive. Gratuit, sans inscription.`;
-
-
-  const faqs = [
-    {
-      q: `Où sortir ce soir à ${cityName} ?`,
-      a: `Pour sortir ce soir à ${cityName}, PulseMap affiche en temps réel tous les concerts, soirées, clubs, bars animés et festivals ouverts ce soir à ${cityName} sur une carte interactive. Filtre par type, distance ou horaire pour trouver la sortie idéale.`,
-    },
-    {
-      q: `Quelle soirée à ${cityName} ce soir ?`,
-      a: topVenues.length
-        ? `Ce soir à ${cityName}, des soirées sont programmées notamment à ${topVenues.slice(0, 4).join(', ')}. PulseMap liste ${eventsCount} sorties à venir à ${cityName} avec horaires, adresse exacte et billetterie.`
-        : `PulseMap liste en direct toutes les soirées, clubs et DJ sets programmés à ${cityName}, avec horaires, adresse exacte et lien billetterie.`,
-    },
-    {
-      q: `Que faire ce soir à ${cityName} ?`,
-      a: `Ce soir à ${cityName}, tu peux profiter de concerts live, soirées électro et techno, clubs, afterworks, festivals, expos nocturnes ou simplement un bar animé. Tous les événements sont géolocalisés et mis à jour en continu sur PulseMap.`,
-    },
-    {
-      q: `Comment trouver une soirée ce soir à ${cityName} ?`,
-      a: `Ouvre PulseMap, sélectionne ${cityName} et active le filtre « ce soir ». La carte affiche immédiatement toutes les soirées disponibles ce soir à ${cityName} avec les horaires, le lieu et le lien vers la billetterie.`,
-    },
-    {
-      q: `PulseMap est-il gratuit pour découvrir les sorties à ${cityName} ?`,
-      a: `Oui, PulseMap est 100 % gratuit. Tu peux consulter la carte des sorties à ${cityName} sans inscription, et créer un compte uniquement pour les fonctionnalités sociales (amis, check-ins, badges).`,
-    },
-  ];
-
-
-  const faqLd = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqs.map(f => ({
-      '@type': 'Question',
-      name: f.q,
-      acceptedAnswer: { '@type': 'Answer', text: f.a },
-    })),
-  };
-
-  const ld: object[] = [
-    placeLd(cityName),
-    breadcrumbLd([
-      { name: 'Accueil', url: '/' },
-      { name: 'Villes', url: '/villes' },
-      { name: cityName, url: canonical },
-    ]),
-    faqLd,
-  ];
-  events.slice(0, 20).forEach(e =>
-    ld.push(eventLd({
-      id: e.id,
-      name: e.name,
-      description: e.description,
-      startTime: e.start_time,
-      endTime: e.end_time || undefined,
-      venue: e.venue,
-      address: e.address,
-      city: e.city,
-      lat: e.lat,
-      lng: e.lng,
-      imageUrl: e.image_url || undefined,
-      ticketUrl: e.ticket_url || undefined,
-      priceRange: e.price_range,
-    }, `/evenements/${eventSlug(e.name, e.id)}`))
-  );
+  const { canonical, topVenues, eventsCount, eventsCountLabel, title, description, ogTitle, ogDescription, faqs, ld, hreflang } =
+    buildCityMeta({ slug, cityName, events, aiIntro, isSortirRoute });
 
   return (
     <>
@@ -181,11 +98,7 @@ export default function CityPage() {
         ogDescription={ogDescription}
         canonical={canonical}
         jsonLd={ld}
-        hreflang={[
-          { lang: 'fr', path: canonical },
-          { lang: 'en', path: `/en/nightlife/${slug.toLowerCase()}` },
-          { lang: 'x-default', path: canonical },
-        ]}
+        hreflang={hreflang}
       />
       <main className="h-full overflow-y-auto bg-background text-foreground px-5 py-6 max-w-3xl mx-auto">
         <nav aria-label="Fil d'ariane" className="flex items-center gap-2 text-sm text-muted-foreground mb-5">

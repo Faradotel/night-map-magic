@@ -3,6 +3,7 @@ import { Link, useParams, Navigate } from 'react-router-dom';
 import { MapCtaLink } from '@/components/MapCtaLink';
 import { supabase } from '@/integrations/supabase/client';
 import { SEO } from '@/components/SEO';
+import { buildEventMeta } from '@/lib/seo/pageMeta';
 import { breadcrumbLd, eventLd } from '@/lib/seo/jsonld';
 import { parseEventSlug, eventSlug } from '@/lib/seo/slug';
 import { isEventIndexable } from '@/lib/seo/eventIndexability';
@@ -111,55 +112,9 @@ export default function EventPage() {
     );
   }
 
-  const canonical = `/evenements/${slug}`;
-  const dateLabel = new Date(event.start_time).toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  });
-  const timeLabel = new Date(event.start_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-  const cityLower = event.city.toLowerCase();
-
-  const title = `${event.name} — ${event.city}, ${dateLabel} | PulseMap`;
-  const description = (event.description || `${event.name} à ${event.venue}, ${event.city} le ${dateLabel} à ${timeLabel}. Sortir ce soir à ${event.city} avec PulseMap : infos, lieu et billetterie.`).slice(0, 200);
-
-  // AggregateRating for rich snippets — only when we have enough real engagement
-  // signal (>= 5 combined favorites + attendances) to satisfy Google policy.
-  const engagementTotal = engagement.favorites + engagement.attendances;
-  const aggregateRating = engagementTotal >= 5
-    ? {
-        '@type': 'AggregateRating',
-        // Simple heuristic: high favorites/attendance = strong positive signal.
-        // Rating floors at 4.2, rises to 4.9 with volume.
-        ratingValue: Math.min(4.9, 4.2 + Math.log10(engagementTotal) / 3).toFixed(1),
-        reviewCount: engagementTotal,
-        bestRating: '5',
-        worstRating: '1',
-      }
-    : null;
-
-  const baseEventLd = eventLd({
-    id: event.id,
-    name: event.name,
-    description: event.description,
-    startTime: event.start_time,
-    endTime: event.end_time || undefined,
-    venue: event.venue,
-    address: event.address,
-    city: event.city,
-    lat: event.lat,
-    lng: event.lng,
-    imageUrl: event.image_url || undefined,
-    ticketUrl: event.ticket_url || undefined,
-    priceRange: event.price_range,
-  }, canonical);
-
-  const ld = [
-    aggregateRating ? { ...baseEventLd, aggregateRating } : baseEventLd,
-    breadcrumbLd([
-      { name: 'Accueil', url: '/' },
-      { name: `Sortir à ${event.city}`, url: `/sortir-ce-soir/${cityLower}` },
-      { name: event.name, url: canonical },
-    ]),
-  ];
+  // Meta and JSON-LD built in src/lib/seo/pageMeta.ts (shared with the prerender).
+  const { canonical, dateLabel, timeLabel, cityLower, title, description, ld } =
+    buildEventMeta({ slug, event, engagement });
 
   return (
     <>

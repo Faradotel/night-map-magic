@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { SEO } from '@/components/SEO';
+import { buildCategoryMeta } from '@/lib/seo/pageMeta';
 import { breadcrumbLd } from '@/lib/seo/jsonld';
 import { CATEGORY_SLUGS, CITY_SLUGS, GENRE_SLUGS, VIBE_SLUGS, eventSlug } from '@/lib/seo/slug';
 import { SITE } from '@/components/SEO';
@@ -89,125 +90,9 @@ export default function CategoryPage() {
     );
   }
 
-  const canonical = cityName
-    ? `/categories/${slug.toLowerCase()}/${citySlug}`
-    : `/categories/${slug.toLowerCase()}`;
-  const labelLower = cat.label.toLowerCase();
-  const singular = cat.label.replace(/s$/, '').toLowerCase();
-  const isSoirees = slug.toLowerCase() === 'soirees';
-
-  // Titre optimisé : le mot-clé exact "Soirée <ville>" en tout début (positions 1-2 = poids max SEO).
-  const titleCount = cityName && events.length > 0 ? ` : ${events.length} events live` : '';
-  const title = isSoirees
-    ? (cityName
-        ? `Soirée ${cityName} ce soir${titleCount} | PulseMap`
-        : `Soirée ce soir en France : où sortir ? Clubs, DJ & bars`)
-    : (cityName
-        ? `${cat.label} ${cityName} ce soir${titleCount} | PulseMap`
-        : `${cat.label} ce soir en France — agenda live | PulseMap`);
-
-  // Dynamic upcoming events count for meta/title (fresh signal to Google + higher CTR).
-  const eventsCount = events.length;
-  const genericMeta = isSoirees
-    ? (cityName
-        ? `Soirée ${cityName} ce soir : toutes les soirées, clubs, DJ sets et bars animés à ${cityName} sur une carte temps réel. Mis à jour en direct, gratuit, sans inscription.`
-        : `Où sortir ce soir ? Toutes les soirées en France ce soir : clubs, DJ sets, techno, électro, afterworks et bars animés sur une carte temps réel. Gratuit, sans inscription.`)
-    : (cityName
-        ? `Tous les ${labelLower} ce soir à ${cityName} : carte temps réel, horaires, lieux et billetterie. Gratuit, sans inscription.`
-        : `${cat.description} Carte temps réel des ${labelLower} ce soir partout en France. Gratuit, sans inscription.`);
-
-  const description = (() => {
-    if (aiIntro?.meta_description) return aiIntro.meta_description;
-    if (!cityName || loading) return genericMeta;
-    const sampleVenues = [...new Set(events.slice(0, 6).map(e => e.venue).filter(Boolean))].slice(0, 2);
-    if (isSoirees && eventsCount > 0) {
-      const venuePart = sampleVenues.length ? ` : ${sampleVenues.join(', ')}` : '';
-      return `${eventsCount} soirée${eventsCount > 1 ? 's' : ''} à ${cityName} ce soir et dans les jours à venir${venuePart}. Carte live PulseMap, gratuit sans inscription.`.slice(0, 200);
-    }
-    if (eventsCount > 0) {
-      return `${eventsCount} ${labelLower} à ${cityName} à venir. Carte temps réel, horaires, lieux et billetterie sur PulseMap. Gratuit, sans inscription.`.slice(0, 200);
-    }
-    return genericMeta;
-  })();
-
-  const h1 = aiIntro?.h1 || (isSoirees
-    ? (cityName
-        ? `Soirée ${cityName} — Que faire ce soir à ${cityName} ?`
-        : `Soirée ce soir en France : où sortir ?`)
-    : (cityName
-        ? `${cat.label} ${cityName} ce soir`
-        : `${cat.label} ce soir en France`));
-
-
-  const faqs = isSoirees && cityName ? [
-    {
-      q: `Où sortir ce soir à ${cityName} ?`,
-      a: `Pour trouver où sortir ce soir à ${cityName}, PulseMap affiche en direct toutes les soirées, clubs, DJ sets, afterworks et bars animés ouverts ce soir à ${cityName} sur une carte interactive — avec horaires, lieux et billetterie.`,
-    },
-    {
-      q: `Quelles soirées ce soir à ${cityName} ?`,
-      a: `Ce soir à ${cityName}, tu trouveras des soirées techno, électro, house, hip-hop, généralistes, afterworks et clubs. PulseMap regroupe tous les events actifs ce soir à ${cityName} en un coup d'œil.`,
-    },
-    {
-      q: `Comment trouver une soirée près de moi à ${cityName} ?`,
-      a: `Ouvre PulseMap, active la catégorie « Soirées & Clubs », centre la carte sur ${cityName} : toutes les soirées ${cityName} apparaissent géolocalisées, triées par distance et horaire.`,
-    },
-    {
-      q: `Y a-t-il une soirée ${cityName} ce week-end ?`,
-      a: `Oui. Sélectionne la catégorie « Soirées & Clubs » sur PulseMap et filtre ${cityName} pour voir toutes les soirées ${cityName} du vendredi au dimanche, mises à jour en temps réel.`,
-    },
-  ] : cityName ? [
-    {
-      q: `Où trouver un ${singular} ce soir à ${cityName} ?`,
-      a: `PulseMap affiche en direct tous les ${labelLower} qui ont lieu ce soir à ${cityName} sur une carte interactive. Horaires, lieux exacts et liens de billetterie inclus.`,
-    },
-    {
-      q: `Y a-t-il des ${labelLower} ce week-end à ${cityName} ?`,
-      a: `Oui. Activez la catégorie « ${cat.label} » sur PulseMap et filtrez sur ${cityName} pour voir tous les ${labelLower} disponibles ce week-end avec horaires et lieux.`,
-    },
-    {
-      q: `Comment voir les ${labelLower} à ${cityName} sur une carte ?`,
-      a: `Ouvrez la carte PulseMap centrée sur ${cityName} : tous les ${labelLower} apparaissent géolocalisés en temps réel. Cliquez sur un marqueur pour les détails.`,
-    },
-  ] : [
-    {
-      q: `Où trouver des ${labelLower} ce soir en France ?`,
-      a: `PulseMap référence en direct tous les ${labelLower} qui ont lieu ce soir partout en France sur une carte interactive. Filtrez par ville, distance ou horaire pour trouver l'événement idéal.`,
-    },
-    {
-      q: `Comment savoir s'il y a des ${labelLower} ce week-end près de chez moi ?`,
-      a: `Ouvrez PulseMap, activez la catégorie « ${cat.label} » et la carte affiche immédiatement tous les ${labelLower} disponibles autour de vous avec horaires, lieux et billetterie.`,
-    },
-    {
-      q: `PulseMap est-il gratuit pour consulter les ${labelLower} ?`,
-      a: `Oui, PulseMap est 100 % gratuit. Vous pouvez consulter tous les ${labelLower} référencés sans inscription.`,
-    },
-  ];
-
-  const faqLd = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqs.map(f => ({
-      '@type': 'Question',
-      name: f.q,
-      acceptedAnswer: { '@type': 'Answer', text: f.a },
-    })),
-  };
-
-  // ItemList JSON-LD des prochains évènements — améliore les rich results
-  // et signale à Google la fraîcheur + le volume de contenu réel de la page.
-  const itemListLd = events.length > 0 ? {
-    '@context': 'https://schema.org',
-    '@type': 'ItemList',
-    name: cityName ? `${cat.label} à ${cityName}` : `${cat.label} en France`,
-    numberOfItems: events.length,
-    itemListElement: events.slice(0, 20).map((e, i) => ({
-      '@type': 'ListItem',
-      position: i + 1,
-      url: `${SITE.url}/evenements/${eventSlug(e.name, e.id)}`,
-      name: e.name,
-    })),
-  } : null;
+  // Meta, FAQ and JSON-LD built in src/lib/seo/pageMeta.ts (shared with the prerender).
+  const { canonical, labelLower, isSoirees, title, description, h1, faqs, breadcrumbs, jsonLd, emptyCityPage } =
+    buildCategoryMeta({ slug, cat, citySlug, cityName, events, aiIntro, loading });
 
   const todayFr = new Date().toLocaleDateString('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
@@ -234,9 +119,6 @@ export default function CategoryPage() {
     ? `/?category=${slug.toLowerCase()}&city=${citySlug}`
     : `/?category=${slug.toLowerCase()}`;
 
-  // Auto-noindex des pages catégorie×ville vides pour éviter le statut Google
-  // "Explorée, actuellement non indexée" qui gaspille le crawl budget.
-  const emptyCityPage = !!cityName && !loading && events.length === 0;
 
   return (
     <>
@@ -245,7 +127,7 @@ export default function CategoryPage() {
         description={description}
         canonical={canonical}
         noindex={emptyCityPage}
-        jsonLd={itemListLd ? [breadcrumbLd(breadcrumbs), faqLd, itemListLd] : [breadcrumbLd(breadcrumbs), faqLd]}
+        jsonLd={jsonLd}
       />
 
       <main className="h-full overflow-y-auto bg-background text-foreground px-5 py-6 max-w-3xl mx-auto">
