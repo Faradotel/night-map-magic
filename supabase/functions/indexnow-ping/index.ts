@@ -107,8 +107,8 @@ Deno.serve(async (req) => {
 
     // Déjà envoyées : événements jamais renvoyés, villes renvoyées après 24 h.
     const sent = new Map<string, number>();
-    for (let i = 0; i < candidates.length; i += 500) {
-      const { data, error } = await sb.from('indexnow_submitted').select('url,submitted_at').in('url', candidates.slice(i, i + 500));
+    for (let i = 0; i < candidates.length; i += 100) {
+      const { data, error } = await sb.from('indexnow_submitted').select('url,submitted_at').in('url', candidates.slice(i, i + 100));
       if (error) throw error;
       for (const r of data || []) sent.set(r.url, new Date(r.submitted_at).getTime());
     }
@@ -157,6 +157,6 @@ Deno.serve(async (req) => {
     return json(200, { found: candidates.length, submitted, skipped_already_sent: skipped, batches, status_codes: statusCodes });
   } catch (e) {
     console.error('[indexnow-ping] error:', e);
-    return json(500, { error: e instanceof Error ? e.message : String(e) });
+    return json(500, { error: e instanceof Error ? e.message : JSON.stringify(e) });
   }
 });
