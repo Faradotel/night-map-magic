@@ -102,7 +102,7 @@ const eventList = (evs: { id: string; name: string; venue: string; start_time: s
     .join('')}</ul>`;
 const faqHtml = (faqs: { q: string; a: string }[]) =>
   `<h2 ${H2}>Questions fréquentes</h2>${faqs.map((f) => `<h3 style="font-size:15px;margin:12px 0 4px">${esc(f.q)}</h3><p ${MUTED}>${esc(f.a)}</p>`).join('')}`;
-const main = (inner: string) => `<main style="${WRAP}">${inner}</main>`;
+const page = (inner: string) => `<main style="${WRAP}">${inner}</main>`;
 
 function render(template: string, head: string, body: string): string {
   let html = template
@@ -176,7 +176,7 @@ async function main() {
       title: CITIES_INDEX_META.title, description: CITIES_INDEX_META.description,
       canonical: CITIES_INDEX_META.canonical, jsonLd: CITIES_INDEX_META.jsonLd(),
     });
-    const body = main(
+    const body = page(
       crumbs([['Accueil', '/'], ['Villes', null]]) +
       `<h1 style="font-size:26px;margin:0 0 12px">${esc(CITIES_INDEX_META.h1)}</h1><p ${MUTED}>${esc(CITIES_INDEX_META.intro)}</p>` +
       `<h2 ${H2}>Sortir ce soir, par ville</h2>` + inlineList(cityEntries.map(([s, n]) => link(`/sortir-ce-soir/${s}`, `Sortir ce soir à ${n}`))) +
@@ -239,7 +239,7 @@ async function main() {
       const m = buildCityMeta({ slug, cityName, events, aiIntro, isSortirRoute: true });
       const head = headTags({ title: m.title, description: m.description, ogTitle: m.ogTitle, ogDescription: m.ogDescription, canonical: m.canonical, jsonLd: m.ld, hreflang: m.hreflang });
       const cats = catEntries.filter(([s]) => prerenderedCats.has(`/categories/${s}/${slug}`));
-      const body = main(
+      const body = page(
         crumbs([['Accueil', '/'], ['Villes', '/villes'], [cityName, null]]) +
         `<h1 style="font-size:26px;margin:0 0 12px">${esc(aiIntro?.h1 || `Sortir ce soir à ${cityName}`)}</h1>` +
         (aiIntro?.intro_html ? `<div style="color:#b8b8cc">${safeIntro(aiIntro.intro_html)}</div>` : `<p ${MUTED}>${esc(m.description)}</p>`) +
@@ -270,7 +270,7 @@ async function main() {
       const otherCats = catEntries.filter(([s]) => s !== catSlug)
         .map(([s, c]) => (cityName && prerenderedCats.has(`/categories/${s}/${citySlug}`) ? link(`/categories/${s}/${citySlug}`, `${c.label} à ${cityName}`) : link(`/categories/${s}`, c.label)));
       const citiesWithCat = cityEntries.filter(([s]) => s !== citySlug && prerenderedCats.has(`/categories/${catSlug}/${s}`));
-      const body = main(
+      const body = page(
         crumbs(cityName ? [['Accueil', '/'], ['Villes', '/villes'], [cityName, `/sortir-ce-soir/${citySlug}`], [cat.label, null]] : [['Accueil', '/'], ['Villes', '/villes'], [cat.label, null]]) +
         `<h1 style="font-size:26px;margin:0 0 12px">${esc(m.h1)}</h1>` +
         (aiIntro?.intro_html ? `<div style="color:#b8b8cc">${safeIntro(aiIntro.intro_html)}</div>` : `<p ${MUTED}>${esc(cat.description)}</p>`) +
@@ -298,7 +298,7 @@ async function main() {
       const cityHref = citySlug ? `/sortir-ce-soir/${citySlug}` : `/sortir-ce-soir/${m.cityLower}`;
       const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([event.venue, event.address].filter(Boolean).join(', '))}`;
       const sameVenue = rows.filter((r) => r.venue && r.venue === event.venue && r.id !== event.id).slice(0, 6);
-      const body = main(
+      const body = page(
         crumbs([['Accueil', '/'], ['Villes', '/villes'], [event.name, null]]) +
         `<h1 style="font-size:26px;margin:0 0 8px">${esc(event.name)}</h1>` +
         `<p ${MUTED}>${esc(m.dateLabel)} · ${esc(m.timeLabel)} · ${esc(event.venue)}, ${esc(event.city)}</p>` +
