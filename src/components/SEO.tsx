@@ -22,7 +22,7 @@ interface SEOProps {
 }
 
 const SITE_URL = 'https://pulse-map.live';
-const DEFAULT_IMAGE = `${SITE_URL}/icon-512.png`;
+const DEFAULT_IMAGE = `${SITE_URL}/og-default.png`;
 
 export function SEO({
   title,
@@ -31,9 +31,9 @@ export function SEO({
   ogDescription,
   canonical,
   image = DEFAULT_IMAGE,
-  imageWidth,
-  imageHeight,
-  imageAlt,
+  imageWidth = image === DEFAULT_IMAGE ? 1200 : undefined,
+  imageHeight = image === DEFAULT_IMAGE ? 630 : undefined,
+  imageAlt = image === DEFAULT_IMAGE ? 'PulseMap : où sortir ce soir en France' : undefined,
   type = 'website',
   jsonLd,
   noindex,
@@ -65,7 +65,7 @@ export function SEO({
       <meta property="og:url" content={url} />
       <meta property="og:image" content={image} />
       <meta property="og:image:secure_url" content={image} />
-      <meta property="og:image:type" content="image/png" />
+      {image === DEFAULT_IMAGE && <meta property="og:image:type" content="image/png" />}
       {imageWidth && <meta property="og:image:width" content={String(imageWidth)} />}
       {imageHeight && <meta property="og:image:height" content={String(imageHeight)} />}
       {imageAlt && <meta property="og:image:alt" content={imageAlt} />}
