@@ -6,7 +6,7 @@
   <url><loc>https://pulse-map.live/sortir-ce-soir/saint-denis</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/montreuil</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/nanterre</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://pulse-map.live/sortir-ce-soir/creteil</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://pulse-map.live/sortir-ce-soir/courbevoie</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/aubervilliers</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/issy-les-moulineaux</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://pulse-map.live/sortir-ce-soir/menton</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
@@ -17,12 +17,10 @@
   <url><loc>https://pulse-map.live/categories/bars/martigues</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/sport/martigues</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/roubaix</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://pulse-map.live/categories/culture/versailles</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/boulogne-billancourt</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/saint-denis</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/montreuil</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/nanterre</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://pulse-map.live/categories/culture/aubervilliers</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/issy-les-moulineaux</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://pulse-map.live/categories/culture/martigues</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
 </urlset>
