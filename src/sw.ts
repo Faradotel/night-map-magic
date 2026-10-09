@@ -2,7 +2,7 @@
 export {};
 
 import { clientsClaim } from 'workbox-core';
-import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute, type PrecacheEntry } from 'workbox-precaching';
+import { cleanupOutdatedCaches, createHandlerBoundToURL, matchPrecache, precacheAndRoute, type PrecacheEntry } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
 
 declare const self: ServiceWorkerGlobalScope & {
@@ -14,6 +14,21 @@ clientsClaim();
 
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
+
+// Prerendered SEO pages (scripts/prerender.ts): network first so the real page
+// is served, cached index.html only as offline fallback. Must stay before the
+// generic NavigationRoute below.
+const PRERENDERED = /^\/(sortir-ce-soir|categories|evenements|villes)(\/|$)/;
+registerRoute(
+  ({ request, url }) => request.mode === 'navigate' && PRERENDERED.test(url.pathname),
+  async ({ request }) => {
+    try {
+      return await fetch(request);
+    } catch {
+      return (await matchPrecache('/index.html')) ?? Response.error();
+    }
+  },
+);
 
 registerRoute(
   new NavigationRoute(createHandlerBoundToURL('/index.html'), {

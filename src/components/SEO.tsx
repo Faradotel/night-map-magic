@@ -1,88 +1,42 @@
 import { Helmet } from 'react-helmet-async';
+import { computeSeoHead, SITE_URL, DEFAULT_IMAGE, type SeoInput } from '@/lib/seo/seoHead';
 
-interface HreflangItem {
-  lang: string;
-  path: string;
-}
-
-interface SEOProps {
-  title: string;
-  description: string;
-  ogTitle?: string;
-  ogDescription?: string;
-  canonical?: string;
-  image?: string;
-  imageWidth?: number;
-  imageHeight?: number;
-  imageAlt?: string;
-  type?: 'website' | 'article' | 'event';
-  jsonLd?: object | object[];
-  noindex?: boolean;
-  hreflang?: HreflangItem[];
-}
-
-const SITE_URL = 'https://pulse-map.live';
-const DEFAULT_IMAGE = `${SITE_URL}/og-default.png`;
-
-export function SEO({
-  title,
-  description,
-  ogTitle,
-  ogDescription,
-  canonical,
-  image = DEFAULT_IMAGE,
-  imageWidth = image === DEFAULT_IMAGE ? 1200 : undefined,
-  imageHeight = image === DEFAULT_IMAGE ? 630 : undefined,
-  imageAlt = image === DEFAULT_IMAGE ? 'PulseMap : où sortir ce soir en France' : undefined,
-  type = 'website',
-  jsonLd,
-  noindex,
-  hreflang,
-}: SEOProps) {
-  const url = canonical
-    ? canonical.startsWith('http')
-      ? canonical
-      : `${SITE_URL}${canonical}`
-    : SITE_URL;
-
-  const fullTitle = title.length > 60 ? title.slice(0, 57) + '…' : title;
-  const fullDesc = description.length > 160 ? description.slice(0, 157) + '…' : description;
-  const ogT = (ogTitle || title).length > 60 ? (ogTitle || title).slice(0, 57) + '…' : (ogTitle || title);
-  const ogD = (ogDescription || description).length > 160 ? (ogDescription || description).slice(0, 157) + '…' : (ogDescription || description);
-  const ogType = type === 'event' ? 'article' : type;
-  const ldArray = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+// Head values are computed in src/lib/seo/seoHead.ts, shared with the
+// build-time prerender (scripts/prerender.ts).
+export function SEO(props: SeoInput) {
+  const h = computeSeoHead(props);
 
   return (
     <Helmet>
-      <title>{fullTitle}</title>
-      <meta name="description" content={fullDesc} />
-      <link rel="canonical" href={url} />
-      {noindex && <meta name="robots" content="noindex,nofollow" />}
+      <title>{h.title}</title>
+      <meta name="description" content={h.description} />
+      <link rel="canonical" href={h.url} />
+      {h.noindex && <meta name="robots" content="noindex,nofollow" />}
 
-      <meta property="og:title" content={ogT} />
-      <meta property="og:description" content={ogD} />
-      <meta property="og:type" content={ogType} />
-      <meta property="og:url" content={url} />
-      <meta property="og:image" content={image} />
-      <meta property="og:image:secure_url" content={image} />
-      {image === DEFAULT_IMAGE && <meta property="og:image:type" content="image/png" />}
-      {imageWidth && <meta property="og:image:width" content={String(imageWidth)} />}
-      {imageHeight && <meta property="og:image:height" content={String(imageHeight)} />}
-      {imageAlt && <meta property="og:image:alt" content={imageAlt} />}
+      <meta property="og:title" content={h.ogTitle} />
+      <meta property="og:description" content={h.ogDescription} />
+      <meta property="og:type" content={h.ogType} />
+      <meta property="og:url" content={h.url} />
+      <meta property="og:image" content={h.image} />
+      <meta property="og:image:secure_url" content={h.image} />
+      {h.isDefaultImage && <meta property="og:image:type" content="image/png" />}
+      {h.imageWidth && <meta property="og:image:width" content={String(h.imageWidth)} />}
+      {h.imageHeight && <meta property="og:image:height" content={String(h.imageHeight)} />}
+      {h.imageAlt && <meta property="og:image:alt" content={h.imageAlt} />}
       <meta property="og:site_name" content="PulseMap" />
       <meta property="og:locale" content="fr_FR" />
 
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={ogT} />
-      <meta name="twitter:description" content={ogD} />
-      <meta name="twitter:image" content={image} />
-      {imageAlt && <meta name="twitter:image:alt" content={imageAlt} />}
+      <meta name="twitter:title" content={h.ogTitle} />
+      <meta name="twitter:description" content={h.ogDescription} />
+      <meta name="twitter:image" content={h.image} />
+      {h.imageAlt && <meta name="twitter:image:alt" content={h.imageAlt} />}
 
-      {hreflang?.map((h) => (
-        <link key={h.lang} rel="alternate" hrefLang={h.lang} href={`${SITE_URL}${h.path}`} />
+      {h.hreflang.map((x) => (
+        <link key={x.lang} rel="alternate" hrefLang={x.lang} href={x.href} />
       ))}
 
-      {ldArray.map((ld, i) => (
+      {h.jsonLd.map((ld, i) => (
         <script key={i} type="application/ld+json">
           {JSON.stringify(ld)}
         </script>

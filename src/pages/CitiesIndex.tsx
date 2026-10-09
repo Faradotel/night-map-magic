@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { SEO, SITE } from '@/components/SEO';
+import { CITIES_INDEX_META } from '@/lib/seo/pageMeta';
 import { breadcrumbLd, organizationLd, websiteLd } from '@/lib/seo/jsonld';
 import { CITY_SLUGS, CATEGORY_SLUGS } from '@/lib/seo/slug';
 import { MapCtaLink } from '@/components/MapCtaLink';
@@ -11,17 +12,10 @@ export default function CitiesIndex() {
   return (
     <>
       <SEO
-        title="Où sortir ce soir en France ? Villes & sorties | PulseMap"
-        description="Où sortir ce soir en France ? Découvre les soirées, concerts, festivals et bars animés en direct dans toutes les grandes villes : Paris, Lyon, Marseille, Toulouse, Grenoble…"
-        canonical="/villes"
-        jsonLd={[
-          organizationLd(),
-          websiteLd(),
-          breadcrumbLd([
-            { name: 'Accueil', url: '/' },
-            { name: 'Villes', url: '/villes' },
-          ]),
-        ]}
+        title={CITIES_INDEX_META.title}
+        description={CITIES_INDEX_META.description}
+        canonical={CITIES_INDEX_META.canonical}
+        jsonLd={CITIES_INDEX_META.jsonLd()}
       />
       <main className="h-full overflow-y-auto bg-background text-foreground px-5 py-8 max-w-3xl mx-auto">
         <nav aria-label="Fil d'ariane" className="flex items-center gap-2 text-sm text-muted-foreground mb-5">

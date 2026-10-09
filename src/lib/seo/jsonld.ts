@@ -1,4 +1,6 @@
-import { SITE } from '@/components/SEO';
+import { SITE_URL } from './seoHead';
+
+const SITE = { url: SITE_URL };
 
 const LOGO_PULSE = `${SITE.url}/icon-512.png`;
 
