@@ -91,7 +91,7 @@ export default function CategoryPage() {
   }
 
   // Meta, FAQ and JSON-LD built in src/lib/seo/pageMeta.ts (shared with the prerender).
-  const { canonical, labelLower, isSoirees, title, description, h1, faqs, breadcrumbs, jsonLd, emptyCityPage } =
+  const { canonical, labelLower, isSoirees, title, description, h1, faqs, jsonLd, emptyCityPage } =
     buildCategoryMeta({ slug, cat, citySlug, cityName, events, aiIntro, loading });
 
   const todayFr = new Date().toLocaleDateString('fr-FR', {
@@ -99,18 +99,6 @@ export default function CategoryPage() {
   });
 
 
-  const breadcrumbs = cityName
-    ? [
-        { name: 'Accueil', url: '/' },
-        { name: 'Villes', url: '/villes' },
-        { name: cityName, url: `/sortir-ce-soir/${citySlug}` },
-        { name: cat.label, url: canonical },
-      ]
-    : [
-        { name: 'Accueil', url: '/' },
-        { name: 'Villes', url: '/villes' },
-        { name: cat.label, url: canonical },
-      ];
 
   const cities = Object.entries(CITY_SLUGS);
   const otherCategories = Object.entries(CATEGORY_SLUGS).filter(([s]) => s !== slug.toLowerCase());
