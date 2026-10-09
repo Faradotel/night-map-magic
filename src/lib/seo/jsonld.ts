@@ -25,12 +25,7 @@ export function websiteLd() {
     '@type': 'WebSite',
     name: 'PulseMap',
     url: SITE.url,
-    inLanguage: 'fr-FR',
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: `${SITE.url}/?q={search_term_string}`,
-      'query-input': 'required name=search_term_string',
-    },
+    inLanguage: 'fr-FR'
   };
 }
 

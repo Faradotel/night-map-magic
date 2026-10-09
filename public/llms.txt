@@ -13,30 +13,25 @@
 - [/categories/sport](/categories/sport): Événements sportifs en direct.
 - [/categories/culture](/categories/culture): Théâtre, expositions et spectacles.
 - [/categories/brocantes](/categories/brocantes): Brocantes, vide-greniers et puces.
-- [/rgpd](/rgpd): Politique de confidentialité et protection des données (RGPD).
+- [/privacy-policy](/privacy-policy): Politique de confidentialité et protection des données (RGPD).
 
 ## Villes
 
-- [/villes/paris](/villes/paris): Événements à Paris.
-- [/villes/lyon](/villes/lyon): Événements à Lyon.
-- [/villes/marseille](/villes/marseille): Événements à Marseille.
-- [/villes/toulouse](/villes/toulouse): Événements à Toulouse.
-- [/villes/nice](/villes/nice): Événements à Nice.
-- [/villes/nantes](/villes/nantes): Événements à Nantes.
-- [/villes/bordeaux](/villes/bordeaux): Événements à Bordeaux.
-- [/villes/grenoble](/villes/grenoble): Événements à Grenoble.
-- [/villes/lille](/villes/lille): Événements à Lille.
-- [/villes/strasbourg](/villes/strasbourg): Événements à Strasbourg.
-- [/villes/rennes](/villes/rennes): Événements à Rennes.
-- [/villes/montpellier](/villes/montpellier): Événements à Montpellier.
-- [/villes/aix-en-provence](/villes/aix-en-provence): Événements à Aix-en-Provence.
-- [/villes/saint-etienne](/villes/saint-etienne): Événements à Saint-Étienne.
-- [/villes/villeurbanne](/villes/villeurbanne): Événements à Villeurbanne.
-
-## Exemples d'événements
-
-- [/evenements/techno-night-grenoble-shotgun-abc123](/evenements/techno-night-grenoble-shotgun-abc123): Page détail d'un événement individuel (exemple : soirée techno à Grenoble).
-- [/evenements/concert-jazz-lyon-tm-xyz789](/evenements/concert-jazz-lyon-tm-xyz789): Page détail d'un événement individuel (exemple : concert jazz à Lyon).
+- [/sortir-ce-soir/paris](/sortir-ce-soir/paris): Événements à Paris.
+- [/sortir-ce-soir/lyon](/sortir-ce-soir/lyon): Événements à Lyon.
+- [/sortir-ce-soir/marseille](/sortir-ce-soir/marseille): Événements à Marseille.
+- [/sortir-ce-soir/toulouse](/sortir-ce-soir/toulouse): Événements à Toulouse.
+- [/sortir-ce-soir/nice](/sortir-ce-soir/nice): Événements à Nice.
+- [/sortir-ce-soir/nantes](/sortir-ce-soir/nantes): Événements à Nantes.
+- [/sortir-ce-soir/bordeaux](/sortir-ce-soir/bordeaux): Événements à Bordeaux.
+- [/sortir-ce-soir/grenoble](/sortir-ce-soir/grenoble): Événements à Grenoble.
+- [/sortir-ce-soir/lille](/sortir-ce-soir/lille): Événements à Lille.
+- [/sortir-ce-soir/strasbourg](/sortir-ce-soir/strasbourg): Événements à Strasbourg.
+- [/sortir-ce-soir/rennes](/sortir-ce-soir/rennes): Événements à Rennes.
+- [/sortir-ce-soir/montpellier](/sortir-ce-soir/montpellier): Événements à Montpellier.
+- [/sortir-ce-soir/aix-en-provence](/sortir-ce-soir/aix-en-provence): Événements à Aix-en-Provence.
+- [/sortir-ce-soir/saint-etienne](/sortir-ce-soir/saint-etienne): Événements à Saint-Étienne.
+- [/sortir-ce-soir/villeurbanne](/sortir-ce-soir/villeurbanne): Événements à Villeurbanne.
 
 ## Sitemaps
 
