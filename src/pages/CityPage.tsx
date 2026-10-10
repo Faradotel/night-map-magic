@@ -222,7 +222,7 @@ export default function CityPage() {
             simplement un bar animé pour <strong>sortir ce soir à {cityName}</strong>,
             PulseMap regroupe les meilleures sorties en un seul endroit. La carte interactive
             te montre en temps réel ce qui se passe autour de toi : horaires, lieux, prix et
-            billetterie. Plus besoin de jongler entre Shotgun, Ticketmaster ou Facebook — tout
+            billetterie. Plus besoin de jongler entre plusieurs billetteries et réseaux sociaux — tout
             est centralisé pour trouver où sortir ce soir à {cityName} en quelques secondes.
           </p>
         </section>

@@ -217,7 +217,7 @@ export default function NightlifePage() {
             Whether you're after a techno party, a live concert, a festival, an afterwork or
             simply a lively bar, PulseMap gathers the best {cityName} nightlife spots in one
             place. The live map shows what's happening around you right now — times, venues,
-            prices and tickets. No more juggling Shotgun, Ticketmaster or Facebook to find out
+            prices and tickets. No more juggling several ticketing sites and social networks to find out
             where to go tonight in {cityName}.
           </p>
         </section>
