@@ -17,6 +17,24 @@ function getCorsHeaders(req: Request) {
   };
 }
 
+// Sources actives. Les autres fonctions de collecte restent deployees mais ne sont plus
+// appelees (conformite : scraping retire). Pour en reactiver une, l'ajouter ici.
+const ENABLED_SOURCES: readonly string[] = ['ticketmaster', 'openagenda', 'eventbrite', 'meetup'];
+
+// Fonction edge et delai max par source.
+const SOURCE_FUNCTIONS: Record<string, { fn: string; timeoutMs: number }> = {
+  shotgun: { fn: 'scrape-shotgun', timeoutMs: 110000 },
+  ticketmaster: { fn: 'fetch-ticketmaster', timeoutMs: 20000 },
+  eventbrite: { fn: 'fetch-eventbrite', timeoutMs: 20000 },
+  meetup: { fn: 'fetch-meetup', timeoutMs: 20000 },
+  infoconcert: { fn: 'fetch-infoconcert', timeoutMs: 55000 },
+  routedesfestivals: { fn: 'fetch-routedesfestivals', timeoutMs: 50000 },
+  brocabrac: { fn: 'fetch-brocabrac', timeoutMs: 45000 },
+  runtrail: { fn: 'fetch-runtrail', timeoutMs: 20000 },
+  openagenda: { fn: 'fetch-openagenda', timeoutMs: 20000 },
+  'sports-federations': { fn: 'fetch-sports-federations', timeoutMs: 55000 },
+};
+
 const CITIES = [
   'Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 'Montpellier',
   'Strasbourg', 'Bordeaux', 'Lille', 'Rennes', 'Reims', 'Saint-Étienne',
@@ -79,35 +97,6 @@ Deno.serve(async (req) => {
     } else {
       console.log('Cleaned up past events');
     }
-
-    // Clean up brocabrac events with invalid city names (parsing artifacts)
-    const INVALID_CITIES = ['Img', 'Text', 'Evenements', 'Menu', 'Accueil', 'Connexion'];
-    const { error: junkError } = await supabase
-      .from('cached_events')
-      .delete()
-      .eq('source', 'brocabrac')
-      .in('city', INVALID_CITIES);
-    if (junkError) console.error('Error cleaning junk cities:', junkError.message);
-    else console.log('Cleaned up invalid brocabrac city names');
-
-    // Fix misclassified brocabrac events (expo/chill → brocante/culture)
-    const { error: bbFixError } = await supabase
-      .from('cached_events')
-      .update({ type: 'brocante', vibe: 'culture' })
-      .eq('source', 'brocabrac')
-      .in('type', ['expo', 'soirée', 'concert'])
-      .not('type', 'eq', 'sport');
-    if (bbFixError) console.error('Error fixing brocabrac types:', bbFixError.message);
-    else console.log('Fixed brocabrac event categories');
-
-    // Fix misclassified runtrail events
-    const { error: rtFixError } = await supabase
-      .from('cached_events')
-      .update({ type: 'sport', vibe: 'sport' })
-      .eq('source', 'runtrail')
-      .neq('type', 'sport');
-    if (rtFixError) console.error('Error fixing runtrail types:', rtFixError.message);
-    else console.log('Fixed runtrail event categories');
 
     let totalInserted = 0;
 
@@ -233,45 +222,29 @@ Deno.serve(async (req) => {
       };
       const body = JSON.stringify({ city });
 
-      const [shotgunRes, tmRes, ebRes, muRes, icRes, rdfRes, bbRes, rtRes, oaRes, sfRes] = await Promise.allSettled([
-        fetchWithTimeout(`${supabaseUrl}/functions/v1/scrape-shotgun`, { method: 'POST', headers, body }, 110000).then(r => r.json()),
-        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-ticketmaster`, { method: 'POST', headers, body }).then(r => r.json()),
-        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-eventbrite`, { method: 'POST', headers, body }).then(r => r.json()),
-        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-meetup`, { method: 'POST', headers, body }).then(r => r.json()),
-        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-infoconcert`, { method: 'POST', headers, body }, 55000).then(r => r.json()),
-        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-routedesfestivals`, { method: 'POST', headers, body }, 50000).then(r => r.json()),
-        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-brocabrac`, { method: 'POST', headers, body }, 45000).then(r => r.json()),
-        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-runtrail`, { method: 'POST', headers, body }).then(r => r.json()),
-        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-openagenda`, { method: 'POST', headers, body }).then(r => r.json()),
-        fetchWithTimeout(`${supabaseUrl}/functions/v1/fetch-sports-federations`, { method: 'POST', headers, body }, 55000).then(r => r.json()),
-      ]);
+      const sources = ENABLED_SOURCES.filter((src) => SOURCE_FUNCTIONS[src]);
+      const results = await Promise.allSettled(sources.map((src) => {
+        const { fn, timeoutMs } = SOURCE_FUNCTIONS[src];
+        return fetchWithTimeout(`${supabaseUrl}/functions/v1/${fn}`, { method: 'POST', headers, body }, timeoutMs).then(r => r.json());
+      }));
 
       const events: any[] = [];
       // Sources that answered with at least one event this run. Only those get their
-      // stale rows purged — a source that failed (timeout, rate limit) must NOT wipe
+      // stale rows purged: a source that failed (timeout, rate limit) must NOT wipe
       // the data it delivered on a previous run.
       const healthySources = new Set<string>();
-      const collect = (res: PromiseSettledResult<any>, source: string) => {
+      results.forEach((res, i) => {
+        const source = sources[i];
         if (res.status === 'fulfilled' && Array.isArray(res.value?.events) && res.value.events.length > 0) {
-          events.push(...res.value.events);
+          for (const ev of res.value.events) events.push({ ...ev, _source: source });
           healthySources.add(source);
         } else {
           const reason = res.status === 'rejected'
             ? (res.reason as Error)?.message
-            : (res.value?.error ?? 'aucun événement');
-          console.warn(`${city}: source ${source} sans données (${reason}) — anciens événements conservés`);
+            : (res.value?.error ?? 'aucun evenement');
+          console.warn(`${city}: source ${source} sans donnees (${reason}), anciens evenements conserves`);
         }
-      };
-      collect(shotgunRes, 'shotgun');
-      collect(tmRes, 'ticketmaster');
-      collect(ebRes, 'eventbrite');
-      collect(muRes, 'meetup');
-      collect(icRes, 'infoconcert');
-      collect(rdfRes, 'routedesfestivals');
-      collect(bbRes, 'brocabrac');
-      collect(rtRes, 'runtrail');
-      collect(oaRes, 'openagenda');
-      collect(sfRes, 'sports-federations');
+      });
 
       if (events.length === 0) return 0;
 
@@ -297,7 +270,7 @@ Deno.serve(async (req) => {
           description: e.description || '',
           venue: e.venue || '',
           ticket_url: e.ticketUrl || null,
-          source: e.id?.startsWith('eb-') ? 'eventbrite' : e.id?.startsWith('tm-') ? 'ticketmaster' : e.id?.startsWith('mu-') ? 'meetup' : e.id?.startsWith('icf-') ? 'infoconcert' : e.id?.startsWith('ic-') ? 'infoconcert' : e.id?.startsWith('rdf-') ? 'routedesfestivals' : e.id?.startsWith('bb-') ? 'brocabrac' : e.id?.startsWith('rt-') ? 'runtrail' : e.id?.startsWith('sf-') ? 'sports-federations' : e.id?.startsWith('oa-') ? 'openagenda' : 'shotgun',
+          source: e._source,
           updated_at: new Date().toISOString(),
           external_attendees: e.externalAttendees || null,
         };
@@ -339,16 +312,16 @@ Deno.serve(async (req) => {
         start_time: '2026-05-29T18:00:00+02:00',
         end_time: '2026-05-31T01:00:00+02:00',
         price_range: '€',
-        description: "25e édition du festival Magic Bus au Palais des Sports de Grenoble — 2 jours de concerts et de fête. • via Route des Festivals",
+        description: "25e édition du festival Magic Bus au Palais des Sports de Grenoble, 2 jours de concerts et de fête.",
         venue: 'Palais des Sports',
         ticket_url: 'https://www.seetickets.com/fr/d/event/festival-magic-bus-2026-pass-2-jours-ven-sam/palais-des-sports-de-grenoble/11587107',
-        source: 'routedesfestivals',
+        source: 'curated',
         external_attendees: null,
       },
     ];
 
     // Process cities in parallel batches of 3 (~3x faster than sequential)
-    const BATCH_SIZE = 2; // limite les rafales Firecrawl (quota/minute)
+    const BATCH_SIZE = 2;
     for (let i = 0; i < citiesToRefresh.length; i += BATCH_SIZE) {
       const cityBatch = citiesToRefresh.slice(i, i + BATCH_SIZE);
       const results = await Promise.allSettled(cityBatch.map(processCity));
@@ -397,8 +370,8 @@ Deno.serve(async (req) => {
       '80','81','82','83','84','85','86','87','88','89',
       '90','91','92','93','94','95',
     ];
-    const missingDepts = singleCity ? [] : ALL_DEPTS.filter(d => !coveredDepts.has(d));
-    console.log(`Brocabrac extra: scraping ${missingDepts.length} uncovered departments...`);
+    const missingDepts = (singleCity || !ENABLED_SOURCES.includes('brocabrac')) ? [] : ALL_DEPTS.filter(d => !coveredDepts.has(d));
+    if (missingDepts.length) console.log(`Brocabrac extra: scraping ${missingDepts.length} uncovered departments...`);
 
     const BB_BATCH = 5;
     for (let i = 0; i < missingDepts.length; i += BB_BATCH) {
@@ -453,8 +426,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ── InfoConcert Festivals: bulk scrape (1 call, all cities) ──
-    try {
+    // ── InfoConcert Festivals: bulk scrape (1 call, all cities), desactive si source inactive ──
+    if (ENABLED_SOURCES.includes('infoconcert-festivals')) try {
       console.log('[ICF] Bulk scraping InfoConcert festivals...');
       const icfRes = await fetchWithTimeout(
         `${supabaseUrl}/functions/v1/fetch-infoconcert-festivals`,
