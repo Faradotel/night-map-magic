@@ -160,7 +160,7 @@ export function PrivacyPolicyScreen({ onBack }: PrivacyPolicyScreenProps) {
             Pour exercer tes droits ou pour toute question relative à la protection de tes données, tu peux nous contacter à :
           </p>
           <p className="text-sm font-bold mt-2" style={{ color: 'hsl(var(--accent))' }}>
-            la page Contact légal (/contact-legal)
+            contact@pulse-map.live
           </p>
           <p className="text-xs text-muted-foreground mt-2">
             Tu peux également adresser une réclamation à la CNIL (Commission Nationale de l'Informatique et des Libertés) : <span className="font-medium text-foreground">www.cnil.fr</span>
