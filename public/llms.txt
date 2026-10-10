@@ -1,6 +1,6 @@
 # PulseMap
 
-> PulseMap est une application mobile-first qui permet de découvrir les soirées, concerts, festivals, bars et événements culturels autour de soi, via une carte interactive couvrant toute la France. Tous les événements sont agrégés en temps réel depuis des sources locales et nationales.
+> PulseMap est une application mobile-first qui permet de découvrir les soirées, concerts, festivals, bars et événements culturels autour de soi, via une carte interactive couvrant toute la France. Tous les événements sont agrégés depuis des sources sous API officielle ou licence ouverte (OpenAgenda, Ticketmaster, Eventbrite, Meetup) et des saisies de professionnels.
 
 ## Pages principales
 
@@ -13,6 +13,7 @@
 - [/categories/sport](/categories/sport): Événements sportifs en direct.
 - [/categories/culture](/categories/culture): Théâtre, expositions et spectacles.
 - [/categories/brocantes](/categories/brocantes): Brocantes, vide-greniers et puces.
+- [/sources](/sources): Sources des événements, licences et demande de retrait.
 - [/privacy-policy](/privacy-policy): Politique de confidentialité et protection des données (RGPD).
 
 ## Villes
