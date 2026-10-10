@@ -24,6 +24,7 @@ import {
   buildCityMeta, buildCategoryMeta, buildEventMeta, CITIES_INDEX_META,
   type CityEventInput, type SeoIntroInput,
 } from '../src/lib/seo/pageMeta';
+import { SOURCE_ENTRIES, SOURCES_INTRO, SOURCES_DISCLAIMER, SOURCES_META, takedownText } from '../src/lib/seo/sourcesContent';
 
 const MAX_EVENT_PAGES = 3500;
 const DIST = resolve(process.argv[2] || 'dist');
@@ -166,7 +167,7 @@ async function main() {
   const tplPath = join(DIST, 'index.html');
   if (!existsSync(tplPath)) { console.warn('[prerender] dist/index.html missing, skipped'); return; }
   const template = readFileSync(tplPath, 'utf8');
-  const counts = { villes: 0, city: 0, category: 0, event: 0, skipped: 0 };
+  const counts = { villes: 0, sources: 0, city: 0, category: 0, event: 0, skipped: 0 };
 
   // /villes : static content, no data needed.
   const cityEntries = Object.entries(CITY_SLUGS);
@@ -183,6 +184,20 @@ async function main() {
       `<h2 ${H2}>Catégories</h2>` + inlineList(catEntries.map(([s, c]) => link(`/categories/${s}`, c.label))),
     );
     if (writePage('/villes', render(template, head, body))) counts.villes++;
+  }
+
+  // /sources : contenu statique partage avec SourcesPage.tsx.
+  {
+    const head = headTags({ title: SOURCES_META.title, description: SOURCES_META.description, canonical: SOURCES_META.canonical });
+    const body = page(
+      crumbs([['Accueil', '/'], [SOURCES_META.h1, null]]) +
+      `<h1 style="font-size:26px;margin:0 0 12px">${esc(SOURCES_META.h1)}</h1><p ${MUTED}>${esc(SOURCES_INTRO)}</p>` +
+      SOURCE_ENTRIES.map((s) =>
+        `<h2 ${H2}>${esc(s.name)}</h2><p ${MUTED}>${esc(s.role)} ${esc(s.shown)} ${esc(s.license)}</p>`).join('') +
+      `<h2 ${H2}>Exactitude des informations</h2><p ${MUTED}>${esc(SOURCES_DISCLAIMER)}</p>` +
+      `<h2 ${H2} id="retrait">Retrait d'un contenu</h2><p ${MUTED}>${esc(takedownText())}</p>`,
+    );
+    if (writePage('/sources', render(template, head, body))) counts.sources++;
   }
 
   let rows: Row[] = [];

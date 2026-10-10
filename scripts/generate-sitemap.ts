@@ -187,6 +187,10 @@ function urlset(routes: SeoRoute[]): string {
 function writeTier(tier: Tier, retired: Set<string>, sets: ContentSets | null): number {
   const raw = getSeoRoutesForTier(tier).filter(r => !retired.has(SITE + r.path));
   const routes = filterEmptyCombos(raw, sets);
+  // Pages statiques de confiance (sources et licences), toujours en tier 1.
+  if (tier === 1 && !retired.has(SITE + '/sources')) {
+    routes.push({ path: '/sources', changefreq: 'monthly', priority: '0.3' });
+  }
   writeFileSync(resolve(`public/sitemap-tier${tier}.xml`), urlset(routes));
   return routes.length;
 }

@@ -1,3 +1,6 @@
+import { openCookieBanner } from '@/components/CookieConsent';
+import { LEGAL_INFO_COMPLETE } from '@/lib/legal';
+
 // Minimal legal links bar above the BottomNav.
 // Real <a href> tags so Google OAuth verification & SEO crawlers can detect them.
 export function LegalFooter() {
@@ -23,7 +26,24 @@ export function LegalFooter() {
         <Dot />
         <LegalLink href="/terms">Conditions</LegalLink>
         <Dot />
+        <LegalLink href="/sources">Sources</LegalLink>
+        <Dot />
         <LegalLink href="/contact-legal">Contact</LegalLink>
+        {LEGAL_INFO_COMPLETE && (
+          <>
+            <Dot />
+            <LegalLink href="/mentions-legales">Mentions</LegalLink>
+          </>
+        )}
+        <Dot />
+        <button
+          type="button"
+          onClick={openCookieBanner}
+          className="text-[11px] font-semibold tracking-wide"
+          style={{ color: 'hsl(0 0% 100% / 0.85)', background: 'none', border: 0, padding: 0, cursor: 'pointer' }}
+        >
+          Cookies
+        </button>
       </div>
     </footer>
   );

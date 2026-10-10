@@ -33,6 +33,8 @@ const TagPage = lazy(() => import("./pages/TagPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
 const ContactLegalPage = lazy(() => import("./pages/ContactLegalPage"));
+const SourcesPage = lazy(() => import("./pages/SourcesPage"));
+const MentionsLegalesPage = lazy(() => import("./pages/MentionsLegalesPage"));
 const IndexationDashboard = lazy(() => import("./pages/admin/IndexationDashboard"));
 const ApiKeysAdmin = lazy(() => import("./pages/admin/ApiKeys"));
 import { RetiredPageGuard } from "@/components/RetiredPageGuard";
@@ -112,6 +114,8 @@ const App = () => {
                     <Route path="/privacy-policy" element={<PrivacyPage />} />
                     <Route path="/terms" element={<TermsPage />} />
                     <Route path="/contact-legal" element={<ContactLegalPage />} />
+                    <Route path="/sources" element={<SourcesPage />} />
+                    <Route path="/mentions-legales" element={<MentionsLegalesPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
