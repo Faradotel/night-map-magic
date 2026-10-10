@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { EventSourceNotice } from '@/components/EventSourceNotice';
 import { Link, useParams, Navigate } from 'react-router-dom';
 import { MapCtaLink } from '@/components/MapCtaLink';
 import { supabase } from '@/integrations/supabase/client';
@@ -168,6 +169,8 @@ export default function EventPage() {
             </a>
           )}
         </div>
+
+        <EventSourceNotice eventId={event.id} url={event.ticket_url} className="-mt-3 mb-6" />
 
         <section aria-labelledby="desc-h2" className="mb-6">
           <h2 id="desc-h2" className="text-lg font-bold mb-2">À propos</h2>

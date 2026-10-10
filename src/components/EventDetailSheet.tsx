@@ -1,4 +1,5 @@
 import { X, MapPin, Clock, Ticket, ExternalLink, Check } from 'lucide-react';
+import { EventSourceNotice } from '@/components/EventSourceNotice';
 import { NightEvent, vibeConfig, typeConfig, formatTime, formatDate } from '@/data/mockEvents';
 import { getSourceEmoji } from '@/lib/sourceEmoji';
 import { useEffect, useState } from 'react';
@@ -142,6 +143,8 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
                 </span>
               ))}
             </div>
+
+            <EventSourceNotice eventId={event.id} url={event.ticketUrl} className="mb-3" />
 
             {/* Action buttons */}
             <div className="flex gap-2">

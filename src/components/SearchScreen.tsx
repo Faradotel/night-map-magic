@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getEventSource } from '@/lib/eventSource';
 import { Search, MapPin, Clock, X } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, formatTime, formatDate } from '@/data/mockEvents';
 import { getSourceEmoji } from '@/lib/sourceEmoji';
@@ -77,7 +78,7 @@ export function SearchScreen({ onEventSelect, events }: SearchScreenProps) {
             {results.map(event => {
               const vibe = vibeConfig[event.vibe];
               const type = typeConfig[event.type];
-              const source = event.id.startsWith('tm-') ? 'TM' : event.id.startsWith('shotgun-') ? 'SG' : event.id.startsWith('eb-') ? 'EB' : event.id.startsWith('mu-') ? 'MU' : event.id.startsWith('ic-') ? 'IC' : event.id.startsWith('bb-') ? 'BB' : event.id.startsWith('rt-') ? 'RT' : event.id.startsWith('oa-') ? 'OA' : null;
+              const source = getEventSource(event.id)?.short ?? null;
               return (
                 <button
                   key={event.id}

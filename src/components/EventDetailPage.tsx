@@ -1,4 +1,6 @@
 import { useRef, useCallback } from 'react';
+import { getEventSource } from '@/lib/eventSource';
+import { EventSourceNotice } from '@/components/EventSourceNotice';
 import { toast } from 'sonner';
 import { X, MapPin, Clock, Ticket, ExternalLink, Check, ChevronDown, Share2, Music, Users, Info, Heart, Link as LinkIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -50,8 +52,9 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
   const vibe = vibeConfig[event.vibe];
   const type = typeConfig[event.type];
 
-  const source = event.id.startsWith('tm-') ? 'Ticketmaster' : event.id.startsWith('shotgun-') ? 'Shotgun' : event.id.startsWith('eb-') ? 'Eventbrite' : event.id.startsWith('mu-') ? 'Meetup' : event.id.startsWith('ic-') ? 'InfoConcert' : event.id.startsWith('bb-') ? 'Brocabrac' : event.id.startsWith('rt-') ? 'RunTrail' : event.id.startsWith('oa-') ? 'OpenAgenda' : 'PulseMap';
-  const sourceColor = source === 'Ticketmaster' ? 'hsl(210 100% 56%)' : source === 'Shotgun' ? 'hsl(25 95% 55%)' : source === 'Eventbrite' ? 'hsl(15 85% 55%)' : source === 'Meetup' ? 'hsl(0 82% 55%)' : source === 'InfoConcert' ? 'hsl(280 70% 55%)' : 'hsl(var(--primary))';
+  const srcInfo = getEventSource(event.id);
+  const source = srcInfo?.name ?? 'PulseMap';
+  const sourceColor = srcInfo?.color ?? 'hsl(var(--primary))';
 
   const priceColor =
     event.priceRange === 'gratuit' ? 'hsl(130 60% 55%)' :
@@ -189,7 +192,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
             }}
           >
             <Info size={12} />
-            Source : {source}
+            {srcInfo?.attribution ?? `Source : ${source}`}
           </div>
           <Link
             to={`/evenements/${eventSlug(event.name, event.id)}`}
@@ -385,6 +388,7 @@ export function EventDetailPage({ event, onClose, userLocation, attendance, favo
                   Voir sur {source}
                 </button>
               )}
+              <EventSourceNotice eventId={event.id} url={event.ticketUrl} className="pt-1 text-center" />
             </div>
           </div>
         </div>
