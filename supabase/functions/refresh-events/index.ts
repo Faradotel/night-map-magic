@@ -196,7 +196,7 @@ Deno.serve(async (req) => {
 
 
     async function processCity(city: string): Promise<number> {
-      // Capture timestamp BEFORE scraping — used to delete stale events after upsert
+      // Capture timestamp BEFORE scraping, used to delete stale events after upsert
       const refreshStart = new Date().toISOString();
 
       // Skip city if refreshed within the last 4 minutes (prevents double-refresh race)
@@ -277,7 +277,7 @@ Deno.serve(async (req) => {
 
       });
 
-      // 1. Upsert new events FIRST — users always see data, no gap
+      // 1. Upsert new events FIRST, users always see data, no gap
       const { error } = await supabase.from('cached_events').upsert(batch, { onConflict: 'id' });
       if (error) {
         console.error(`Error inserting ${city}:`, error.message);
@@ -297,7 +297,7 @@ Deno.serve(async (req) => {
       return batch.length;
     }
 
-    // Curated events that 3rd-party scrapers miss/get wrong — always upserted.
+    // Curated events that 3rd-party scrapers miss/get wrong, always upserted.
     const CURATED_EVENTS: any[] = [
       {
         id: 'curated-magic-bus-2026',
