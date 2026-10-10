@@ -228,7 +228,7 @@ export default function TagPage({ kind }: { kind: Kind }) {
               PulseMap regroupe en temps réel tous les clubs, DJ sets, raves et events {tagLower}
               ouverts ce soir à {cityName}, géolocalisés sur une carte interactive avec horaires,
               lieux exacts et billetterie. La façon la plus rapide de trouver une soirée {tagLower}
-              à {cityName} sans jongler entre Shotgun, Resident Advisor et Facebook.
+              à {cityName} sans jongler entre plusieurs billetteries et réseaux sociaux.
             </>
           ) : (
             <>

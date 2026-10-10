@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Cookie, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { isImpactLoaded, loadImpactTag } from '@/lib/impactConsent';
 
 const STORAGE_KEY = 'pulse_cookie_consent';
 
@@ -23,6 +24,19 @@ export function openCookieBanner() {
 
 export function CookieConsent() {
   const [visible, setVisible] = useState(false);
+
+  // Charge le tag d'affiliation seulement si le choix stocke ou nouveau est "accepted".
+  useEffect(() => {
+    if (getCookieConsent() === 'accepted') loadImpactTag();
+    const onChoice = (e: Event) => {
+      const choice = (e as CustomEvent<CookieChoice>).detail;
+      if (choice === 'accepted') loadImpactTag();
+      // Retrait du consentement : recharger pour decharger le script deja present.
+      else if (isImpactLoaded()) window.location.reload();
+    };
+    window.addEventListener('pulse:cookie-consent', onChoice);
+    return () => window.removeEventListener('pulse:cookie-consent', onChoice);
+  }, []);
 
   useEffect(() => {
     if (!getCookieConsent()) {
@@ -73,10 +87,12 @@ export function CookieConsent() {
           <Cookie size={18} />
         </div>
         <div className="flex-1">
-          <h3 className="text-sm font-bold text-foreground">Cookies & stockage local</h3>
+          <h3 className="text-sm font-bold text-foreground">Cookies et stockage local</h3>
           <p className="mt-1 text-xs leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            PulseMap utilise uniquement le stockage local nécessaire au fonctionnement
-            (session, préférences). Aucun cookie publicitaire ou de tracking tiers.{' '}
+            PulseMap utilise le stockage local nécessaire au fonctionnement (session,
+            préférences) et une mesure d'audience sans cookie (Plausible). Si tu acceptes,
+            des cookies d'affiliation impact.com peuvent être déposés pour mesurer les
+            visites vers certains partenaires. Tu peux changer d'avis à tout moment.{' '}
             <Link to="/privacy-policy" className="underline font-medium" style={{ color: 'hsl(var(--accent))' }}>
               En savoir plus
             </Link>
@@ -95,8 +111,8 @@ export function CookieConsent() {
         </button>
         <button
           onClick={() => handle('accepted')}
-          className="flex-1 rounded-xl px-3 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90"
-          style={{ background: 'hsl(var(--accent))' }}
+          className="flex-1 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors hover:bg-muted"
+          style={{ borderColor: 'hsl(var(--border))', color: 'hsl(var(--foreground))' }}
         >
           Accepter
         </button>

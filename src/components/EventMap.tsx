@@ -146,6 +146,10 @@ export function EventMap({ events, center, zoom, onEventSelect, selectedEvent, u
       zoomControl: false,
       attributionControl: false,
     });
+    // Attribution obligatoire du fond de carte et des donnees OpenStreetMap.
+    L.control.attribution({ position: 'bottomright', prefix: false })
+      .addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, tuiles &copy; <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>')
+      .addTo(map);
 
     const { base, labels } = getTileUrls(theme === 'dark');
     tileLayerRef.current = L.tileLayer(base, { maxZoom: 19 }).addTo(map);

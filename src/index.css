@@ -437,3 +437,10 @@
   50%      { transform: scale(1.12) rotate(2deg); filter: drop-shadow(0 0 8px hsl(0 95% 55% / 0.9)); }
 }
 .flame-flicker { animation: flame-flicker 1.4s ease-in-out infinite; }
+
+/* Attribution de la carte au-dessus de la barre de navigation et du footer legal */
+.leaflet-bottom.leaflet-right .leaflet-control-attribution {
+  margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 96px);
+  max-width: 60vw;
+  line-height: 1.3;
+}

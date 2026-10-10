@@ -4,15 +4,15 @@
 
 Production : [pulse-map.live](https://pulse-map.live)
 
-PulseMap agrège en temps réel les events de 10 sources (Shotgun, Ticketmaster,
-Eventbrite, Meetup, InfoConcert, OpenAgenda, Brocabrac, Route des Festivals,
-RunTrail, + events créés par des pros) et les affiche sur une carte Leaflet
+PulseMap agrège les events de sources sous API officielle ou licence ouverte
+(OpenAgenda, Ticketmaster, Eventbrite, Meetup, + events créés par des pros),
+listées sur /sources, et les affiche sur une carte Leaflet
 avec clustering, filtres avancés, check-in, badges, amis, QR pass et mode Live.
 
 ## Stack
 
 - **Front** : Vite + React 18 + TypeScript + shadcn/ui + Tailwind
-- **Carte** : Leaflet + Leaflet.markercluster (tuiles Carto dark/light)
+- **Carte** : Leaflet + Leaflet.markercluster (tuiles Esri Canvas, données OpenStreetMap)
 - **Backend** : Supabase (Postgres + Auth + Storage + Edge Functions + Realtime)
 - **Mobile** : Capacitor 8 (Android builds, iOS prêt à ajouter)
 - **PWA** : vite-plugin-pwa avec manifest complet (192/512/maskable)
@@ -84,7 +84,7 @@ src/
 │   ├── useEventPass.ts     # QR pass CRUD + validation
 │   ├── useUnlockedBadges.ts
 │   └── useOfflineEvents.ts # cache 24h localStorage
-├── lib/api/shotgun.ts      # agrégation des 10 sources via edge functions
+├── lib/api/shotgun.ts      # chargement des events depuis cached_events
 ├── data/mockEvents.ts      # types + fixtures (vide en prod)
 └── integrations/supabase/  # client + types générés
 supabase/
@@ -142,9 +142,12 @@ public/                     # favicon + icônes PWA
 - `on_attendance_created` → notifie tous les amis du check-in
 
 ### Edge Functions
-`fetch-ticketmaster`, `fetch-eventbrite`, `fetch-meetup`, `fetch-infoconcert`,
-`fetch-openagenda`, `fetch-brocabrac`, `fetch-routedesfestivals`,
-`fetch-runtrail`, `scrape-shotgun`, `refresh-events` (orchestrateur).
+Sources actives (constante `ENABLED_SOURCES` dans `refresh-events`) :
+`fetch-ticketmaster`, `fetch-openagenda`, `fetch-eventbrite`, `fetch-meetup`.
+Les fonctions de scraping (`scrape-shotgun`, `fetch-infoconcert`,
+`fetch-infoconcert-festivals`, `fetch-brocabrac`, `fetch-routedesfestivals`,
+`fetch-runtrail`, `fetch-sports-federations`) restent déployées mais ne sont
+plus appelées, pour des raisons de conformité.
 
 ## Déploiement
 

@@ -1,366 +1,137 @@
-import { Shield, Database, Eye, Trash2, Mail, MapPin, Users, Cookie, Server, HelpCircle } from 'lucide-react';
-import { SEO } from '@/components/SEO';
+import { Shield, Database, Trash2, Mail, MapPin, Users, Cookie, Server, Scale, Globe, UserCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { BackButton, useSwipeBack } from '@/components/BackButton';
+import { SEO } from '@/components/SEO';
 import { openCookieBanner } from '@/components/CookieConsent';
 import { TableOfContents } from '@/components/TableOfContents';
+import { LegalLayout, LegalSection, Bullet, ContactEmail } from '@/components/LegalLayout';
+import { CONTACT_EMAIL, LEGAL_EDITOR_NAME, LEGAL_EDITOR_STATUS, LEGAL_EDITOR_ADDRESS } from '@/lib/legal';
 
-const faqs = [
-  {
-    q: 'PulseMap utilise-t-il des cookies de tracking ?',
-    a: "Non. PulseMap n'utilise aucun cookie tiers de tracking, publicitaire ou analytique. Seul le stockage local (localStorage) du navigateur est utilisé pour mémoriser ta session et tes préférences (thème, ville, unité de distance).",
-  },
-  {
-    q: 'Mes données sont-elles vendues ou partagées ?',
-    a: "Jamais. Aucune donnée personnelle n'est vendue, louée ou partagée avec des tiers à des fins commerciales. Tes données restent strictement utilisées pour le fonctionnement de l'application.",
-  },
-  {
-    q: 'Où sont hébergées mes données ?',
-    a: "Toutes les données sont hébergées sur des serveurs sécurisés situés au sein de l'Union Européenne, conformément au RGPD. Les communications sont chiffrées en HTTPS/TLS.",
-  },
-  {
-    q: 'Comment supprimer mon compte et mes données ?',
-    a: "Tu peux supprimer ton compte directement depuis ton profil dans l'application, ou en envoyant une demande à privacy@pulsemap.app. Toutes tes données personnelles sont supprimées définitivement dans un délai de 30 jours.",
-  },
-  {
-    q: 'Ma géolocalisation est-elle envoyée à PulseMap ?',
-    a: "Non. Ta position GPS est traitée uniquement localement dans ton navigateur pour afficher les événements proches. Elle n'est jamais transmise ni stockée sur nos serveurs.",
-  },
-  {
-    q: 'Comment exercer mes droits RGPD ?',
-    a: "Pour toute demande d'accès, de rectification, d'effacement, de portabilité ou d'opposition, écris-nous à privacy@pulsemap.app. Nous répondons sous 30 jours maximum. Tu peux aussi saisir la CNIL (www.cnil.fr).",
-  },
-];
-
-const faqJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: faqs.map((f) => ({
-    '@type': 'Question',
-    name: f.q,
-    acceptedAnswer: { '@type': 'Answer', text: f.a },
-  })),
-};
-
-const orgJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: 'PulseMap',
-  url: 'https://pulse-map.live/',
-  logo: {
-    '@type': 'ImageObject',
-    url: 'https://pulse-map.live/icon-512.png',
-    width: 512,
-    height: 512,
-    caption: 'PulseMap logo',
-  },
-  email: 'privacy@pulsemap.app',
-  sameAs: ['https://pulse-map.live/'],
-};
+const LAST_UPDATED = '10 octobre 2026';
 
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
-  name: 'Privacy Policy — PulseMap',
-  description: 'Privacy policy and personal data protection statement for PulseMap.',
+  name: 'Politique de confidentialité | PulseMap',
   url: 'https://pulse-map.live/privacy-policy',
-  dateModified: '2026-05-16',
-  inLanguage: 'en',
-  isPartOf: {
-    '@type': 'WebSite',
-    name: 'PulseMap',
-    url: 'https://pulse-map.live/',
-  },
-  about: orgJsonLd,
+  dateModified: '2026-10-10',
+  inLanguage: 'fr',
+  isPartOf: { '@type': 'WebSite', name: 'PulseMap', url: 'https://pulse-map.live/' },
 };
 
-export default function PrivacyPage() {
-  useSwipeBack();
+const SECTIONS = [
+  { id: 'responsable', label: '1. Responsable du traitement' },
+  { id: 'traitements', label: '2. Données et traitements' },
+  { id: 'bases-legales', label: '3. Bases légales' },
+  { id: 'geolocalisation', label: '4. Géolocalisation' },
+  { id: 'partage', label: '5. Partage et sources' },
+  { id: 'conservation', label: '6. Durées de conservation' },
+  { id: 'hebergement', label: '7. Hébergement et transferts' },
+  { id: 'cookies', label: '8. Cookies et stockage local' },
+  { id: 'droits-rgpd', label: '9. Tes droits' },
+  { id: 'contact', label: '10. Contact' },
+];
 
+export default function PrivacyPage() {
   return (
     <>
       <SEO
-        title="Politique de confidentialité — PulseMap"
-        description="PulseMap s'engage à protéger la vie privée de ses utilisateurs conformément au RGPD. Découvre comment tes données sont collectées, utilisées et sécurisées."
-        ogTitle="Politique de confidentialité — PulseMap | Vos données, votre contrôle"
-        ogDescription="Découvre comment PulseMap protège tes données personnelles. Hébergement UE, zéro tracking, droits RGPD garantis."
+        title="Politique de confidentialité | PulseMap"
+        description="Comment PulseMap traite tes données : compte, check-ins, amis, notifications, mesure d'audience sans cookie, affiliation avec consentement, durées de conservation et droits RGPD."
         canonical="/privacy-policy"
-        jsonLd={[orgJsonLd, jsonLd, faqJsonLd]}
+        jsonLd={[jsonLd]}
         hreflang={[
           { lang: 'fr', path: '/privacy-policy' },
           { lang: 'en', path: '/terms' },
           { lang: 'x-default', path: '/privacy-policy' },
         ]}
-        imageWidth={512}
-        imageHeight={512}
-        imageAlt="PulseMap logo"
       />
+      <LegalLayout
+        icon={<Shield size={28} />}
+        title="Politique de confidentialité"
+        intro="PulseMap protège la vie privée de ses utilisateurs conformément au Règlement Général sur la Protection des Données (RGPD, UE 2016/679) et à la loi Informatique et Libertés."
+        updated={`Dernière mise à jour : ${LAST_UPDATED}`}
+      >
+        <TableOfContents title="Sommaire" items={SECTIONS} />
 
-      <div className="h-full overflow-y-auto" style={{ background: 'hsl(var(--background))' }}>
-        {/* Subtle ambient glow */}
-        <div
-          className="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, hsl(var(--accent) / 0.08) 0%, transparent 70%)', filter: 'blur(80px)' }}
-        />
-
-        {/* Navigation */}
-        <nav className="sticky top-0 z-50 border-b px-4 py-3" style={{ background: 'hsl(var(--background) / 0.85)', backdropFilter: 'blur(12px)', borderColor: 'hsl(var(--border))' }}>
-          <div className="mx-auto max-w-3xl flex items-center gap-3">
-            <BackButton label="Retour à la carte" />
-            <span className="ml-auto text-xs font-bold tracking-widest uppercase" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              PulseMap
-            </span>
-          </div>
-        </nav>
-
-        {/* Hero */}
-        <header className="relative px-4 pt-12 pb-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <div
-              className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl"
-              style={{ background: 'hsl(var(--accent) / 0.12)' }}
-            >
-              <Shield size={28} style={{ color: 'hsl(var(--accent))' }} />
-            </div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-              Politique de confidentialit<span style={{ color: 'hsl(var(--accent))' }}>é</span>
-            </h1>
-            <p className="mt-3 text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              PulseMap s'engage à protéger la vie privée de ses utilisateurs conformément au Règlement Général sur la Protection des Données (RGPD – UE 2016/679) et à la loi Informatique et Libertés.
+        <LegalSection id="responsable" icon={<UserCheck size={18} />} title="1. Responsable du traitement">
+          {LEGAL_EDITOR_NAME ? (
+            <p>
+              Le responsable du traitement est <strong className="text-foreground">{LEGAL_EDITOR_NAME}</strong>
+              {LEGAL_EDITOR_STATUS && `, ${LEGAL_EDITOR_STATUS}`}{LEGAL_EDITOR_ADDRESS && `, ${LEGAL_EDITOR_ADDRESS}`}, éditeur de PulseMap.
             </p>
-            <p className="mt-2 text-xs font-medium" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Dernière mise à jour : 16 mai 2026
-            </p>
-          </div>
-        </header>
+          ) : (
+            <p>Le responsable du traitement est l'éditeur de PulseMap.</p>
+          )}
+          <p>Contact pour toute question relative à tes données : <ContactEmail email={CONTACT_EMAIL} />.</p>
+        </LegalSection>
 
-        {/* Content */}
-        <main className="px-4 pb-20">
-          <div className="mx-auto max-w-3xl space-y-4">
-            <TableOfContents
-              title="Sommaire"
-              items={[
-                { id: 'donnees-collectees', label: '1. Données collectées' },
-                { id: 'geolocalisation', label: '2. Géolocalisation' },
-                { id: 'finalites', label: '3. Finalités du traitement' },
-                { id: 'partage', label: '4. Partage des données' },
-                { id: 'conservation', label: '5. Conservation des données' },
-                { id: 'hebergement', label: '6. Hébergement & sécurité' },
-                { id: 'droits-rgpd', label: '7. Tes droits (RGPD)' },
-                { id: 'cookies', label: '8. Cookies & stockage local' },
-                { id: 'faq', label: 'FAQ — Vie privée & RGPD' },
-                { id: 'contact', label: '9. Contact' },
-              ]}
-            />
+        <LegalSection id="traitements" icon={<Database size={18} />} title="2. Données et traitements">
+          <ul className="space-y-1.5">
+            <Bullet label="Compte">Email, mot de passe (stocké chiffré), pseudo et ville préférée, pour créer et sécuriser ton compte et afficher les événements de ta ville.</Bullet>
+            <Bullet label="Check-ins">Les événements auxquels tu indiques participer, pour ton historique et tes badges.</Bullet>
+            <Bullet label="Amis">Les demandes et liens d'amitié que tu acceptes, et les notifications associées.</Bullet>
+            <Bullet label="Notifications push">Si tu les actives, l'abonnement push de ton navigateur (adresse technique et clés de chiffrement) est enregistré pour t'envoyer des alertes, ainsi que tes préférences de notification.</Bullet>
+            <Bullet label="Mesure d'audience">Plausible Analytics, sans cookie et sans donnée permettant de t'identifier, pour compter les visites de façon agrégée.</Bullet>
+            <Bullet label="Affiliation">Uniquement si tu acceptes les cookies : le tag impact.com peut déposer des cookies pour mesurer les visites vers certains partenaires. Sans consentement, aucun script impact.com n'est chargé.</Bullet>
+          </ul>
+          <p className="font-semibold text-foreground">Aucune donnée personnelle n'est vendue ni louée.</p>
+        </LegalSection>
 
-            <Section id="donnees-collectees" icon={<Database size={18} />} iconColor="hsl(var(--primary))" iconBg="hsl(var(--primary) / 0.12)" title="1. Données collectées">
-              <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                Nous collectons uniquement les données nécessaires au fonctionnement de l'application :
-              </p>
-              <ul className="mt-3 space-y-2">
-                <DataItem label="Email & mot de passe" desc="Pour la création et la sécurisation de ton compte." />
-                <DataItem label="Pseudo" desc="Affiché publiquement pour identifier ton profil auprès de tes amis." />
-                <DataItem label="Ville préférée" desc="Pour afficher les événements pertinents dans ta zone." />
-                <DataItem label="Historique de présence" desc="Les événements auxquels tu as indiqué participer (check-ins)." />
-                <DataItem label="Liste d'amis" desc="Les connexions avec d'autres utilisateurs que tu as acceptées." />
-              </ul>
-            </Section>
+        <LegalSection id="bases-legales" icon={<Scale size={18} />} title="3. Bases légales">
+          <ul className="space-y-1.5">
+            <Bullet label="Exécution du service">compte, check-ins, amis et notifications liées à ton compte.</Bullet>
+            <Bullet label="Consentement">notifications push et cookies d'affiliation impact.com, retirables à tout moment.</Bullet>
+            <Bullet label="Intérêt légitime">mesure d'audience sans cookie, sécurité du service.</Bullet>
+          </ul>
+        </LegalSection>
 
-            <Section id="geolocalisation" icon={<MapPin size={18} />} iconColor="hsl(var(--neon-pink))" iconBg="hsl(var(--neon-pink) / 0.12)" title="2. Géolocalisation">
-              <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                PulseMap peut utiliser ta position géographique pour afficher les événements proches de toi. Cette donnée est traitée <strong className="text-foreground">localement dans ton navigateur</strong> et n'est jamais transmise ni stockée sur nos serveurs. Tu peux refuser la géolocalisation à tout moment via les paramètres de ton navigateur, et utiliser le mode « Ville » à la place.
-              </p>
-            </Section>
+        <LegalSection id="geolocalisation" icon={<MapPin size={18} />} title="4. Géolocalisation">
+          <p>Ta position sert à afficher les événements proches. Elle est traitée <strong className="text-foreground">localement dans ton navigateur</strong> et n'est ni transmise ni stockée sur nos serveurs. Tu peux la refuser et utiliser le mode Ville.</p>
+        </LegalSection>
 
-            <Section id="finalites" icon={<Eye size={18} />} iconColor="hsl(var(--neon-purple))" iconBg="hsl(var(--neon-purple) / 0.12)" title="3. Finalités du traitement">
-              <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                Tes données sont utilisées exclusivement pour :
-              </p>
-              <ul className="mt-3 space-y-1.5">
-                <li className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>• Créer et gérer ton compte utilisateur</li>
-                <li className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>• Afficher les événements pertinents selon ta localisation ou ta ville</li>
-                <li className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>• Permettre le suivi de tes participations (check-ins) et badges</li>
-                <li className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>• Gérer ta liste d'amis et les notifications associées</li>
-                <li className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>• Améliorer l'expérience utilisateur de l'application</li>
-              </ul>
-              <p className="mt-3 text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
-                Aucune donnée n'est vendue, louée ou transmise à des tiers à des fins commerciales.
-              </p>
-            </Section>
+        <LegalSection id="partage" icon={<Users size={18} />} title="5. Partage et sources">
+          <ul className="space-y-1.5">
+            <Bullet label="Pseudo">visible par les autres utilisateurs (recherche d'amis).</Bullet>
+            <Bullet label="Check-ins">visibles par toi et tes amis confirmés.</Bullet>
+            <Bullet label="Email">jamais affiché publiquement.</Bullet>
+          </ul>
+          <p>
+            Les données d'événements proviennent de sources tierces listées sur la page{' '}
+            <Link to="/sources" className="font-semibold" style={{ color: 'hsl(var(--accent))' }}>Sources et licences</Link>, et sont affichées en l'état.
+          </p>
+        </LegalSection>
 
-            <Section id="partage" icon={<Users size={18} />} iconColor="hsl(45 100% 55%)" iconBg="hsl(45 100% 55% / 0.12)" title="4. Partage des données">
-              <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                Tes données sont visibles de manière limitée :
-              </p>
-              <ul className="mt-3 space-y-1.5">
-                <li className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>• <strong className="text-foreground">Pseudo :</strong> visible par tous les utilisateurs (pour la recherche d'amis)</li>
-                <li className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>• <strong className="text-foreground">Check-ins :</strong> visibles uniquement par toi et tes amis confirmés</li>
-                <li className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>• <strong className="text-foreground">Email :</strong> jamais affiché publiquement</li>
-              </ul>
-              <p className="mt-3 text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                Les données d'événements proviennent de sources tierces (Shotgun, Ticketmaster) et sont affichées en l'état.
-              </p>
-            </Section>
+        <LegalSection id="conservation" icon={<Server size={18} />} title="6. Durées de conservation">
+          <ul className="space-y-1.5">
+            <Bullet label="Compte, check-ins, amis">tant que le compte est actif, puis suppression sous 30 jours après la suppression du compte.</Bullet>
+            <Bullet label="Abonnement push">jusqu'à la désactivation des notifications ou la suppression du compte.</Bullet>
+            <Bullet label="Notifications">supprimées avec le compte.</Bullet>
+            <Bullet label="Choix cookies">conservé dans ton navigateur jusqu'à ce que tu le modifies.</Bullet>
+            <Bullet label="Cookies impact.com">selon la durée fixée par impact.com, au plus 13 mois conformément aux recommandations de la CNIL.</Bullet>
+          </ul>
+        </LegalSection>
 
-            <Section id="conservation" icon={<Server size={18} />} iconColor="hsl(var(--neon-green))" iconBg="hsl(var(--neon-green) / 0.12)" title="5. Conservation des données">
-              <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                Tes données sont conservées tant que ton compte est actif. En cas de suppression de compte, toutes tes données personnelles (profil, check-ins, amitiés, notifications) sont supprimées définitivement dans un délai de 30 jours.
-              </p>
-            </Section>
+        <LegalSection id="hebergement" icon={<Globe size={18} />} title="7. Hébergement et transferts">
+          <p>Le site et la base de données sont hébergés par Lovable Cloud, qui s'appuie sur l'infrastructure Supabase. Les communications sont chiffrées (HTTPS/TLS) et l'accès aux données est protégé par des règles de sécurité au niveau de la base.</p>
+          <p>impact.com est une société établie aux États-Unis : si tu acceptes ses cookies, des données de navigation peuvent être transférées hors de l'Union européenne, encadrées par les clauses contractuelles types de la Commission européenne ou le Data Privacy Framework.</p>
+        </LegalSection>
 
-            <Section id="hebergement" icon={<Shield size={18} />} iconColor="hsl(210 100% 56%)" iconBg="hsl(210 100% 56% / 0.12)" title="6. Hébergement & sécurité">
-              <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                Les données sont hébergées sur des serveurs sécurisés au sein de l'Union Européenne. Les communications sont chiffrées via HTTPS/TLS. Les mots de passe sont hashés et ne sont jamais stockés en clair. L'accès aux données est protégé par des politiques de sécurité au niveau de la base de données (Row Level Security).
-              </p>
-            </Section>
+        <LegalSection id="cookies" icon={<Cookie size={18} />} title="8. Cookies et stockage local">
+          <p>Le stockage local du navigateur conserve ta session et tes préférences (thème, ville, unité de distance). La mesure d'audience Plausible n'utilise aucun cookie. Les cookies d'affiliation impact.com ne sont déposés qu'après ton accord.</p>
+          <button type="button" onClick={openCookieBanner} className="mt-2 inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors hover:bg-muted" style={{ borderColor: 'hsl(var(--border))', color: 'hsl(var(--foreground))' }}>
+            <Cookie size={14} /> Gérer mes préférences cookies
+          </button>
+        </LegalSection>
 
-            <Section id="droits-rgpd" icon={<Trash2 size={18} />} iconColor="hsl(var(--destructive))" iconBg="hsl(var(--destructive) / 0.12)" title="7. Tes droits (RGPD)">
-              <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                Conformément au RGPD, tu disposes des droits suivants :
-              </p>
-              <ul className="mt-3 space-y-1.5">
-                <li className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>• <strong className="text-foreground">Droit d'accès :</strong> consulter tes données personnelles</li>
-                <li className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>• <strong className="text-foreground">Droit de rectification :</strong> modifier tes informations (pseudo, ville…)</li>
-                <li className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>• <strong className="text-foreground">Droit à l'effacement :</strong> supprimer ton compte et toutes tes données</li>
-                <li className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>• <strong className="text-foreground">Droit à la portabilité :</strong> exporter tes données dans un format lisible</li>
-                <li className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>• <strong className="text-foreground">Droit d'opposition :</strong> t'opposer à certains traitements</li>
-                <li className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>• <strong className="text-foreground">Droit de retrait :</strong> retirer ton consentement à tout moment</li>
-              </ul>
-            </Section>
+        <LegalSection id="droits-rgpd" icon={<Trash2 size={18} />} title="9. Tes droits">
+          <p>Tu disposes des droits d'accès, de rectification, d'effacement, de portabilité, d'opposition, de limitation et de retrait du consentement. Tu peux supprimer ton compte depuis ton profil. Réponse sous 30 jours maximum.</p>
+        </LegalSection>
 
-            <Section id="cookies" icon={<Cookie size={18} />} iconColor="hsl(25 90% 55%)" iconBg="hsl(25 90% 55% / 0.12)" title="8. Cookies & stockage local">
-              <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                PulseMap utilise le stockage local du navigateur (localStorage) pour sauvegarder tes préférences (thème, unité de distance, ville préférée) et ta session d'authentification. Aucun cookie tiers de tracking ou publicitaire n'est utilisé.
-              </p>
-              <button
-                type="button"
-                onClick={openCookieBanner}
-                className="mt-4 inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors hover:bg-muted"
-                style={{ borderColor: 'hsl(var(--border))', color: 'hsl(var(--foreground))' }}
-              >
-                <Cookie size={14} />
-                Gérer mes préférences cookies
-              </button>
-            </Section>
-
-            <Section id="faq" icon={<HelpCircle size={18} />} iconColor="hsl(200 90% 55%)" iconBg="hsl(200 90% 55% / 0.12)" title="FAQ — Vie privée & RGPD">
-              <div className="space-y-3">
-                {faqs.map((f, i) => (
-                  <details
-                    key={i}
-                    className="group rounded-xl border p-3 transition-colors open:bg-muted/40"
-                    style={{ borderColor: 'hsl(var(--border))' }}
-                  >
-                    <summary
-                      className="cursor-pointer list-none text-sm font-semibold text-foreground flex items-center justify-between gap-2"
-                    >
-                      <span>{f.q}</span>
-                      <span
-                        className="text-lg leading-none transition-transform group-open:rotate-45"
-                        style={{ color: 'hsl(var(--accent))' }}
-                        aria-hidden
-                      >
-                        +
-                      </span>
-                    </summary>
-                    <p className="mt-2 text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                      {f.a}
-                    </p>
-                  </details>
-                ))}
-              </div>
-            </Section>
-
-            <Section id="contact" icon={<Mail size={18} />} iconColor="hsl(var(--accent))" iconBg="hsl(var(--accent) / 0.12)" title="9. Contact">
-              <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                Pour exercer tes droits ou pour toute question relative à la protection de tes données, tu peux nous contacter à :
-              </p>
-              <p className="mt-2 text-sm font-bold" style={{ color: 'hsl(var(--accent))' }}>
-                privacy@pulsemap.app
-              </p>
-              <p className="mt-2 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                Tu peux également adresser une réclamation à la CNIL (Commission Nationale de l'Informatique et des Libertés) : <span className="font-medium text-foreground">www.cnil.fr</span>
-              </p>
-            </Section>
-          </div>
-        </main>
-
-        {/* Footer */}
-        <footer className="border-t px-4 py-8" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
-          <div className="mx-auto max-w-3xl flex flex-col items-center gap-3 text-center">
-            <p className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              © 2026 PulseMap. Tous droits réservés.
-            </p>
-            <div className="flex items-center gap-4">
-              <Link to="/" className="text-xs font-medium transition-colors hover:text-foreground" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                Accueil
-              </Link>
-              <span style={{ color: 'hsl(var(--border))' }}>|</span>
-              <Link to="/villes" className="text-xs font-medium transition-colors hover:text-foreground" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                Villes
-              </Link>
-              <span style={{ color: 'hsl(var(--border))' }}>|</span>
-              <Link to="/terms" className="text-xs font-medium transition-colors hover:text-foreground" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                Conditions
-              </Link>
-              <span style={{ color: 'hsl(var(--border))' }}>|</span>
-              <Link to="/contact-legal" className="text-xs font-medium transition-colors hover:text-foreground" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                Contact légal
-              </Link>
-              <span style={{ color: 'hsl(var(--border))' }}>|</span>
-              <span className="text-xs font-medium" style={{ color: 'hsl(var(--foreground))' }}>
-                Confidentialité
-              </span>
-            </div>
-          </div>
-        </footer>
-      </div>
+        <LegalSection id="contact" icon={<Mail size={18} />} title="10. Contact">
+          <p>Pour exercer tes droits : <ContactEmail email={CONTACT_EMAIL} />.</p>
+          <p>Tu peux aussi adresser une réclamation à la CNIL : <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer" className="font-medium text-foreground underline">www.cnil.fr</a>.</p>
+        </LegalSection>
+      </LegalLayout>
     </>
-  );
-}
-
-function Section({
-  id,
-  icon,
-  iconColor,
-  iconBg,
-  title,
-  children,
-}: {
-  id?: string;
-  icon: React.ReactNode;
-  iconColor: string;
-  iconBg: string;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section
-      id={id}
-      className="rounded-2xl border p-5 transition-shadow hover:shadow-lg"
-      style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
-    >
-      <div className="flex items-center gap-3 mb-4">
-        <div
-          className="flex h-9 w-9 items-center justify-center rounded-xl shrink-0"
-          style={{ background: iconBg, color: iconColor }}
-        >
-          {icon}
-        </div>
-        <h2 className="text-base font-bold text-foreground">{title}</h2>
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function DataItem({ label, desc }: { label: string; desc: string }) {
-  return (
-    <li className="flex gap-2 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: 'hsl(var(--primary))' }} />
-      <span>
-        <strong className="text-foreground">{label}</strong> — {desc}
-      </span>
-    </li>
   );
 }

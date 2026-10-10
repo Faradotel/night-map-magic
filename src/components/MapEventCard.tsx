@@ -1,4 +1,5 @@
 import { useRef, useCallback, useMemo } from 'react';
+import { getEventSource } from '@/lib/eventSource';
 import { X, ChevronUp, ChevronLeft, ChevronRight, Users, Flame } from 'lucide-react';
 import { NightEvent, vibeConfig, typeConfig, getDistance } from '@/data/mockEvents';
 import { useDistanceUnit } from '@/hooks/useDistanceUnit';
@@ -32,7 +33,7 @@ export function MapEventCard({ event, onClose, onDetails, userLocation, coLocate
     : null;
 
   const attendanceCount = useEventAttendanceCount(event.id);
-  const source = event.id.startsWith('tm-') ? 'Ticketmaster' : event.id.startsWith('shotgun-') ? 'Shotgun' : event.id.startsWith('eb-') ? 'Eventbrite' : event.id.startsWith('mu-') ? 'Meetup' : event.id.startsWith('ic-') ? 'InfoConcert' : event.id.startsWith('bb-') ? 'Brocabrac' : event.id.startsWith('rt-') ? 'RunTrail' : event.id.startsWith('oa-') ? 'OpenAgenda' : null;
+  const source = getEventSource(event.id)?.name ?? null;
 
   // Co-located navigation
   const group = useMemo(() => coLocatedEvents && coLocatedEvents.length > 1 ? coLocatedEvents : null, [coLocatedEvents]);

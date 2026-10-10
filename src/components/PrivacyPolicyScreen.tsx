@@ -31,12 +31,12 @@ export function PrivacyPolicyScreen({ onBack }: PrivacyPolicyScreenProps) {
               <Shield size={20} style={{ color: 'hsl(var(--accent))' }} />
             </div>
             <div>
-              <p className="text-sm font-bold text-foreground">PulseMap – RGPD</p>
-              <p className="text-[10px] text-muted-foreground">Dernière mise à jour : février 2026</p>
+              <p className="text-sm font-bold text-foreground">PulseMap : RGPD</p>
+              <p className="text-[10px] text-muted-foreground">Dernière mise à jour : octobre 2026</p>
             </div>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            PulseMap s'engage à protéger la vie privée de ses utilisateurs conformément au Règlement Général sur la Protection des Données (RGPD – UE 2016/679) et à la loi Informatique et Libertés.
+            PulseMap s'engage à protéger la vie privée de ses utilisateurs conformément au Règlement Général sur la Protection des Données (RGPD : UE 2016/679) et à la loi Informatique et Libertés.
           </p>
         </div>
 
@@ -105,7 +105,7 @@ export function PrivacyPolicyScreen({ onBack }: PrivacyPolicyScreenProps) {
             <li className="text-xs text-muted-foreground">• <strong className="text-foreground">Email :</strong> jamais affiché publiquement</li>
           </ul>
           <p className="text-xs text-muted-foreground leading-relaxed mt-2">
-            Les données d'événements proviennent de sources tierces (Shotgun, Ticketmaster) et sont affichées en l'état.
+            Les données d'événements proviennent de sources tierces listées sur la page Sources et licences (/sources) et sont affichées en l'état.
           </p>
         </Section>
 
@@ -160,7 +160,7 @@ export function PrivacyPolicyScreen({ onBack }: PrivacyPolicyScreenProps) {
             Pour exercer tes droits ou pour toute question relative à la protection de tes données, tu peux nous contacter à :
           </p>
           <p className="text-sm font-bold mt-2" style={{ color: 'hsl(var(--accent))' }}>
-            privacy@nightmap.app
+            la page Contact légal (/contact-legal)
           </p>
           <p className="text-xs text-muted-foreground mt-2">
             Tu peux également adresser une réclamation à la CNIL (Commission Nationale de l'Informatique et des Libertés) : <span className="font-medium text-foreground">www.cnil.fr</span>
@@ -174,7 +174,7 @@ export function PrivacyPolicyScreen({ onBack }: PrivacyPolicyScreenProps) {
           title="9. Cookies & stockage local"
         >
           <p className="text-xs text-muted-foreground leading-relaxed">
-            NightMap utilise le stockage local du navigateur (localStorage) pour sauvegarder tes préférences (thème, unité de distance, ville préférée) et ta session d'authentification. Aucun cookie tiers de tracking ou publicitaire n'est utilisé.
+            PulseMap utilise le stockage local du navigateur (localStorage) pour sauvegarder tes préférences (thème, unité de distance, ville préférée) et ta session d'authentification. Aucun cookie tiers de tracking ou publicitaire n'est utilisé.
           </p>
         </Section>
       </div>
