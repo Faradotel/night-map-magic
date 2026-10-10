@@ -6,5 +6,5 @@
 - Page titles, descriptions and JSON-LD live in `src/lib/seo/pageMeta.ts` and head tags in `src/lib/seo/seoHead.ts`, used by both React pages and the prerender. Why: static HTML and React output must stay identical.
 - Event sources are switched on only through `ENABLED_SOURCES` in `supabase/functions/refresh-events/index.ts`; scraping functions stay deployed but uncalled. Why: legal compliance, only official APIs or open licences are used.
 - The impact.com tag is never in `index.html`; `src/lib/impactConsent.ts` loads it only after cookie consent, without `transformLinks`. Why: GDPR consent, and Ticketmaster links must not carry any revenue mechanism.
-- Legal identity and contact come only from `src/lib/legal.ts`; `/mentions-legales` redirects to `/terms` while the editor name or contact email is empty. Why: no hard-coded or placeholder legal data in production.
+- Legal identity and contact come only from `src/lib/legal.ts`; `/mentions-legales` redirects to `/terms` while the editor name is empty. Why: no hard-coded or placeholder legal data in production.
 - `/sources` content lives in `src/lib/seo/sourcesContent.ts`, shared by the React page and the prerender. Why: static HTML and React output must stay identical.
