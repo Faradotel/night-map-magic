@@ -1,4 +1,4 @@
-import { Shield, Database, Eye, Trash2, Mail, MapPin, Users, Cookie, Server, Scale, Globe, UserCheck } from 'lucide-react';
+import { Shield, Database, Trash2, Mail, MapPin, Users, Cookie, Server, Scale, Globe, UserCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SEO } from '@/components/SEO';
 import { openCookieBanner } from '@/components/CookieConsent';
@@ -131,7 +131,6 @@ export default function PrivacyPage() {
           <p>Pour exercer tes droits : <ContactEmail email={CONTACT_EMAIL} />.</p>
           <p>Tu peux aussi adresser une réclamation à la CNIL : <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer" className="font-medium text-foreground underline">www.cnil.fr</a>.</p>
         </LegalSection>
-        <Eye className="hidden" aria-hidden="true" />
       </LegalLayout>
     </>
   );
